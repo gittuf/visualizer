@@ -1,0 +1,145 @@
+{
+  "result": "allowed",
+  "reasons": [
+    "All approval requirements satisfied",
+    "Rule 'protect-main-branch': 2/2 maintainer approvals collected",
+    "All signatures verified successfully",
+    "Change is safe to merge"
+  ],
+  "approval_requirements": [
+    {
+      "role": "maintainer",
+      "role_metadata_version": 1,
+      "threshold": 2,
+      "file_globs": ["src/**", "docs/**", "*.md"],
+      "eligible_signers": [
+        {
+          "id": "alice",
+          "display_name": "Alice Johnson",
+          "keyid": "ssh-rsa-abc123",
+          "key_type": "ssh"
+        },
+        {
+          "id": "bob",
+          "display_name": "Bob Smith",
+          "keyid": "gpg-def456",
+          "key_type": "gpg"
+        },
+        {
+          "id": "charlie",
+          "display_name": "Charlie Brown",
+          "keyid": "sigstore-ghi789",
+          "key_type": "sigstore"
+        }
+      ],
+      "satisfied": 2,
+      "satisfiers": [
+        {
+          "who": "alice",
+          "keyid": "ssh-rsa-abc123",
+          "signature_valid": true,
+          "signature_time": "2024-01-15T10:30:00Z",
+          "signature_verification_reason": "Valid SSH signature from authorized maintainer key"
+        },
+        {
+          "who": "bob",
+          "keyid": "gpg-def456",
+          "signature_valid": true,
+          "signature_time": "2024-01-15T11:15:00Z",
+          "signature_verification_reason": "Valid GPG signature with trusted maintainer key"
+        }
+      ]
+    }
+  ],
+  "signature_verification": [
+    {
+      "signature_id": "sig-001",
+      "keyid": "ssh-rsa-abc123",
+      "sig_ok": true,
+      "verified_at": "2024-01-15T10:30:00Z",
+      "reason": "Valid SSH signature from authorized key - signature verified against known public key"
+    },
+    {
+      "signature_id": "sig-002",
+      "keyid": "gpg-def456",
+      "sig_ok": true,
+      "verified_at": "2024-01-15T11:15:00Z",
+      "reason": "Valid GPG signature with trusted key - full certificate chain verified"
+    }
+  ],
+  "attestation_matches": [
+    {
+      "attestation_id": "att-001",
+      "rsl_index": 42,
+      "maps_to_proposal": true,
+      "from_revision_ok": true,
+      "target_tree_hash_match": true,
+      "signature_valid": true
+    }
+  ],
+  "visualization_hint": {
+    "nodes": [
+      {
+        "id": "maintainer-role",
+        "type": "role",
+        "label": "Maintainer (2/2)",
+        "meta": {
+          "satisfied": true,
+          "threshold": 2,
+          "current": 2,
+          "description": "Protects core source code and documentation"
+        }
+      },
+      {
+        "id": "alice",
+        "type": "person",
+        "label": "Alice Johnson",
+        "meta": {
+          "signed": true,
+          "keyType": "ssh",
+          "role": "maintainer"
+        }
+      },
+      {
+        "id": "bob",
+        "type": "person",
+        "label": "Bob Smith",
+        "meta": {
+          "signed": true,
+          "keyType": "gpg",
+          "role": "maintainer"
+        }
+      },
+      {
+        "id": "charlie",
+        "type": "person",
+        "label": "Charlie Brown",
+        "meta": {
+          "signed": false,
+          "keyType": "sigstore",
+          "role": "maintainer"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "from": "alice",
+        "to": "maintainer-role",
+        "label": "Approved ✓",
+        "satisfied": true
+      },
+      {
+        "from": "bob",
+        "to": "maintainer-role",
+        "label": "Approved ✓",
+        "satisfied": true
+      },
+      {
+        "from": "charlie",
+        "to": "maintainer-role",
+        "label": "Eligible",
+        "satisfied": false
+      }
+    ]
+  }
+}
