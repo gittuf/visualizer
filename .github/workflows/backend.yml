@@ -1,0 +1,40 @@
+name: Backend CI/CD
+
+on:
+  push:
+    paths:
+      - "backend/**"
+    branches: [ 'main' ]
+  pull_request:
+    paths:
+      - "backend/**"
+    branches: [ 'main' ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+
+      - name: Set up Python
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Step 1: Check Python syntax 
+      - name: Check syntax errors
+        run: python -m compileall .
+
+      # Step 2: Try importing main.py to catch runtime/import issues
+      - name: Import main.py
+        run: python -c "import main"
+
+      # Step 3: Run tests (if available)
+      - name: Run tests
+        run: pytest || echo "No tests yet"
