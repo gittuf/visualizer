@@ -1,7 +1,7 @@
 blinker==1.9.0
 click==8.2.0
 Flask==3.1.1
-flask-cors==5.0.1
+flask-cors==6.0.0
 gitdb==4.0.12
 GitPython==3.1.44
 itsdangerous==2.2.0
