@@ -1,11 +1,11 @@
 blinker==1.9.0
 click==8.2.0
-Flask==3.1.1
-flask-cors==6.0.0
+Flask==3.1.2
+flask-cors==6.0.1
 gitdb==4.0.12
-GitPython==3.1.44
+GitPython==3.1.45
 itsdangerous==2.2.0
 Jinja2==3.1.6
-MarkupSafe==3.0.2
+MarkupSafe==3.0.3
 smmap==5.0.2
 Werkzeug==3.1.3
