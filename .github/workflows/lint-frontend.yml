@@ -25,16 +25,17 @@ jobs:
       - name: Install ESLint
         run: |
           npm install eslint@v9.36.0 @eslint/js typescript typescript-eslint
-          npm install @microsoft/eslint-formatter-sarif@3.1.0
+#          npm install @microsoft/eslint-formatter-sarif@3.1.0
 
       - name: Run ESLint
         env:
           SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
-        run: npx eslint . --config eslint.config.mjs --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif  --output-file eslint-results.sarif
+#        run: npx eslint . --config eslint.config.mjs --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif  --output-file eslint-results.sarif
+        run: npx eslint . --config eslint.config.mjs --ext .js,.jsx,.ts,.tsx
         continue-on-error: true
 
-      - name: Upload analysis results to GitHub
-        uses: github/codeql-action/upload-sarif@3599b3baa15b485a2e49ef411a7a4bb2452e7f93
-        with:
-          sarif_file: frontend/eslint-results.sarif
-          wait-for-processing: true
+#      - name: Upload analysis results to GitHub
+#        uses: github/codeql-action/upload-sarif@3599b3baa15b485a2e49ef411a7a4bb2452e7f93
+#        with:
+#          sarif_file: frontend/eslint-results.sarif
+#          wait-for-processing: true
