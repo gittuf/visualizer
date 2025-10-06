@@ -1,5 +1,5 @@
 blinker==1.9.0
-click==8.2.0
+click==8.3.0
 Flask==3.1.2
 flask-cors==6.0.1
 gitdb==4.0.12
