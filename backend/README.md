@@ -1,21 +1,23 @@
-# Gittuf Metadata Visualizer (Backend)
+# gittuf Metadata Visualizer (Backend)
 
-A Flask-based API backend that powers the Gittuf Metadata Visualizer frontend.  
-Handles cloning Git repositories, fetching custom Gittuf refs, and decoding security metadata JSON.
+A Flask-based API backend that powers the gittuf Metadata Visualizer frontend.  
+Handles cloning Git repositories, fetching custom gittuf refs, and decoding
+security metadata JSON.
 
 ## Features
 
-- **Clone & Fetch**: Clones a Git repository and fetches the `refs/gittuf/policy` branch.
-- **List Commits**: Returns a list of commits for the Gittuf policy ref, including hash, message, author, and date.
-- **Decode Metadata**: Reads and decodes Base64-encoded Gittuf metadata files (`root.json`, `targets.json`) from a specific commit.
-- **CORS Support**: Enabled via `flask-cors` for seamless frontend integration.
+- **Clone & Fetch**: Clones a Git repository and fetches the
+  `refs/gittuf/policy` branch.
+- **List Commits**: Returns a list of commits for the Gittuf policy ref,
+  including hash, message, author, and date.
+- **Decode Metadata**: Reads and decodes Base64-encoded Gittuf metadata files
+  (`root.json`, `targets.json`) from a specific commit.
 
 ## Tech Stack
 
 - **Framework**: Flask
 - **Language**: Python 3
 - **Git Integration**: GitPython, subprocess for low-level Git commands
-- **CORS**: flask-cors
 
 ## Prerequisites
 
@@ -26,8 +28,8 @@ Handles cloning Git repositories, fetching custom Gittuf refs, and decoding secu
 
 ```bash
 # Clone the backend repo
-git clone https://github.com/BrawlerXull/Gittuf-Visualizer-Backend.git
-cd gittuf-visualizer-backend
+git clone https://github.com/gittuf/visualizer.git
+cd visualizer/backend
 
 # Create and activate a virtual environment (optional but recommended)
 python -m venv venv
@@ -79,15 +81,7 @@ Decodes a metadata file for a specific commit.
 ## Project Structure
 
 ```
-brawlerxull-gittuf-visualizer-backend/
+backend/
 ├── main.py            # Flask application and route handlers
 └── requirements.txt   # Python dependencies
 ```
-
-## Contributing
-
-Contributions are welcome! Please open issues or submit pull requests for improvements or bug fixes.
-
-## License
-
-[MIT](LICENSE)
