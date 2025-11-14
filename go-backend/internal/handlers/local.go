@@ -12,12 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func HealthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"status": "Looks good!",
-	})
-}
-
 // Lists commits from local repo's HEAD
 func ListCommitsLocal(c *gin.Context) {
 	var req models.CommitsLocalRequest

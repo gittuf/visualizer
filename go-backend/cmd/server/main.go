@@ -36,7 +36,6 @@ func main() {
 	router.Use(cors.New(config))
 
 	// Remote repository endpoints
-	router.GET("/health", handlers.HealthCheck)
 	router.POST("/commits", handlers.ListCommits)
 	router.POST("/metadata", handlers.GetMetadata)
 

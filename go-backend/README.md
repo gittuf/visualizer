@@ -1,4 +1,4 @@
-# Gittuf Metadata Visualizer (Backend)
+# gittuf Metadata Visualizer (Backend)
 
 A Golang backend microservice with Gin framework for the Gittuf Visualizer web application.
 Currently handles cloning Git repositories, fetching custom Gittuf refs, and decoding security metadata JSON.
