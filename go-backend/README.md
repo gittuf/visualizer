@@ -36,10 +36,9 @@ go mod download
 
 ## Running Locally
 
-```bash
-# From the go-backend directory
 Set PORT in .env (defaults to 8080)
 
+```bash
 go run cmd/server/main.go
 ```
 
@@ -105,7 +104,7 @@ Retrieves and decodes a metadata blob from a specific commit in a remote reposit
 - **Response** (200 OK):
   ```json
   {
-    // Decoded metadata object (structure varies by file type)
+    // Decoded metadata object
   }
   ```
 - **Error Response** (400/500):
@@ -166,7 +165,7 @@ Retrieves and decodes a metadata blob from a specific commit in a local reposito
 - **Response** (200 OK):
   ```json
   {
-    // Decoded metadata object (structure varies by file type)
+    // Decoded metadata object
   }
   ```
 - **Error Response** (400/500):
