@@ -134,7 +134,7 @@ This repository hosts the source code for the metadata visualizer for
 Mentorship program for gittuf. This visualizer is a work-in-progress and
 currently in alpha.
 
-Have Questions?
+## Have Questions?
 Feel free to reach out on the [OpenSSF Slack](https://slack.openssf.org/) if you have questions on how the app works, installation, or just want to say hi!
 
 ## License
