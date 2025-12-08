@@ -14,6 +14,8 @@ interface CollapsibleCardProps {
   isExpanded?: boolean
   badgeText?: string
   badgeColor?: string
+  className?: string
+  headerClassName?: string
 }
 
 export const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
@@ -25,6 +27,8 @@ export const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
   isExpanded,
   badgeText,
   badgeColor,
+  className = "",
+  headerClassName = "",
 }) => {
   const colorMap: Record<string, string> = {
     "border-blue-500": "text-blue-600",
@@ -43,9 +47,9 @@ export const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
     <motion.div
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
-      className={`bg-white border-2 ${borderColor} rounded-lg p-3 w-full shadow-md`}
+      className={`bg-white border-2 ${borderColor} rounded-lg p-3 w-full shadow-md ${className}`}
     >
-      <div className="flex justify-between items-center mb-1">
+      <div className={`flex justify-between items-center mb-1 ${headerClassName}`}>
         <div className="flex items-center">
           <div className={`font-semibold text-sm ${titleColor} truncate max-w-[160px]`}>{title}</div>
           {badgeText && (
