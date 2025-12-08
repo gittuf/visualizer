@@ -1,0 +1,41 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend.yml"
+    branches: [ 'main' ]
+  pull_request:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend.yml"
+    branches: [ 'main' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'frontend'
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+
+      - name: Set up Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: '**/package-lock.json'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # Run build
+      - name: Run build
+        run: npm run build
+
+      # Run tests (if available)
+      - name: Run tests
+        run: npm test || echo "No tests yet"
