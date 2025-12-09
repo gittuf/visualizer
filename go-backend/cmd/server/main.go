@@ -51,5 +51,7 @@ func main() {
 		port = "8080"
 	}
 
-	router.Run(":" + port)
+	if err := router.Run(":" + port); err != nil {
+		logger.Sugar.Fatal(err)
+	}
 }

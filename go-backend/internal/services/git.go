@@ -4,6 +4,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -43,7 +44,7 @@ func CloneAndFetchRepo(url string) (string, func(), error) {
 		RefSpecs: []config.RefSpec{refSpec},
 		Progress: nil,
 	})
-	if err != nil && err != git.NoErrAlreadyUpToDate {
+	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		cleanup()
 		return "", nil, fmt.Errorf("failed to fetch refs/gittuf/policy: %w", err)
 	}
