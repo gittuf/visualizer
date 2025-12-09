@@ -11,7 +11,7 @@ on:
       - "go-backend/**"
       - ".github/workflows/go-backend.yml"
     branches: [ 'main' ]
-
+permissions: read-all
 jobs:
   test:
     runs-on: ubuntu-latest

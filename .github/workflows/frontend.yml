@@ -11,7 +11,7 @@ on:
       - "frontend/**"
       - ".github/workflows/frontend.yml"
     branches: [ 'main' ]
-
+permissions: read-all
 jobs:
   build:
     runs-on: ubuntu-latest
