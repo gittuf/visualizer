@@ -19,7 +19,7 @@ import {
   Key,
   FileText,
 } from "lucide-react"
-import { TrustGraph } from "./trust-graph"
+import { TrustGraph } from "@/components/features/visualization/trust-graph"
 import type { SimulatorResponse } from "@/lib/simulator-types"
 
 interface StoryModalProps {
