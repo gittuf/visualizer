@@ -7,7 +7,6 @@ intended for aiding development.
 
 - `frontend/` — Next.js 16, Tailwind CSS, shadcn, Radix UI; ReactFlow/Chart.js
   for visualizations
-- `backend/` — Flask, subprocess calls to `git` for low-level operations (now deprecated)
 - `go-backend/` — Gin, go-git/v5, structured logging, CORS configuration
 
 - The UI (Next.js) talks to an API backend which:
@@ -15,11 +14,7 @@ intended for aiding development.
   - Lists commits
   - Fetches and decodes gittuf metadata blobs (e.g., metadata/root.json,
     metadata/targets.json)
-  - `go-backend/` Go (Gin) — default port 8080 (configurable via `PORT`)
-
-The frontend expects the backend at `http://localhost:5000` by default. If you
-choose the Go backend, start it on port 5000 (set `PORT=5000`) or update the
-frontend API base URL (see details below).
+  - `go-backend/` Go (Gin) — default port 5000 (configurable via `PORT`)
 
 ## Backend API
 
@@ -48,22 +43,14 @@ Both backends expose the same core endpoints. The Go backend also includes a
   - `GET /health` → `{ "status": "Looks good!" }`
 
 Notes:
-- The Python backend fetches commits from the `refs/gittuf/policy` ref for
+- The backend fetches commits from the `refs/gittuf/policy` ref for
   remote repositories.
 - Metadata blobs are expected under `metadata/root.json` or
   `metadata/targets.json` in the tree of the given commit.
 
 ## Configuration and CORS
 
-- Frontend API base URL
-  - By default, the frontend calls `http://localhost:5000` from
-    `frontend/lib/mock-api.ts`.
-  - If you use the Go backend on a different port, either:
-    - Start it on port 5000 (`PORT=5000`) or
-    - Update the base URL in `frontend/lib/mock-api.ts` (and, if used,
-      `frontend/mock-api.ts`) to your backend address.
 - CORS
-  - Python backend: CORS is enabled for all origins in development.
   - Go backend: default allowed origins include `http://localhost:3000` and
     `http://localhost:5173`. Update in `cmd/server/main.go` if needed.
 
