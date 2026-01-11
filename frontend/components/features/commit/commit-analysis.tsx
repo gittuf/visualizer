@@ -38,7 +38,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
   const [activeTab, setActiveTab] = useState("timeline")
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([])
   const [securityTrends, setSecurityTrends] = useState<SecurityTrend[]>([])
-  const [overallScore, setOverallScore] = useState<number>(0)
   const [error, setError] = useState<string | null>(null)
 
   // Process commits data for comprehensive analysis
@@ -53,7 +52,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
 
       const events: SecurityEvent[] = []
       const trends: SecurityTrend[] = []
-      let totalSecurityScore = 0
 
       // Analyze each commit transition
       for (let i = 1; i < sortedCommits.length; i++) {
@@ -68,9 +66,7 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
           const commitEvents = analyzeSecurityEvents(diff, currentCommit)
           events.push(...commitEvents)
 
-          // Calculate security score for this commit
-          const commitScore = calculateSecurityScore(currentCommit.data, diff)
-          totalSecurityScore += commitScore
+
         }
       }
 
@@ -78,12 +74,8 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
       const calculatedTrends = calculateSecurityTrends(sortedCommits)
       trends.push(...calculatedTrends)
 
-      // Calculate overall security score
-      const avgScore = Math.round(totalSecurityScore / (sortedCommits.length - 1))
-
       setSecurityEvents(events)
       setSecurityTrends(trends)
-      setOverallScore(avgScore)
       setError(null)
     } catch (err) {
       console.error("Error processing analysis data:", err)
@@ -231,44 +223,7 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
     return events
   }
 
-  const calculateSecurityScore = (data: JsonObject, diff: DiffResult | DiffEntry | null): number => {
-    let score = 50 // Base score
 
-    // Positive factors
-    if (data.expires && typeof data.expires === 'string') {
-      const expiryDate = new Date(data.expires)
-      const now = new Date()
-      const daysUntilExpiry = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-
-      if (daysUntilExpiry > 90) score += 20
-      else if (daysUntilExpiry > 30) score += 10
-      else if (daysUntilExpiry < 0) score -= 30
-    }
-
-    // Threshold analysis
-    if (data.roles && typeof data.roles === 'object') {
-      Object.values(data.roles as JsonObject).forEach((role: any) => {
-        if (role?.threshold) {
-          if (role.threshold >= 2) score += 15
-          else if (role.threshold === 1) score += 5
-        }
-      })
-    }
-
-    // Rules analysis
-    if (data.rules && typeof data.rules === 'object') {
-      const ruleCount = Object.keys(data.rules).length
-      score += Math.min(ruleCount * 5, 25) // Max 25 points for rules
-    }
-
-    // Principal diversity
-    if (data.principals && typeof data.principals === 'object') {
-      const principalCount = Object.keys(data.principals).length
-      score += Math.min(principalCount * 3, 15) // Max 15 points for principals
-    }
-
-    return Math.max(0, Math.min(100, score))
-  }
 
   const calculateSecurityTrends = (commits: Commit[]): SecurityTrend[] => {
     const trends: SecurityTrend[] = []
@@ -320,18 +275,7 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
     return trends
   }
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600"
-    if (score >= 60) return "text-yellow-600"
-    return "text-red-600"
-  }
 
-  const getScoreDescription = (score: number) => {
-    if (score >= 80) return "Excellent security posture"
-    if (score >= 60) return "Good security with room for improvement"
-    if (score >= 40) return "Moderate security, needs attention"
-    return "Poor security, immediate action required"
-  }
 
   return (
     <div className="space-y-6">
@@ -349,10 +293,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
                   Analyzing {commits.length} commits across {selectedFile}
                 </p>
               </div>
-            </div>
-            <div className="text-right">
-              <div className={`text-3xl font-bold ${getScoreColor(overallScore)}`}>{overallScore}/100</div>
-              <p className="text-sm text-slate-600">{getScoreDescription(overallScore)}</p>
             </div>
           </div>
         </CardHeader>
@@ -567,7 +507,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
           <SecurityInsights
             commits={commits}
             securityEvents={securityEvents}
-            overallScore={overallScore}
             isLoading={isLoading}
           />
         </TabsContent>
@@ -577,7 +516,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
             commits={commits}
             securityEvents={securityEvents}
             securityTrends={securityTrends}
-            overallScore={overallScore}
             isLoading={isLoading}
           />
         </TabsContent>
@@ -590,12 +528,10 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
 function SecurityInsights({
   commits,
   securityEvents,
-  overallScore,
   isLoading,
 }: {
   commits: Commit[]
   securityEvents: SecurityEvent[]
-  overallScore: number
   isLoading: boolean
 }) {
   const getInsights = () => {
@@ -649,20 +585,7 @@ function SecurityInsights({
       })
     }
 
-    // Overall health
-    if (overallScore >= 80) {
-      insights.push({
-        title: "Strong Security Posture",
-        description: "Your repository maintains excellent security practices",
-        type: "success" as const,
-      })
-    } else if (overallScore < 50) {
-      insights.push({
-        title: "Security Concerns",
-        description: "Multiple security issues detected that need addressing",
-        type: "error" as const,
-      })
-    }
+
 
     return insights
   }
@@ -692,13 +615,11 @@ function SecurityInsights({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
                 className={`p-4 rounded-lg border-l-4 ${
-                  insight.type === "success"
-                    ? "border-green-500 bg-green-50"
-                    : insight.type === "warning"
-                      ? "border-yellow-500 bg-yellow-50"
-                      : insight.type === "error"
-                        ? "border-red-500 bg-red-50"
-                        : "border-blue-500 bg-blue-50"
+                  insight.type === "warning"
+                    ? "border-yellow-500 bg-yellow-50"
+                    : insight.type === "error"
+                      ? "border-red-500 bg-red-50"
+                      : "border-blue-500 bg-blue-50"
                 }`}
               >
                 <h4 className="font-medium text-slate-800 mb-2">{insight.title}</h4>
@@ -717,13 +638,11 @@ function SecurityRecommendations({
   commits,
   securityEvents,
   securityTrends,
-  overallScore,
   isLoading,
 }: {
   commits: Commit[]
   securityEvents: SecurityEvent[]
   securityTrends: SecurityTrend[]
-  overallScore: number
   isLoading: boolean
 }) {
   interface Recommendation {
@@ -779,15 +698,7 @@ function SecurityRecommendations({
       }
     })
 
-    // Overall score recommendations
-    if (overallScore < 60) {
-      recommendations.push({
-        priority: "high",
-        title: "Improve Overall Security",
-        description: "Security score is below recommended levels.",
-        action: "Review all security policies and implement missing protections",
-      })
-    }
+
 
     // Critical events
     const criticalEvents = securityEvents.filter((e) => e.severity === "critical")
