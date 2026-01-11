@@ -1,27 +1,51 @@
 # gittuf Metadata Visualizer
 
-This repository hosts the source code for the metadata visualizer for
-[gittuf](https://github.com/gittuf/gittuf), a part of the 2025 Summer Mentorship
-program for gittuf. This visualizer is a work-in-progress and currently in
-alpha.
+[gittuf] is a security layer for Git repositories that enables **independently
+verifiable** security policies to be defined for a repository.
 
-## What is this?
+This repository hosts the source code for the gittuf metadata visualizer. It's a
+web app that displays gittuf metadata for a repository in an easy-to-understand
+way in your web browser. The visualizer is a work-in-progress and
+currently in alpha.
 
-gittuf allows repositories to define a security policy without relying on a
-centralized party to enforce said policy. See the
-[gittuf website](https://gittuf.dev) to learn more about gittuf.
+This project originally started as a part of the 2025 Summer
+Mentorship program for gittuf. 
 
-gittuf is primarily configured via the gittuf tool, which may be difficult to
-use to visualize the gittuf policy for a repository, especially more complex
-policies.
+## What’s inside
 
-The visualizer is a work-in-progress tool that can be pointed at a repository
-and visualize the policy as an interactive graph.
+This is a multi-project repo:
 
-More documentation will be coming soon.
+```
+visualizer/
+├── frontend/         # Next.js app (UI, visualizations)
+├── backend/          # Python (Flask) API backend (this is now deprecated, use go-backend instead)
+└── go-backend/       # Go (Gin) API backend
+```
 
-## Building the visualizer
+For more information on the inner workings of the visualizer and other development
+bits, see the [visualizer development] document.
 
-At the moment, to use the visualizer, you must build both its components from
-source: the [backend](backend/README.md) and then the
-[frontend](frontend/README.md).
+## Installation and Getting Started
+
+The gittuf metadata visualizer is currently a local-only app. To get started,
+see the [getting started documentation].
+
+## Have Questions?
+
+Feel free to reach out on the [OpenSSF Slack] if you have questions on how the
+app works, installation, or just want to say hi!
+
+## License
+
+The gittuf visualizer is licensed under Apache-2.0. See `LICENSE`.
+
+
+## Additional docs
+
+- Backend (Go): `go-backend/README.md`
+- Frontend: `frontend/README.md`
+
+[gittuf]: https://github.com/gittuf/gittuf
+[getting started documentation]: /docs/get-started.md
+[visualizer development]: /docs/development.md
+[OpenSSF Slack]: https://slack.openssf.org/

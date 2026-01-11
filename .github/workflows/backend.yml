@@ -11,7 +11,7 @@ on:
       - "backend/**"
       - ".github/workflows/backend.yml"
     branches: [ 'main' ]
-
+permissions: read-all
 jobs:
   test:
     runs-on: ubuntu-latest

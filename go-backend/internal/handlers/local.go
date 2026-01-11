@@ -10,7 +10,7 @@ import (
 	"github.com/gittuf/visualizer/go-backend/internal/logger"
 	"github.com/gittuf/visualizer/go-backend/internal/models"
 	"github.com/gittuf/visualizer/go-backend/internal/services"
-	"github.com/gittuf/visualizer/go-backend/internal/utils"
+	"github.com/gittuf/visualizer/go-backend/internal/validation"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +27,7 @@ func ListCommitsLocal(c *gin.Context) {
 	}
 
 	// Get absolute path
-	absPath, err := utils.GetAbsolutePath(req.Path)
+	absPath, err := validation.GetAbsolutePath(req.Path)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Error:   "Invalid path",
@@ -38,7 +38,7 @@ func ListCommitsLocal(c *gin.Context) {
 	}
 
 	// Check if path exists
-	if !utils.PathExists(absPath) {
+	if !validation.PathExists(absPath) {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Error:   fmt.Sprintf("Path does not exist: %s", absPath),
 			Code:    http.StatusBadRequest,
@@ -48,7 +48,7 @@ func ListCommitsLocal(c *gin.Context) {
 	}
 
 	// Check if it's a valid git repository
-	if !utils.IsValidGitRepo(absPath) {
+	if !validation.IsValidGitRepo(absPath) {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Error:   fmt.Sprintf("Not a valid Git repository: %s", absPath),
 			Code:    http.StatusBadRequest,
@@ -84,7 +84,7 @@ func GetMetadataLocal(c *gin.Context) {
 	}
 
 	// Get absolute path
-	absPath, err := utils.GetAbsolutePath(req.Path)
+	absPath, err := validation.GetAbsolutePath(req.Path)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Error:   "Invalid path",
@@ -95,7 +95,7 @@ func GetMetadataLocal(c *gin.Context) {
 	}
 
 	// Check if path exists
-	if !utils.PathExists(absPath) {
+	if !validation.PathExists(absPath) {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Error:   fmt.Sprintf("Path does not exist: %s", absPath),
 			Code:    http.StatusBadRequest,
@@ -105,7 +105,7 @@ func GetMetadataLocal(c *gin.Context) {
 	}
 
 	// Check if it's a valid git repository
-	if !utils.IsValidGitRepo(absPath) {
+	if !validation.IsValidGitRepo(absPath) {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Error:   fmt.Sprintf("Not a valid Git repository: %s", absPath),
 			Code:    http.StatusBadRequest,
