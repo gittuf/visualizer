@@ -17,7 +17,7 @@ import ReactFlow, {
 } from "reactflow"
 import "reactflow/dist/style.css"
 import dagre from "dagre"
-import { CollapsibleCard } from "./collapsible-card"
+import { CollapsibleCard } from "@/components/shared/collapsible-card"
 import { motion } from "framer-motion"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"

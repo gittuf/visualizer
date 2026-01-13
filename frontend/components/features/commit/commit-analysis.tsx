@@ -16,26 +16,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { compareJsonObjects, countChanges } from "@/lib/json-diff"
-import type { Commit } from "@/lib/types"
+import { compareJsonObjects, countChanges, type DiffResult, type DiffEntry } from "@/lib/json-diff"
+import type { Commit, SecurityEvent, JsonObject, JsonValue } from "@/lib/types"
 import { motion } from "framer-motion"
 
 interface CommitAnalysisProps {
   commits: Commit[]
   isLoading: boolean
   selectedFile: string
-}
-
-interface SecurityEvent {
-  commit: string
-  date: string
-  author: string
-  message: string
-  type: "security_enhancement" | "security_degradation" | "policy_change" | "principal_change" | "expiration_change"
-  severity: "critical" | "high" | "medium" | "low"
-  description: string
-  details: string
-  impact: string
 }
 
 interface SecurityTrend {
@@ -50,7 +38,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
   const [activeTab, setActiveTab] = useState("timeline")
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([])
   const [securityTrends, setSecurityTrends] = useState<SecurityTrend[]>([])
-  const [overallScore, setOverallScore] = useState<number>(0)
   const [error, setError] = useState<string | null>(null)
 
   // Process commits data for comprehensive analysis
@@ -65,7 +52,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
 
       const events: SecurityEvent[] = []
       const trends: SecurityTrend[] = []
-      let totalSecurityScore = 0
 
       // Analyze each commit transition
       for (let i = 1; i < sortedCommits.length; i++) {
@@ -80,9 +66,7 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
           const commitEvents = analyzeSecurityEvents(diff, currentCommit)
           events.push(...commitEvents)
 
-          // Calculate security score for this commit
-          const commitScore = calculateSecurityScore(currentCommit.data, diff)
-          totalSecurityScore += commitScore
+
         }
       }
 
@@ -90,12 +74,8 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
       const calculatedTrends = calculateSecurityTrends(sortedCommits)
       trends.push(...calculatedTrends)
 
-      // Calculate overall security score
-      const avgScore = Math.round(totalSecurityScore / (sortedCommits.length - 1))
-
       setSecurityEvents(events)
       setSecurityTrends(trends)
-      setOverallScore(avgScore)
       setError(null)
     } catch (err) {
       console.error("Error processing analysis data:", err)
@@ -103,13 +83,16 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
     }
   }, [commits])
 
-  const analyzeSecurityEvents = (diff: any, commit: Commit): SecurityEvent[] => {
+  const analyzeSecurityEvents = (diff: DiffResult | DiffEntry | null, commit: Commit): SecurityEvent[] => {
     const events: SecurityEvent[] = []
 
-    const traverseChanges = (obj: any, path = "") => {
+    // If diff is null or singular DiffEntry (root change), we might need to handle it.
+    // Assuming structure is mostly Record<string, DiffEntry> for traversal.
+    
+    const traverseChanges = (obj: Record<string, DiffEntry> | undefined, path = "") => {
       if (!obj) return
 
-      Object.entries(obj).forEach(([key, value]: [string, any]) => {
+      Object.entries(obj).forEach(([key, value]) => {
         const currentPath = path ? `${path}.${key}` : key
         const pathLower = currentPath.toLowerCase()
 
@@ -119,8 +102,8 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
           // Expiration changes
           if (pathLower.includes("expires")) {
             if (value.status === "changed") {
-              const oldDate = new Date(value.oldValue)
-              const newDate = new Date(value.value)
+              const oldDate = new Date(String(value.oldValue))
+              const newDate = new Date(String(value.value))
               const extended = newDate > oldDate
 
               event = {
@@ -141,7 +124,7 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
 
           // Threshold changes
           else if (pathLower.includes("threshold")) {
-            if (value.status === "changed") {
+            if (value.status === "changed" && typeof value.value === 'number' && typeof value.oldValue === 'number') {
               const increased = value.value > value.oldValue
               event = {
                 commit: commit.hash.substring(0, 8),
@@ -230,48 +213,17 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
       })
     }
 
-    traverseChanges(diff)
+    if (diff && !('status' in diff)) {
+        traverseChanges(diff as DiffResult)
+    } else if (diff && 'status' in diff && (diff as DiffEntry).children) {
+        // If root is a DiffEntry with children
+        traverseChanges((diff as DiffEntry).children)
+    }
+    
     return events
   }
 
-  const calculateSecurityScore = (data: any, diff: any): number => {
-    let score = 50 // Base score
 
-    // Positive factors
-    if (data.expires) {
-      const expiryDate = new Date(data.expires)
-      const now = new Date()
-      const daysUntilExpiry = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-
-      if (daysUntilExpiry > 90) score += 20
-      else if (daysUntilExpiry > 30) score += 10
-      else if (daysUntilExpiry < 0) score -= 30
-    }
-
-    // Threshold analysis
-    if (data.roles) {
-      Object.values(data.roles).forEach((role: any) => {
-        if (role.threshold) {
-          if (role.threshold >= 2) score += 15
-          else if (role.threshold === 1) score += 5
-        }
-      })
-    }
-
-    // Rules analysis
-    if (data.rules) {
-      const ruleCount = Object.keys(data.rules).length
-      score += Math.min(ruleCount * 5, 25) // Max 25 points for rules
-    }
-
-    // Principal diversity
-    if (data.principals) {
-      const principalCount = Object.keys(data.principals).length
-      score += Math.min(principalCount * 3, 15) // Max 15 points for principals
-    }
-
-    return Math.max(0, Math.min(100, score))
-  }
 
   const calculateSecurityTrends = (commits: Commit[]): SecurityTrend[] => {
     const trends: SecurityTrend[] = []
@@ -282,8 +234,8 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
     const lastCommit = commits[commits.length - 1]
 
     // Principal count trend
-    const firstPrincipals = firstCommit.data?.principals ? Object.keys(firstCommit.data.principals).length : 0
-    const lastPrincipals = lastCommit.data?.principals ? Object.keys(lastCommit.data.principals).length : 0
+    const firstPrincipals = firstCommit.data?.principals && typeof firstCommit.data.principals === 'object' && !Array.isArray(firstCommit.data.principals) ? Object.keys(firstCommit.data.principals).length : 0
+    const lastPrincipals = lastCommit.data?.principals && typeof lastCommit.data.principals === 'object' && !Array.isArray(lastCommit.data.principals) ? Object.keys(lastCommit.data.principals).length : 0
 
     trends.push({
       metric: "Security Principals",
@@ -294,8 +246,8 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
     })
 
     // Rules count trend
-    const firstRules = firstCommit.data?.rules ? Object.keys(firstCommit.data.rules).length : 0
-    const lastRules = lastCommit.data?.rules ? Object.keys(lastCommit.data.rules).length : 0
+    const firstRules = firstCommit.data?.rules && typeof firstCommit.data.rules === 'object' && !Array.isArray(firstCommit.data.rules) ? Object.keys(firstCommit.data.rules).length : 0
+    const lastRules = lastCommit.data?.rules && typeof lastCommit.data.rules === 'object' && !Array.isArray(lastCommit.data.rules) ? Object.keys(lastCommit.data.rules).length : 0
 
     trends.push({
       metric: "Security Rules",
@@ -306,7 +258,7 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
     })
 
     // Expiration health
-    if (lastCommit.data?.expires) {
+    if (lastCommit.data?.expires && typeof lastCommit.data.expires === 'string') {
       const expiryDate = new Date(lastCommit.data.expires)
       const now = new Date()
       const daysUntilExpiry = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
@@ -323,18 +275,7 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
     return trends
   }
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600"
-    if (score >= 60) return "text-yellow-600"
-    return "text-red-600"
-  }
 
-  const getScoreDescription = (score: number) => {
-    if (score >= 80) return "Excellent security posture"
-    if (score >= 60) return "Good security with room for improvement"
-    if (score >= 40) return "Moderate security, needs attention"
-    return "Poor security, immediate action required"
-  }
 
   return (
     <div className="space-y-6">
@@ -352,10 +293,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
                   Analyzing {commits.length} commits across {selectedFile}
                 </p>
               </div>
-            </div>
-            <div className="text-right">
-              <div className={`text-3xl font-bold ${getScoreColor(overallScore)}`}>{overallScore}/100</div>
-              <p className="text-sm text-slate-600">{getScoreDescription(overallScore)}</p>
             </div>
           </div>
         </CardHeader>
@@ -570,7 +507,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
           <SecurityInsights
             commits={commits}
             securityEvents={securityEvents}
-            overallScore={overallScore}
             isLoading={isLoading}
           />
         </TabsContent>
@@ -580,7 +516,6 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
             commits={commits}
             securityEvents={securityEvents}
             securityTrends={securityTrends}
-            overallScore={overallScore}
             isLoading={isLoading}
           />
         </TabsContent>
@@ -593,12 +528,10 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
 function SecurityInsights({
   commits,
   securityEvents,
-  overallScore,
   isLoading,
 }: {
   commits: Commit[]
   securityEvents: SecurityEvent[]
-  overallScore: number
   isLoading: boolean
 }) {
   const getInsights = () => {
@@ -652,20 +585,7 @@ function SecurityInsights({
       })
     }
 
-    // Overall health
-    if (overallScore >= 80) {
-      insights.push({
-        title: "Strong Security Posture",
-        description: "Your repository maintains excellent security practices",
-        type: "success" as const,
-      })
-    } else if (overallScore < 50) {
-      insights.push({
-        title: "Security Concerns",
-        description: "Multiple security issues detected that need addressing",
-        type: "error" as const,
-      })
-    }
+
 
     return insights
   }
@@ -695,13 +615,11 @@ function SecurityInsights({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
                 className={`p-4 rounded-lg border-l-4 ${
-                  insight.type === "success"
-                    ? "border-green-500 bg-green-50"
-                    : insight.type === "warning"
-                      ? "border-yellow-500 bg-yellow-50"
-                      : insight.type === "error"
-                        ? "border-red-500 bg-red-50"
-                        : "border-blue-500 bg-blue-50"
+                  insight.type === "warning"
+                    ? "border-yellow-500 bg-yellow-50"
+                    : insight.type === "error"
+                      ? "border-red-500 bg-red-50"
+                      : "border-blue-500 bg-blue-50"
                 }`}
               >
                 <h4 className="font-medium text-slate-800 mb-2">{insight.title}</h4>
@@ -720,28 +638,33 @@ function SecurityRecommendations({
   commits,
   securityEvents,
   securityTrends,
-  overallScore,
   isLoading,
 }: {
   commits: Commit[]
   securityEvents: SecurityEvent[]
   securityTrends: SecurityTrend[]
-  overallScore: number
   isLoading: boolean
 }) {
-  const getRecommendations = () => {
-    const recommendations = []
+  interface Recommendation {
+    priority: "critical" | "high" | "medium" | "low"
+    title: string
+    description: string
+    action: string
+  }
+
+  const getRecommendations = (): Recommendation[] => {
+    const recommendations: Recommendation[] = []
 
     // Check expiration
     const latestCommit = commits[commits.length - 1]
-    if (latestCommit?.data?.expires) {
+    if (latestCommit?.data?.expires && typeof latestCommit.data.expires === 'string') {
       const expiryDate = new Date(latestCommit.data.expires)
       const now = new Date()
       const daysUntilExpiry = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
       if (daysUntilExpiry < 30) {
         recommendations.push({
-          priority: "high" as const,
+          priority: "high",
           title: "Renew Security Metadata",
           description: `Security metadata expires in ${daysUntilExpiry} days. Plan renewal soon.`,
           action: "Update expiration date and refresh security keys",
@@ -750,11 +673,11 @@ function SecurityRecommendations({
     }
 
     // Check thresholds
-    if (latestCommit?.data?.roles) {
+    if (latestCommit?.data?.roles && typeof latestCommit.data.roles === 'object') {
       Object.entries(latestCommit.data.roles).forEach(([role, config]: [string, any]) => {
-        if (config.threshold === 1) {
+        if (config && typeof config === 'object' && config.threshold === 1) {
           recommendations.push({
-            priority: "medium" as const,
+            priority: "medium",
             title: "Increase Security Threshold",
             description: `Role "${role}" only requires 1 signature. Consider increasing for better security.`,
             action: "Increase threshold to 2 or more signatures",
@@ -767,7 +690,7 @@ function SecurityRecommendations({
     securityTrends.forEach((trend) => {
       if (trend.trend === "declining") {
         recommendations.push({
-          priority: "medium" as const,
+          priority: "medium",
           title: `Address Declining ${trend.metric}`,
           description: `${trend.metric} has decreased from ${trend.previous} to ${trend.current}.`,
           action: "Review and restore security measures",
@@ -775,21 +698,13 @@ function SecurityRecommendations({
       }
     })
 
-    // Overall score recommendations
-    if (overallScore < 60) {
-      recommendations.push({
-        priority: "high" as const,
-        title: "Improve Overall Security",
-        description: "Security score is below recommended levels.",
-        action: "Review all security policies and implement missing protections",
-      })
-    }
+
 
     // Critical events
     const criticalEvents = securityEvents.filter((e) => e.severity === "critical")
     if (criticalEvents.length > 0) {
       recommendations.push({
-        priority: "critical" as const,
+        priority: "critical",
         title: "Address Critical Security Events",
         description: `${criticalEvents.length} critical security events detected.`,
         action: "Review and remediate all critical security changes",
