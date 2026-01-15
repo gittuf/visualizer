@@ -2,10 +2,11 @@
   "name": "my-v0-project",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "next lint",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "start": "next start"
   },
   "dependencies": {
@@ -71,6 +72,8 @@
     "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "16.0.10",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.16",
     "typescript": "^5"
