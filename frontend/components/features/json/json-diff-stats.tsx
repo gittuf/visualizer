@@ -370,7 +370,7 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(securityAnalysis).map(([category, changes]: [string, any[]]) => {
+            {Object.entries(securityAnalysis).map(([category, changes]: [string, any]) => {
               if (changes.length === 0) return null
 
               const categoryNames = {
@@ -406,7 +406,7 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {changes.slice(0, 3).map((change, index) => (
+                      {changes.slice(0, 3).map((change: any, index: number) => (
                         <div key={index} className="text-xs p-2 bg-gray-50 rounded border">
                           <div className="font-mono text-gray-700">{change.path}</div>
                           <div

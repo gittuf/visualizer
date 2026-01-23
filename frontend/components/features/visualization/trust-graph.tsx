@@ -214,7 +214,7 @@ export function TrustGraph({
               "text-halign": "center",
               color: "#ffffff",
               "font-size": "12px",
-              "font-weight": "600",
+              "font-weight": 600,
               "text-wrap": "wrap",
               "text-max-width": "80px",
               width: (ele: any) => {
@@ -244,7 +244,7 @@ export function TrustGraph({
                 return "rgba(255, 255, 255, 0.8)"
               },
               "transition-property": "background-color, border-color, border-width",
-              "transition-duration": "0.3s",
+              "transition-duration": 300,
             },
           },
           {
@@ -254,12 +254,12 @@ export function TrustGraph({
               "line-color": (ele: any) => (ele.data("satisfied") ? "#10b981" : "#ef4444"),
               "target-arrow-color": (ele: any) => (ele.data("satisfied") ? "#10b981" : "#ef4444"),
               "target-arrow-shape": "triangle",
-              "target-arrow-size": "10px",
+
               "curve-style": "bezier",
-              "control-point-step-size": "60px",
+              "control-point-step-size": 60,
               label: "data(label)",
               "font-size": "10px",
-              "font-weight": "600",
+              "font-weight": 600,
               color: "#374151",
               "text-background-color": "#ffffff",
               "text-background-opacity": 0.9,
@@ -267,7 +267,7 @@ export function TrustGraph({
               "text-background-shape": "roundrectangle",
               "line-style": (ele: any) => (ele.data("satisfied") ? "solid" : "dashed"),
               "transition-property": "line-color, target-arrow-color, width",
-              "transition-duration": "0.3s",
+              "transition-duration": 300,
             },
           },
         ],
