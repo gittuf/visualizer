@@ -24,7 +24,7 @@ export async function mockFetchMetadata(
   pathOrUrl: string,
   commit: string,
   file: string
-): Promise<any> {
+): Promise<unknown> {
   const isRemote = pathOrUrl.startsWith("http")
   const endpoint = isRemote ? "/metadata" : "/metadata-local"
 

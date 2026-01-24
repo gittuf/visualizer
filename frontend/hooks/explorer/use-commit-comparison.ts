@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { Commit } from "@/lib/types"
+import type { Commit, JsonObject } from "@/lib/types"
 import { mockFetchMetadata } from "@/lib/mock-api"
 import type { RepositoryInfo } from "@/lib/repository-handler"
 
@@ -11,8 +11,8 @@ interface CompareCommits {
 }
 
 interface CompareData {
-  base: any | null
-  compare: any | null
+  base: JsonObject | null
+  compare: JsonObject | null
 }
 
 export function useCommitComparison() {
@@ -35,12 +35,12 @@ export function useCommitComparison() {
 
     try {
       const fallbackUrl = currentRepository?.path || repoUrl || "https://github.com/gittuf/gittuf"
-      const [baseData, compareData] = await Promise.all([
+      const [baseData, compareDataResult] = await Promise.all([
         mockFetchMetadata(fallbackUrl, base.hash, selectedFile),
         mockFetchMetadata(fallbackUrl, compare.hash, selectedFile),
       ])
 
-      setCompareData({ base: baseData, compare: compareData })
+      setCompareData({ base: baseData as JsonObject | null, compare: compareDataResult as JsonObject | null })
       if (onSuccess) onSuccess()
     } catch (err) {
       console.error("Failed to fetch comparison data:", err)
@@ -60,12 +60,12 @@ export function useCommitComparison() {
       setError("")
       try {
         const fallbackUrl = currentRepository?.path || repoUrl || "https://github.com/gittuf/gittuf"
-        const [baseData, compareData] = await Promise.all([
+        const [baseData, compareDataResult] = await Promise.all([
           mockFetchMetadata(fallbackUrl, compareCommits.base.hash, file),
           mockFetchMetadata(fallbackUrl, compareCommits.compare.hash, file),
         ])
 
-        setCompareData({ base: baseData, compare: compareData })
+        setCompareData({ base: baseData as JsonObject | null, compare: compareDataResult as JsonObject | null })
       } catch (err) {
         console.error("Failed to fetch file comparison data:", err)
         setError(`Failed to fetch comparison data: ${err instanceof Error ? err.message : "Unknown error"}`)

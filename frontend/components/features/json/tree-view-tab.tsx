@@ -7,13 +7,14 @@ import { Badge } from "@/components/ui/badge"
 import JsonTreeView from "@/components/features/json/json-tree-view"
 import type { Commit } from "@/lib/types"
 import type { ViewMode } from "@/lib/view-mode-utils"
+import type { JsonValue } from "@/lib/types"
 
 interface TreeViewTabProps {
   selectedCommit: Commit | null
   selectedFile: string
   isLoading: boolean
   error: string
-  jsonData: any
+  jsonData: JsonValue
   viewMode: ViewMode
   onRetry: () => void
 }

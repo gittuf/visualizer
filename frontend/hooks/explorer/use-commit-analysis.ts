@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { Commit } from "@/lib/types"
+import type { Commit, JsonObject } from "@/lib/types"
 import { mockFetchMetadata } from "@/lib/mock-api"
 import type { RepositoryInfo } from "@/lib/repository-handler"
 
@@ -33,7 +33,7 @@ export function useCommitAnalysis(
           const results = await Promise.all(dataPromises)
           const commitsWithData = selectedCommits.map((commit, index) => ({
             ...commit,
-            data: results[index],
+            data: results[index] as JsonObject,
           }))
 
           setSelectedCommits(commitsWithData)

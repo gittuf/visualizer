@@ -7,18 +7,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import JsonDiffVisualization from "@/components/features/json/json-diff-visualization"
 import JsonDiffStats from "@/components/features/json/json-diff-stats"
 import { Button } from "@/components/ui/button"
-import type { Commit } from "@/lib/types"
+import type { Commit, JsonObject, JsonValue } from "@/lib/types"
 import { useState } from "react"
 import JsonTreeView from "@/components/features/json/json-tree-view"
-import { compareJsonObjects, countChanges } from "@/lib/json-diff"
+import { compareJsonObjects, countChanges, type DiffResult, type DiffEntry } from "@/lib/json-diff"
 import type { ViewMode } from "@/lib/view-mode-utils"
 import { motion } from "framer-motion"
 
 interface CommitCompareProps {
   baseCommit: Commit
   compareCommit: Commit
-  baseData: any
-  compareData: any
+  baseData: JsonObject | null
+  compareData: JsonObject | null
   isLoading: boolean
   selectedFile: string
   viewMode?: ViewMode
@@ -67,7 +67,7 @@ export default function CommitCompare({
     let warningChanges = 0
     let infoChanges = 0
 
-    const assessChange = (path: string, changeType: string) => {
+    const assessChange = (path: string) => {
       const pathLower = path.toLowerCase()
 
       // Critical security changes
@@ -84,23 +84,34 @@ export default function CommitCompare({
       }
     }
 
-    const traverseChanges = (obj: any, path = "") => {
+    const traverseChanges = (obj: DiffResult | null, path = "") => {
       if (!obj) return
 
-      Object.entries(obj).forEach(([key, value]: [string, any]) => {
+      Object.entries(obj).forEach(([key, entry]: [string, DiffEntry]) => {
         const currentPath = path ? `${path}.${key}` : key
 
-        if (value.status === "added" || value.status === "removed" || value.status === "changed") {
-          assessChange(currentPath, value.status)
+        if (entry.status === "added" || entry.status === "removed" || entry.status === "changed") {
+          assessChange(currentPath)
         }
 
-        if (value.children) {
-          traverseChanges(value.children, currentPath)
+        if (entry.children) {
+          traverseChanges(entry.children, currentPath)
         }
       })
     }
 
-    traverseChanges(diff)
+    // Handle case where diff might be a single DiffEntry (from null checks in compareJsonObjects)
+    if ('status' in diff && typeof diff.status === 'string') {
+      const entry = diff as DiffEntry
+      if (entry.status === "added" || entry.status === "removed" || entry.status === "changed") {
+        assessChange("root")
+      }
+      if (entry.children) {
+        traverseChanges(entry.children, "")
+      }
+    } else {
+      traverseChanges(diff as DiffResult, "")
+    }
 
     return { criticalChanges, warningChanges, infoChanges }
   }
@@ -412,8 +423,8 @@ function ChangeTimeline({
 }: {
   baseCommit: Commit
   compareCommit: Commit
-  baseData: any
-  compareData: any
+  baseData: JsonObject | null
+  compareData: JsonObject | null
   isLoading: boolean
 }) {
   if (isLoading) {
@@ -438,8 +449,8 @@ function ChangeTimeline({
   const changes: Array<{
     path: string
     type: "added" | "removed" | "changed"
-    oldValue?: any
-    newValue?: any
+    oldValue?: JsonValue
+    newValue?: JsonValue
     impact: "critical" | "warning" | "info"
   }> = []
 
@@ -453,43 +464,56 @@ function ChangeTimeline({
     return "info"
   }
 
-  const traverseChanges = (obj: any, path = "") => {
+  const traverseChanges = (obj: DiffResult | null, path = "") => {
     if (!obj) return
 
-    Object.entries(obj).forEach(([key, value]: [string, any]) => {
+    Object.entries(obj).forEach(([key, entry]: [string, DiffEntry]) => {
       const currentPath = path ? `${path}.${key}` : key
 
-      if (value.status === "added") {
+      if (entry.status === "added") {
         changes.push({
           path: currentPath,
           type: "added",
-          newValue: value.value,
+          newValue: entry.value,
           impact: getImpactLevel(currentPath),
         })
-      } else if (value.status === "removed") {
+      } else if (entry.status === "removed") {
         changes.push({
           path: currentPath,
           type: "removed",
-          oldValue: value.value,
+          oldValue: entry.value,
           impact: getImpactLevel(currentPath),
         })
-      } else if (value.status === "changed") {
+      } else if (entry.status === "changed") {
         changes.push({
           path: currentPath,
           type: "changed",
-          oldValue: value.oldValue,
-          newValue: value.value,
+          oldValue: entry.oldValue,
+          newValue: entry.value,
           impact: getImpactLevel(currentPath),
         })
       }
 
-      if (value.children) {
-        traverseChanges(value.children, currentPath)
+      if (entry.children) {
+        traverseChanges(entry.children, currentPath)
       }
     })
   }
 
-  traverseChanges(diff)
+  // Handle case where diff might be a single DiffEntry
+  if (diff && 'status' in diff && typeof diff.status === 'string') {
+    const entry = diff as DiffEntry
+    if (entry.status === "added") {
+      changes.push({ path: "root", type: "added", newValue: entry.value, impact: "critical" })
+    } else if (entry.status === "removed") {
+      changes.push({ path: "root", type: "removed", oldValue: entry.value, impact: "critical" })
+    }
+    if (entry.children) {
+      traverseChanges(entry.children, "")
+    }
+  } else {
+    traverseChanges(diff as DiffResult, "")
+  }
 
   // Sort changes by impact level
   const sortedChanges = changes.sort((a, b) => {
@@ -498,31 +522,33 @@ function ChangeTimeline({
   })
 
   // Enhanced change analysis with outcome descriptions
-  const getChangeOutcome = (change: any): string => {
+  const getChangeOutcome = (change: { path: string; type: string; oldValue?: JsonValue; newValue?: JsonValue }): string => {
     const pathLower = change.path.toLowerCase()
 
     if (pathLower.includes("expires")) {
-      if (change.type === "changed") {
-        const oldDate = new Date(change.oldValue)
-        const newDate = new Date(change.newValue)
+      if (change.type === "changed" && change.oldValue && change.newValue) {
+        const oldDate = new Date(String(change.oldValue))
+        const newDate = new Date(String(change.newValue))
         const extended = newDate > oldDate
         return extended
           ? `Security metadata validity extended until ${newDate.toLocaleDateString()}. This gives more time before renewal is required.`
           : `Security metadata validity shortened to ${newDate.toLocaleDateString()}. Renewal will be required sooner.`
       }
-      return change.type === "added"
-        ? `New expiration date set. Security metadata will need renewal by ${new Date(change.newValue).toLocaleDateString()}.`
+      return change.type === "added" && change.newValue
+        ? `New expiration date set. Security metadata will need renewal by ${new Date(String(change.newValue)).toLocaleDateString()}.`
         : "Expiration date removed. This may indicate a configuration error or security risk."
     }
 
     if (pathLower.includes("threshold")) {
-      if (change.type === "changed") {
-        const increased = change.newValue > change.oldValue
+      if (change.type === "changed" && change.oldValue !== undefined && change.newValue !== undefined) {
+        const oldVal = Number(change.oldValue)
+        const newVal = Number(change.newValue)
+        const increased = newVal > oldVal
         return increased
-          ? `Security threshold increased from ${change.oldValue} to ${change.newValue} signatures. This makes the repository more secure but requires more approvals.`
-          : `Security threshold decreased from ${change.oldValue} to ${change.newValue} signatures. This makes operations easier but potentially less secure.`
+          ? `Security threshold increased from ${oldVal} to ${newVal} signatures. This makes the repository more secure but requires more approvals.`
+          : `Security threshold decreased from ${oldVal} to ${newVal} signatures. This makes operations easier but potentially less secure.`
       }
-      return change.type === "added"
+      return change.type === "added" && change.newValue !== undefined
         ? `New security threshold of ${change.newValue} signature(s) required. Operations now need multiple approvals.`
         : "Security threshold removed. This may allow unauthorized operations."
     }

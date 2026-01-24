@@ -13,6 +13,7 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   type Node,
+  type Connection,
   type Edge,
 } from "reactflow"
 import "reactflow/dist/style.css"
@@ -23,7 +24,7 @@ import { compareJsonObjects, type DiffEntry, type DiffResult } from "@/lib/json-
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
 import { formatJsonValue, getNodeTypeDescription } from "@/lib/json-utils"
-import type { JsonValue, JsonObject } from "@/lib/types"
+import type { JsonValue, JsonObject, JsonArray } from "@/lib/types"
 import type { ViewMode } from "@/lib/view-mode-utils"
 
 // Node dimensions for layout
@@ -345,8 +346,6 @@ export interface JsonDiffVisualizationProps {
 export default function JsonDiffVisualization({
   baseData,
   compareData,
-  className,
-  viewMode,
 }: JsonDiffVisualizationProps) {
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({})
   const [nodes, setNodes, onNodesChange] = useNodesState([])
@@ -354,7 +353,7 @@ export default function JsonDiffVisualization({
   const [showUnchanged, setShowUnchanged] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const onConnect = useCallback((params: Edge | any) => setEdges((eds) => addEdge(params, eds)), [setEdges])
+  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges])
 
   const toggleNodeExpansion = useCallback((nodeId: string) => {
     setExpandedNodes((prev) => ({
@@ -385,7 +384,7 @@ export default function JsonDiffVisualization({
           path: "$",
           metadata: {
             type: typeof compareData,
-            schemaVersion: (compareData as any)?.schemaVersion || "N/A",
+            schemaVersion: compareData?.schemaVersion || "N/A",
           },
         },
       })
@@ -400,7 +399,7 @@ export default function JsonDiffVisualization({
       }
 
       // Helper function to process added objects recursively
-      const processAddedObject = (parentId: string, obj: JsonObject | any[], path: string, level: number) => {
+      const processAddedObject = (parentId: string, obj: JsonObject | JsonArray, path: string, level: number) => {
         Object.entries(obj).forEach(([childKey, childValue]) => {
           const childId = `node-${nodeId++}`
           const childPath = `${path}.${childKey}`
@@ -440,7 +439,7 @@ export default function JsonDiffVisualization({
       }
 
       // Helper function to process removed objects recursively
-      const processRemovedObject = (parentId: string, obj: JsonObject | any[], path: string, level: number) => {
+      const processRemovedObject = (parentId: string, obj: JsonObject | JsonArray, path: string, level: number) => {
         Object.entries(obj).forEach(([childKey, childValue]) => {
           const childId = `node-${nodeId++}`
           const childPath = `${path}.${childKey}`
@@ -519,7 +518,7 @@ export default function JsonDiffVisualization({
 
             if (isExpanded && typeof value.value === "object" && value.value !== null) {
               // For added objects, create nodes for their properties
-              const addedObj = value.value as JsonObject | any[]
+              const addedObj = value.value as JsonObject | JsonArray
               processAddedObject(currentId, addedObj, currentPath, level + 1)
             }
           } else if (value.status === "removed") {
@@ -555,7 +554,7 @@ export default function JsonDiffVisualization({
 
             if (isExpanded && typeof value.value === "object" && value.value !== null) {
               // For removed objects, create nodes for their properties
-              const removedObj = value.value as JsonObject | any[]
+              const removedObj = value.value as JsonObject | JsonArray
               processRemovedObject(currentId, removedObj, currentPath, level + 1)
             }
           } else if (value.status === "changed") {
@@ -687,9 +686,9 @@ export default function JsonDiffVisualization({
         const diffEntry = diff as DiffEntry;
         // If the whole thing is added, we iterate its value if it's an object
         if (diffEntry.status === "added" && typeof diffEntry.value === "object" && diffEntry.value !== null) {
-           processAddedObject(rootId, diffEntry.value as JsonObject | any[], "$", 1);
+           processAddedObject(rootId, diffEntry.value as JsonObject | JsonArray, "$", 1);
         } else if (diffEntry.status === "removed" && typeof diffEntry.value === "object" && diffEntry.value !== null) {
-           processRemovedObject(rootId, diffEntry.value as JsonObject | any[], "$", 1);
+           processRemovedObject(rootId, diffEntry.value as JsonObject | JsonArray, "$", 1);
         }
         // Handle other cases if necessary (e.g. root changed type)
       } else {
@@ -711,7 +710,7 @@ export default function JsonDiffVisualization({
       console.error("Error processing diff data:", err)
       setError("Failed to process comparison data. Please try again.")
     }
-  }, [baseData, compareData, expandedNodes, toggleNodeExpansion, showUnchanged])
+  }, [baseData, compareData, expandedNodes, toggleNodeExpansion, showUnchanged, setNodes, setEdges])
 
   return (
     <ReactFlow

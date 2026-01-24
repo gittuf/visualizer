@@ -1,16 +1,34 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { motion } from "framer-motion"
 import { PlusCircle, MinusCircle, RefreshCw, Info, AlertTriangle, Shield, TrendingUp } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { compareJsonObjects, countChanges } from "@/lib/json-diff"
+import { compareJsonObjects, countChanges, type DiffResult, type DiffEntry } from "@/lib/json-diff"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
+import type { JsonObject, JsonValue } from "@/lib/types"
 
 interface JsonDiffStatsProps {
-  baseData: any
-  compareData: any
+  baseData: JsonObject
+  compareData: JsonObject
+}
+
+interface SecurityChange {
+  path: string
+  type: string
+  oldValue?: JsonValue
+  newValue?: JsonValue
+}
+
+interface SecurityChanges {
+  expiration: SecurityChange[]
+  principals: SecurityChange[]
+  roles: SecurityChange[]
+  rules: SecurityChange[]
+  thresholds: SecurityChange[]
+  trust: SecurityChange[]
+  other: SecurityChange[]
 }
 
 export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsProps) {
@@ -27,8 +45,8 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
   const unchangedPercent = Math.round((unchanged / total) * 100) || 0
 
   // Enhanced security analysis
-  const getSecurityAnalysis = () => {
-    const securityChanges = {
+  const getSecurityAnalysis = (): SecurityChanges => {
+    const securityChanges: SecurityChanges = {
       expiration: [],
       principals: [],
       roles: [],
@@ -36,11 +54,11 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
       thresholds: [],
       trust: [],
       other: [],
-    } as any
+    }
 
-    const analyzeChange = (path: string, changeType: string, oldValue?: any, newValue?: any) => {
+    const analyzeChange = (path: string, changeType: string, oldValue?: JsonValue, newValue?: JsonValue) => {
       const pathLower = path.toLowerCase()
-      const change = { path, type: changeType, oldValue, newValue }
+      const change: SecurityChange = { path, type: changeType, oldValue, newValue }
 
       if (pathLower.includes("expire")) {
         securityChanges.expiration.push(change)
@@ -59,10 +77,10 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
       }
     }
 
-    const traverse = (obj: any, path = "") => {
+    const traverse = (obj: Record<string, DiffEntry> | undefined, path = "") => {
       if (!obj) return
 
-      Object.entries(obj).forEach(([key, value]: [string, any]) => {
+      Object.entries(obj).forEach(([key, value]) => {
         const currentPath = path ? `${path}.${key}` : key
 
         if (value.status === "added") {
@@ -79,7 +97,12 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
       })
     }
 
-    traverse(diff)
+    if (diff && !('status' in diff)) {
+       traverse(diff as DiffResult)
+    } else if (diff && 'status' in diff && (diff as DiffEntry).children) {
+       traverse((diff as DiffEntry).children)
+    }
+    
     return securityChanges
   }
 
@@ -90,8 +113,8 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
     const changes: {
       path: string
       type: string
-      oldValue?: any
-      newValue?: any
+      oldValue?: JsonValue
+      newValue?: JsonValue
       category: string
       impact: "high" | "medium" | "low"
     }[] = []
@@ -108,7 +131,7 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
       return "Other"
     }
 
-    const getImpact = (path: string, type: string) => {
+    const getImpact = (path: string) => {
       const pathLower = path.toLowerCase()
       if (pathLower.includes("expire") || pathLower.includes("threshold") || pathLower.includes("trusted")) {
         return "high" as const
@@ -119,10 +142,10 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
       return "low" as const
     }
 
-    const traverse = (obj: any, path = "") => {
+    const traverse = (obj: Record<string, DiffEntry> | undefined, path = "") => {
       if (!obj) return
 
-      Object.entries(obj).forEach(([key, value]: [string, any]) => {
+      Object.entries(obj).forEach(([key, value]) => {
         const currentPath = path ? `${path}.${key}` : key
 
         if (value.status === "added") {
@@ -131,7 +154,7 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
             type: "added",
             newValue: typeof value.value === "object" ? "Complex object" : value.value,
             category: getCategory(currentPath),
-            impact: getImpact(currentPath, "added"),
+            impact: getImpact(currentPath),
           })
         } else if (value.status === "removed") {
           changes.push({
@@ -139,7 +162,7 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
             type: "removed",
             oldValue: typeof value.value === "object" ? "Complex object" : value.value,
             category: getCategory(currentPath),
-            impact: getImpact(currentPath, "removed"),
+            impact: getImpact(currentPath),
           })
         } else if (value.status === "changed") {
           changes.push({
@@ -148,7 +171,7 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
             oldValue: value.oldValue,
             newValue: value.value,
             category: getCategory(currentPath),
-            impact: getImpact(currentPath, "changed"),
+            impact: getImpact(currentPath),
           })
         }
 
@@ -158,7 +181,11 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
       })
     }
 
-    traverse(diff)
+    if (diff && !('status' in diff)) {
+       traverse(diff as DiffResult)
+    } else if (diff && 'status' in diff && (diff as DiffEntry).children) {
+       traverse((diff as DiffEntry).children)
+    }
 
     // Sort by impact level, then by category
     return changes
@@ -370,10 +397,10 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(securityAnalysis).map(([category, changes]: [string, any]) => {
+            {Object.entries(securityAnalysis).map(([category, changes]) => {
               if (changes.length === 0) return null
 
-              const categoryNames = {
+              const categoryNames: Record<string, string> = {
                 expiration: "Security Expiration",
                 principals: "Security Principals",
                 roles: "Access Roles",
@@ -381,9 +408,9 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
                 thresholds: "Security Thresholds",
                 trust: "Trust Settings",
                 other: "Other Changes",
-              } as any
+              }
 
-              const categoryIcons = {
+              const categoryIcons: Record<string, React.ReactNode> = {
                 expiration: <AlertTriangle className="h-4 w-4 text-red-500" />,
                 principals: <Shield className="h-4 w-4 text-blue-500" />,
                 roles: <TrendingUp className="h-4 w-4 text-purple-500" />,
@@ -391,14 +418,14 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
                 thresholds: <RefreshCw className="h-4 w-4 text-amber-500" />,
                 trust: <Shield className="h-4 w-4 text-indigo-500" />,
                 other: <Info className="h-4 w-4 text-gray-500" />,
-              } as any
+              }
 
               return (
                 <Card key={category} className="border-l-4 border-l-indigo-500">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center">
-                      {categoryIcons[category]}
-                      <span className="ml-2">{categoryNames[category]}</span>
+                      {categoryIcons[category] || <Info className="h-4 w-4" />}
+                      <span className="ml-2">{categoryNames[category] || category}</span>
                       <Badge variant="outline" className="ml-auto">
                         {changes.length}
                       </Badge>
@@ -406,7 +433,7 @@ export default function JsonDiffStats({ baseData, compareData }: JsonDiffStatsPr
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {changes.slice(0, 3).map((change: any, index: number) => (
+                      {changes.slice(0, 3).map((change: SecurityChange, index: number) => (
                         <div key={index} className="text-xs p-2 bg-gray-50 rounded border">
                           <div className="font-mono text-gray-700">{change.path}</div>
                           <div

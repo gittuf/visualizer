@@ -58,7 +58,7 @@ export interface VisualizationNode {
   id: string
   type: "role" | "person" | "key"
   label: string
-  meta?: Record<string, any>
+  meta?: Record<string, unknown>
 }
 
 export interface VisualizationEdge {

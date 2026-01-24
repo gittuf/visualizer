@@ -31,7 +31,7 @@ export class RepositoryHandler {
       : this.fetchLocalCommits(this.repositoryInfo.path)
   }
 
-  async fetchMetadata(commitHash: string, fileName: string): Promise<any> {
+  async fetchMetadata(commitHash: string, fileName: string): Promise<unknown> {
     if (!this.repositoryInfo) {
       throw new Error("No repository configured")
     }
@@ -51,12 +51,12 @@ export class RepositoryHandler {
     return mockFetchCommits(folderPath)
   }
 
-  private async fetchRemoteMetadata(commitHash: string, fileName: string): Promise<any> {
+  private async fetchRemoteMetadata(commitHash: string, fileName: string): Promise<unknown> {
     const { mockFetchMetadata } = await import("./mock-api")
     return mockFetchMetadata(this.repositoryInfo!.path, commitHash, fileName)
   }
 
-  private async fetchLocalMetadata(commitHash: string, fileName: string): Promise<any> {
+  private async fetchLocalMetadata(commitHash: string, fileName: string): Promise<unknown> {
     const { mockFetchMetadata } = await import("./mock-api")
     return mockFetchMetadata(this.repositoryInfo!.path, commitHash, fileName)
   }

@@ -67,11 +67,17 @@ export function useGittufSimulator() {
   const [customConfig, setCustomConfig] = useState<CustomConfig>(DEFAULT_CONFIG)
 
   // Form States
-  const [newPersonForm, setNewPersonForm] = useState({
+  const [newPersonForm, setNewPersonForm] = useState<{
+    id: string
+    display_name: string
+    keyid: string
+    key_type: "ssh" | "gpg" | "sigstore"
+    has_signed: boolean
+  }>({
     id: "",
     display_name: "",
     keyid: "",
-    key_type: "ssh" as const,
+    key_type: "ssh",
     has_signed: false,
   })
 

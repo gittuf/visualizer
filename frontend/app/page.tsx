@@ -1,7 +1,6 @@
 "use client"
 
-import { GitCommit, GitCompare, BarChart3, FileJson, Github, Sparkles } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { GitCommit, GitCompare, BarChart3, FileJson } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CommitList from "@/components/features/commit/commit-list"
@@ -24,8 +23,6 @@ import { useGittufExplorer } from "@/hooks/use-gittuf-explorer"
 
 export default function Home() {
   const {
-    repoUrl,
-    setRepoUrl,
     isLoading,
     commits,
     selectedCommit,
@@ -47,7 +44,6 @@ export default function Home() {
     handleTryDemo,
     handleRepositorySelect,
     handleRepositoryRefresh,
-    handleRepoSubmit,
     handleCommitSelect,
     handleCompareSelect,
     handleFileChange,

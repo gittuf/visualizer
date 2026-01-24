@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useMemo } from "react"
 import {
   Loader2,
   TrendingUp,
@@ -16,8 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { compareJsonObjects, countChanges, type DiffResult, type DiffEntry } from "@/lib/json-diff"
-import type { Commit, SecurityEvent, JsonObject, JsonValue } from "@/lib/types"
+import { compareJsonObjects, type DiffResult, type DiffEntry } from "@/lib/json-diff"
+import type { Commit, SecurityEvent, JsonValue } from "@/lib/types"
 import { motion } from "framer-motion"
 
 interface CommitAnalysisProps {
@@ -36,52 +36,7 @@ interface SecurityTrend {
 
 export default function CommitAnalysis({ commits, isLoading, selectedFile }: CommitAnalysisProps) {
   const [activeTab, setActiveTab] = useState("timeline")
-  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([])
-  const [securityTrends, setSecurityTrends] = useState<SecurityTrend[]>([])
-  const [error, setError] = useState<string | null>(null)
-
-  // Process commits data for comprehensive analysis
-  useEffect(() => {
-    if (!commits || commits.length < 2) {
-      return
-    }
-
-    try {
-      // Sort commits by date
-      const sortedCommits = [...commits].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-
-      const events: SecurityEvent[] = []
-      const trends: SecurityTrend[] = []
-
-      // Analyze each commit transition
-      for (let i = 1; i < sortedCommits.length; i++) {
-        const prevCommit = sortedCommits[i - 1]
-        const currentCommit = sortedCommits[i]
-
-        if (prevCommit.data && currentCommit.data) {
-          const diff = compareJsonObjects(prevCommit.data, currentCommit.data)
-          const { added, removed, changed } = countChanges(diff)
-
-          // Analyze security events
-          const commitEvents = analyzeSecurityEvents(diff, currentCommit)
-          events.push(...commitEvents)
-
-
-        }
-      }
-
-      // Calculate trends
-      const calculatedTrends = calculateSecurityTrends(sortedCommits)
-      trends.push(...calculatedTrends)
-
-      setSecurityEvents(events)
-      setSecurityTrends(trends)
-      setError(null)
-    } catch (err) {
-      console.error("Error processing analysis data:", err)
-      setError("Failed to process analysis data. Please try again.")
-    }
-  }, [commits])
+  const [error] = useState<string | null>(null)
 
   const analyzeSecurityEvents = (diff: DiffResult | DiffEntry | null, commit: Commit): SecurityEvent[] => {
     const events: SecurityEvent[] = []
@@ -274,6 +229,44 @@ export default function CommitAnalysis({ commits, isLoading, selectedFile }: Com
 
     return trends
   }
+
+  // Process commits data for comprehensive analysis using useMemo
+  const { securityEvents, securityTrends } = useMemo(() => {
+    if (!commits || commits.length < 2) {
+      return { securityEvents: [] as SecurityEvent[], securityTrends: [] as SecurityTrend[] }
+    }
+
+    try {
+      // Sort commits by date
+      const sortedCommits = [...commits].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+      const events: SecurityEvent[] = []
+      const trends: SecurityTrend[] = []
+
+      // Analyze each commit transition
+      for (let i = 1; i < sortedCommits.length; i++) {
+        const prevCommit = sortedCommits[i - 1]
+        const currentCommit = sortedCommits[i]
+
+        if (prevCommit.data && currentCommit.data) {
+          const diff = compareJsonObjects(prevCommit.data, currentCommit.data)
+          const commitEvents = analyzeSecurityEvents(diff, currentCommit)
+          events.push(...commitEvents)
+        }
+      }
+
+      // Calculate trends
+      const calculatedTrends = calculateSecurityTrends(sortedCommits)
+      trends.push(...calculatedTrends)
+
+      return { securityEvents: events, securityTrends: trends }
+    } catch (err) {
+      console.error("Error processing analysis data:", err)
+      return { securityEvents: [] as SecurityEvent[], securityTrends: [] as SecurityTrend[] }
+    }
+  }, [commits])
+
+
 
 
 
@@ -674,14 +667,17 @@ function SecurityRecommendations({
 
     // Check thresholds
     if (latestCommit?.data?.roles && typeof latestCommit.data.roles === 'object') {
-      Object.entries(latestCommit.data.roles).forEach(([role, config]: [string, any]) => {
-        if (config && typeof config === 'object' && config.threshold === 1) {
-          recommendations.push({
-            priority: "medium",
-            title: "Increase Security Threshold",
-            description: `Role "${role}" only requires 1 signature. Consider increasing for better security.`,
-            action: "Increase threshold to 2 or more signatures",
-          })
+      Object.entries(latestCommit.data.roles).forEach(([role, config]) => {
+        if (config && typeof config === 'object' && !Array.isArray(config)) {
+          const configObj = config as Record<string, JsonValue>
+          if (configObj.threshold === 1) {
+            recommendations.push({
+              priority: "medium",
+              title: "Increase Security Threshold",
+              description: `Role "${role}" only requires 1 signature. Consider increasing for better security.`,
+              action: "Increase threshold to 2 or more signatures",
+            })
+          }
         }
       })
     }

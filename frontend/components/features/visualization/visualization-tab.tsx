@@ -17,13 +17,14 @@ const JsonTreeVisualization = dynamic(() => import("@/components/features/json/j
     </div>
   ),
 })
+import type { JsonValue } from "@/lib/types"
 
 interface VisualizationTabProps {
   selectedCommit: Commit | null
   selectedFile: string
   isLoading: boolean
   error: string
-  jsonData: any
+  jsonData: JsonValue
   viewMode: ViewMode
   onRetry: () => void
 }
@@ -87,7 +88,7 @@ export default function VisualizationTab({
             <FileJson className="h-16 w-16 mb-4 text-slate-300" />
             <p className="text-lg font-medium mb-2">Ready to Visualize!</p>
             <p className="text-center max-w-md">
-              Select a commit from the "Browse Commits" tab to see an interactive graph of the security metadata
+              Select a commit from the &quot;Browse Commits&quot; tab to see an interactive graph of the security metadata
             </p>
           </div>
         )}

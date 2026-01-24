@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -88,31 +88,22 @@ export function StoryModal({ isOpen, onClose, fixture, onOpenSimulator }: StoryM
 
     return () => clearInterval(interval)
   }, [autoPlay])
-
-  useEffect(() => {
-    if (isOpen) {
-      setAnimatePulse(true)
-      const timer = setTimeout(() => setAnimatePulse(false), 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [currentStep, isOpen])
-
   const currentStepData = storySteps[currentStep]
   const StepIcon = currentStepData.icon
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentStep < storySteps.length - 1) {
       setCurrentStep(currentStep + 1)
     }
-  }
+  }, [currentStep])
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
     }
-  }
+  }, [currentStep])
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!isOpen) return
 
     switch (e.key) {
@@ -133,12 +124,28 @@ export function StoryModal({ isOpen, onClose, fixture, onOpenSimulator }: StoryM
         setAutoPlay(!autoPlay)
         break
     }
-  }
+  }, [isOpen, autoPlay, handleNext, handlePrev, onClose])
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isOpen, currentStep, autoPlay])
+  }, [handleKeyDown])
+
+  useEffect(() => {
+    if (isOpen) {
+      // Use setTimeout to avoid synchronous state update warning during render phase
+      const pulseTimer = setTimeout(() => {
+        setAnimatePulse(true)
+      }, 0)
+      
+      const resetTimer = setTimeout(() => setAnimatePulse(false), 3000)
+      
+      return () => {
+        clearTimeout(pulseTimer)
+        clearTimeout(resetTimer)
+      }
+    }
+  }, [currentStep, isOpen])
 
   return (
     <AnimatePresence>
@@ -204,7 +211,7 @@ export function StoryModal({ isOpen, onClose, fixture, onOpenSimulator }: StoryM
               >
                 <Card className="border-l-4 border-l-blue-500">
                   <CardContent className="p-6">
-                    <h3 className="font-semibold text-lg mb-3 text-gray-900">What's happening here?</h3>
+                    <h3 className="font-semibold text-lg mb-3 text-gray-900">What&apos;s happening here?</h3>
                     <p className="text-gray-700 mb-4 leading-relaxed">{currentStepData.description}</p>
                     <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-l-blue-400">
                       <p className="text-sm text-blue-800 font-medium">💡 {currentStepData.explanation}</p>

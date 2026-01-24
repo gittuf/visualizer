@@ -39,13 +39,21 @@ export default function RepositorySelector({
   error,
   currentRepository,
 }: RepositorySelectorProps) {
+interface ValidationDetails {
+    type: "remote" | "local"
+    platform?: string
+    url?: string
+    path?: string
+    isGitRepo?: boolean
+  }
+
   const [activeTab, setActiveTab] = useState<"remote" | "local">("remote")
   const [remoteUrl, setRemoteUrl] = useState("")
   const [localPath, setLocalPath] = useState("")
   const [validationStatus, setValidationStatus] = useState<{
     isValid: boolean
     message: string
-    details?: any
+    details?: ValidationDetails
   } | null>(null)
 
   const handleRemoteSubmit = async (e: React.FormEvent) => {
@@ -104,69 +112,7 @@ export default function RepositorySelector({
     onRepositorySelect(repoInfo)
   }
 
-  const handleLocalSelect = async () => {
-    try {
-      // Check if File System Access API is supported
-      if (!("showDirectoryPicker" in window)) {
-        setValidationStatus({
-          isValid: false,
-          message:
-            "Local folder selection is not supported in this browser. Please use Chrome, Edge, or another Chromium-based browser.",
-        })
-        return
-      }
 
-      const dirHandle = await (window as any).showDirectoryPicker({
-        mode: "read",
-      })
-
-      const folderPath = dirHandle.name
-      setLocalPath(folderPath)
-
-      // Validate if it's a git repository
-      let isGitRepo = false
-      try {
-        for await (const [name, handle] of dirHandle.entries()) {
-          if (name === ".git" && handle.kind === "directory") {
-            isGitRepo = true
-            break
-          }
-        }
-      } catch (error) {
-        console.warn("Could not check for .git directory:", error)
-      }
-
-      setValidationStatus({
-        isValid: true,
-        message: isGitRepo
-          ? "Git repository detected successfully"
-          : "Folder selected (Git repository not detected, but proceeding)",
-        details: {
-          type: "local",
-          path: folderPath,
-          isGitRepo,
-        },
-      })
-
-      const repoInfo: RepositoryInfo = {
-        type: "local",
-        path: folderPath,
-        name: folderPath,
-      }
-
-      onRepositorySelect(repoInfo)
-    } catch (error) {
-      if ((error as Error).name === "AbortError") {
-        // User cancelled the selection
-        return
-      }
-
-      setValidationStatus({
-        isValid: false,
-        message: "Failed to select folder. Please try again.",
-      })
-    }
-  }
 
   const handleTryDemo = () => {
     const demoRepo: RepositoryInfo = {

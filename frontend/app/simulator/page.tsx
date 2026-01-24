@@ -649,7 +649,7 @@ export default function SimulatorPage() {
                         <Label htmlFor="person-keytype">Key Type</Label>
                         <Select
                           value={newPersonForm.key_type}
-                          onValueChange={(v) => setNewPersonForm({ ...newPersonForm, key_type: v as any })}
+                          onValueChange={(v) => setNewPersonForm({ ...newPersonForm, key_type: v as "ssh" | "gpg" | "sigstore" })}
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -878,7 +878,7 @@ export default function SimulatorPage() {
                 <Label htmlFor="edit-person-keytype">Key Type</Label>
                 <Select
                   value={editingPerson.key_type}
-                  onValueChange={(v) => setEditingPerson({ ...editingPerson, key_type: v as any })}
+                  onValueChange={(v) => setEditingPerson({ ...editingPerson, key_type: v as "ssh" | "gpg" | "sigstore" })}
                 >
                   <SelectTrigger>
                     <SelectValue />

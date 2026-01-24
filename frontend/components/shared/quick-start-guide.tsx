@@ -71,7 +71,7 @@ export default function QuickStartGuide() {
         <CollapsibleContent>
           <CardContent className="pt-0">
             <div className="space-y-4">
-              {steps.map((step, index) => (
+              {steps.map((step) => (
                 <div
                   key={step.number}
                   className="flex items-start space-x-4 p-3 bg-white rounded-lg border border-amber-200"

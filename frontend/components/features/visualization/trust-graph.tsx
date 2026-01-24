@@ -5,7 +5,37 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ZoomIn, ZoomOut, RotateCcw, Users, Shield, Key } from "lucide-react"
+import type { Core, NodeSingular } from "cytoscape"
 import type { VisualizationHint } from "@/lib/simulator-types"
+
+interface ApprovalRequirement {
+  role: string
+  threshold: number
+  satisfied: number
+  satisfiers: Array<{ who: string }>
+}
+
+interface CyElement {
+  data: (key: string) => string | number | boolean | undefined
+}
+
+interface CyEvent {
+  target: {
+    data: (key: string) => string | number | boolean | undefined
+  }
+}
+
+interface LegendItem {
+  key: string
+  type: string
+  label: string
+  status: string
+}
+
+interface Satisfier {
+  who: string
+}
+
 
 interface TrustGraphProps {
   hint: VisualizationHint
@@ -14,7 +44,7 @@ interface TrustGraphProps {
   animatePulse?: boolean
   onNodeClick?: (nodeId: string) => void
   simulatedSigners?: Set<string>
-  approvalRequirements?: any[]
+  approvalRequirements?: ApprovalRequirement[]
 }
 
 export function TrustGraph({
@@ -27,7 +57,7 @@ export function TrustGraph({
   approvalRequirements = [],
 }: TrustGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const cyRef = useRef<any>(null)
+  const cyRef = useRef<Core | null>(null)
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [layoutApplied, setLayoutApplied] = useState(false)
@@ -41,7 +71,7 @@ export function TrustGraph({
 
       if (node.type === "person") {
         // Check if this person has signed
-        const hasSigned = approvalRequirements.some((req) => req.satisfiers.some((s: any) => s.who === node.id))
+        const hasSigned = approvalRequirements.some((req) => req.satisfiers.some((s) => s.who === node.id))
         const isSimulated = simulatedSigners.has(node.id)
 
         if (hasSigned) {
@@ -91,7 +121,7 @@ export function TrustGraph({
     if (!container) return positions
 
     const containerWidth = container.offsetWidth || 800
-    const containerHeight = container.offsetHeight || 600
+
 
     // Separate nodes by type
     const roleNodes = enhancedNodes.filter((n) => n.type === "role")
@@ -203,10 +233,10 @@ export function TrustGraph({
           {
             selector: "node",
             style: {
-              "background-color": (ele: any) => {
-                const type = ele.data("type")
-                const status = ele.data("status")
-                const isFocused = focusedNodes.includes(ele.data("id"))
+              "background-color": (ele: CyElement) => {
+                const type = ele.data("type") as string
+                const status = ele.data("status") as string
+                const isFocused = focusedNodes.includes(ele.data("id") as string)
                 return getNodeColor(type, status, isFocused)
               },
               label: "data(label)",
@@ -217,28 +247,28 @@ export function TrustGraph({
               "font-weight": 600,
               "text-wrap": "wrap",
               "text-max-width": "80px",
-              width: (ele: any) => {
+              width: (ele: CyElement) => {
                 const type = ele.data("type")
                 return type === "role" ? "80px" : "60px"
               },
-              height: (ele: any) => {
+              height: (ele: CyElement) => {
                 const type = ele.data("type")
                 return type === "role" ? "80px" : "60px"
               },
-              shape: (ele: any) => {
+              shape: (ele: CyElement) => {
                 const type = ele.data("type")
                 if (type === "role") return "hexagon"
                 if (type === "person") return "ellipse"
                 return "rectangle"
               },
-              "border-width": (ele: any) => {
-                const isFocused = focusedNodes.includes(ele.data("id"))
-                const isSelected = selectedNode === ele.data("id")
+              "border-width": (ele: CyElement) => {
+                const isFocused = focusedNodes.includes(ele.data("id") as string)
+                const isSelected = selectedNode === (ele.data("id") as string)
                 return isSelected ? "4px" : isFocused ? "3px" : "2px"
               },
-              "border-color": (ele: any) => {
-                const isSelected = selectedNode === ele.data("id")
-                const isFocused = focusedNodes.includes(ele.data("id"))
+              "border-color": (ele: CyElement) => {
+                const isSelected = selectedNode === (ele.data("id") as string)
+                const isFocused = focusedNodes.includes(ele.data("id") as string)
                 if (isSelected) return "#fbbf24"
                 if (isFocused) return "#ffffff"
                 return "rgba(255, 255, 255, 0.8)"
@@ -250,9 +280,9 @@ export function TrustGraph({
           {
             selector: "edge",
             style: {
-              width: (ele: any) => (ele.data("satisfied") ? "4px" : "2px"),
-              "line-color": (ele: any) => (ele.data("satisfied") ? "#10b981" : "#ef4444"),
-              "target-arrow-color": (ele: any) => (ele.data("satisfied") ? "#10b981" : "#ef4444"),
+              width: (ele: CyElement) => (ele.data("satisfied") ? "4px" : "2px"),
+              "line-color": (ele: CyElement) => (ele.data("satisfied") ? "#10b981" : "#ef4444"),
+              "target-arrow-color": (ele: CyElement) => (ele.data("satisfied") ? "#10b981" : "#ef4444"),
               "target-arrow-shape": "triangle",
 
               "curve-style": "bezier",
@@ -265,7 +295,7 @@ export function TrustGraph({
               "text-background-opacity": 0.9,
               "text-background-padding": "4px",
               "text-background-shape": "roundrectangle",
-              "line-style": (ele: any) => (ele.data("satisfied") ? "solid" : "dashed"),
+              "line-style": (ele: CyElement) => (ele.data("satisfied") ? "solid" : "dashed"),
               "transition-property": "line-color, target-arrow-color, width",
               "transition-duration": 300,
             },
@@ -282,13 +312,13 @@ export function TrustGraph({
       })
 
       // Event handlers
-      cy.on("tap", "node", (evt: any) => {
-        const nodeId = evt.target.data("id")
+      cy.on("tap", "node", (evt: CyEvent) => {
+        const nodeId = evt.target.data("id") as string
         setSelectedNode(nodeId)
         onNodeClick?.(nodeId)
       })
 
-      cy.on("tap", (evt: any) => {
+      cy.on("tap", (evt: CyEvent) => {
         if (evt.target === cy) {
           setSelectedNode(null)
         }
@@ -367,6 +397,7 @@ export function TrustGraph({
         cyRef.current = null
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hint.nodes.length, hint.edges.length])
 
   // Separate effect for updating existing graph without re-creating it
@@ -375,7 +406,7 @@ export function TrustGraph({
 
     try {
       // Update node styles without recreating the graph
-      cyRef.current.nodes().forEach((node: any) => {
+      cyRef.current.nodes().forEach((node: NodeSingular) => {
         const nodeData = enhancedNodes.find((n) => n.id === node.data("id"))
         if (nodeData) {
           node.data("status", nodeData.status)
@@ -521,7 +552,7 @@ export function TrustGraph({
                 })
               }
               return acc
-            }, [] as any[])
+            }, [] as LegendItem[])
             .map((item) => (
               <div key={item.key} className="flex items-center gap-2 text-xs">
                 <div className={`w-3 h-3 rounded-full ${getStatusColor(item.status)}`} />
@@ -560,7 +591,7 @@ export function TrustGraph({
                     <div>
                       {simulatedSigners.has(node.id)
                         ? "Simulated signer"
-                        : approvalRequirements.some((req) => req.satisfiers.some((s: any) => s.who === node.id))
+                        : approvalRequirements.some((req) => req.satisfiers.some((s: Satisfier) => s.who === node.id))
                           ? "Has signed"
                           : "Eligible signer"}
                     </div>

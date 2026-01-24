@@ -24,7 +24,7 @@ export function useRepository() {
       const commitsData = await mockFetchCommits("https://github.com/gittuf/gittuf")
       setCommits(commitsData)
       if (onSuccess) onSuccess()
-    } catch (err) {
+    } catch {
       setError("Failed to load demo data. Please try again.")
     } finally {
       setIsLoading(false)
@@ -80,7 +80,7 @@ export function useRepository() {
       const commitsData = await mockFetchCommits(repoUrl)
       setCommits(commitsData)
       if (onSuccess) onSuccess()
-    } catch (err) {
+    } catch {
       setError("Failed to fetch repository data. Please check the URL and try again.")
     } finally {
       setIsLoading(false)

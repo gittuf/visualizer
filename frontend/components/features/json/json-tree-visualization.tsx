@@ -14,6 +14,8 @@ import ReactFlow, {
   addEdge,
   type Node,
   type Edge,
+  type Connection,
+  type NodeProps,
 } from "reactflow"
 import "reactflow/dist/style.css"
 import dagre from "dagre"
@@ -23,10 +25,20 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Badge } from "@/components/ui/badge"
 import { formatJsonValue, getNodeTypeDescription } from "@/lib/json-utils"
 import { shouldShowInNormalMode, type ViewMode } from "@/lib/view-mode-utils"
+import type { JsonValue, JsonArray, JsonObject } from "@/lib/types"
 
 // Node dimensions for layout
 const NODE_WIDTH = 220
 const NODE_HEIGHT = 80
+
+interface CustomNodeData {
+  label?: string
+  value: JsonValue
+  isExpanded?: boolean
+  onToggle?: () => void
+  path?: string
+  metadata?: Record<string, unknown>
+}
 
 // Animated node wrapper
 const AnimatedNode = ({ children }: { children: React.ReactNode }) => {
@@ -38,7 +50,7 @@ const AnimatedNode = ({ children }: { children: React.ReactNode }) => {
 }
 
 // Node tooltip wrapper
-const NodeTooltip = ({ children, data, type }: { children: React.ReactNode; data: any; type: string }) => {
+const NodeTooltip = ({ children, data, type }: { children: React.ReactNode; data: CustomNodeData; type: string }) => {
   return (
     <TooltipProvider>
       <Tooltip delayDuration={300}>
@@ -89,7 +101,7 @@ const NodeTooltip = ({ children, data, type }: { children: React.ReactNode; data
 }
 
 // Node types
-function RootNode({ data, isConnectable }: any) {
+function RootNode({ data, isConnectable }: NodeProps<CustomNodeData>) {
   return (
     <AnimatedNode>
       <NodeTooltip data={data} type="rootNode">
@@ -118,7 +130,7 @@ function RootNode({ data, isConnectable }: any) {
   )
 }
 
-function JsonNode({ data, isConnectable }: any) {
+function JsonNode({ data, isConnectable }: NodeProps<CustomNodeData>) {
   return (
     <AnimatedNode>
       <NodeTooltip data={data} type="jsonNode">
@@ -126,7 +138,7 @@ function JsonNode({ data, isConnectable }: any) {
           <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
           <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} />
           <CollapsibleCard
-            title={data.label}
+            title={data.label!}
             isOpen={true}
             borderColor="border-purple-500"
             onToggle={data.onToggle}
@@ -148,7 +160,7 @@ function JsonNode({ data, isConnectable }: any) {
   )
 }
 
-function ArrayNode({ data, isConnectable }: any) {
+function ArrayNode({ data, isConnectable }: NodeProps<CustomNodeData>) {
   return (
     <AnimatedNode>
       <NodeTooltip data={data} type="arrayNode">
@@ -156,13 +168,13 @@ function ArrayNode({ data, isConnectable }: any) {
           <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
           <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} />
           <CollapsibleCard
-            title={data.label}
+            title={data.label!}
             isOpen={true}
             borderColor="border-green-500"
             onToggle={data.onToggle}
             isExpanded={data.isExpanded}
           >
-            <div className="text-xs">Array with {data.value.length} items</div>
+            <div className="text-xs">Array with {(data.value as JsonArray).length} items</div>
           </CollapsibleCard>
         </div>
       </NodeTooltip>
@@ -170,13 +182,13 @@ function ArrayNode({ data, isConnectable }: any) {
   )
 }
 
-function ValueNode({ data, isConnectable }: any) {
+function ValueNode({ data, isConnectable }: NodeProps<CustomNodeData>) {
   return (
     <AnimatedNode>
       <NodeTooltip data={data} type="valueNode">
         <div className="w-[220px]">
           <Handle type="target" position={Position.Top} isConnectable={isConnectable} />
-          <CollapsibleCard title={data.label} isOpen={true} borderColor="border-amber-500">
+          <CollapsibleCard title={data.label!} isOpen={true} borderColor="border-amber-500">
             <div className="text-xs break-all">
               {data.value === null ? "null" : data.value === undefined ? "undefined" : String(data.value)}
             </div>
@@ -231,12 +243,12 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => 
 export default function JsonTreeVisualization({
   jsonData,
   viewMode = "advanced",
-}: { jsonData: any; viewMode?: ViewMode }) {
+}: { jsonData: JsonValue; viewMode?: ViewMode }) {
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({})
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
 
-  const onConnect = useCallback((params: any) => setEdges((eds) => addEdge(params, eds)), [setEdges])
+  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges])
 
   const toggleNodeExpansion = useCallback((nodeId: string) => {
     setExpandedNodes((prev) => ({
@@ -266,13 +278,13 @@ export default function JsonTreeVisualization({
         path: "$",
         metadata: {
           type: typeof jsonData,
-          schemaVersion: jsonData?.schemaVersion || "N/A",
+          schemaVersion: (jsonData as JsonObject)?.schemaVersion || "N/A",
         },
       },
     })
 
     // Process JSON recursively
-    const processJson = (parentId: string, data: any, path = "", level = 1) => {
+    const processJson = (parentId: string, data: JsonValue, path = "", level = 1) => {
       if (data === null || data === undefined) {
         return
       }
@@ -427,7 +439,7 @@ export default function JsonTreeVisualization({
 
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
-  }, [jsonData, expandedNodes, toggleNodeExpansion, viewMode])
+  }, [jsonData, expandedNodes, toggleNodeExpansion, viewMode, setNodes, setEdges])
 
   return (
     <ReactFlow

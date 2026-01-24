@@ -1,14 +1,14 @@
 /**
  * Format JSON value for display in tooltips
  */
-export function formatJsonValue(value: any): string {
+export function formatJsonValue(value: unknown): string {
   if (value === undefined) return "undefined"
   if (value === null) return "null"
 
   if (typeof value === "object") {
     try {
       return JSON.stringify(value, null, 2)
-    } catch (error) {
+    } catch {
       return "[Complex Object]"
     }
   }
@@ -47,7 +47,7 @@ export function getNodeTypeDescription(type: string): string {
 /**
  * Get a description of the security implications of a node
  */
-export function getSecurityImplication(path: string, value: any): string | null {
+export function getSecurityImplication(path: string, value: unknown): string | null {
   // Check for security-related paths
   if (path.includes("principals") || path.includes("keyval")) {
     return "Contains security principal information"
@@ -58,7 +58,7 @@ export function getSecurityImplication(path: string, value: any): string | null 
   }
 
   if (path.includes("expires")) {
-    const expiryDate = new Date(value)
+    const expiryDate = new Date(value as string)
     const now = new Date()
     if (expiryDate < now) {
       return "EXPIRED! This metadata has passed its expiration date"
