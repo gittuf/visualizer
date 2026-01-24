@@ -440,3 +440,5 @@ export function useGittufSimulator() {
     customFixture // Exporting just in case, though handled internally
   }
 }
+
+export type SimulatorState = ReturnType<typeof useGittufSimulator>
