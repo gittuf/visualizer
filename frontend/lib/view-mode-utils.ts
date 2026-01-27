@@ -8,7 +8,7 @@ export interface NodeImportance {
 }
 
 // Define which fields are important for normal mode
-export const getNodeImportance = (key: string, value: any, level: number, parentKey?: string): NodeImportance => {
+export const getNodeImportance = (key: string, _value: unknown, level: number): NodeImportance => {
   const keyLower = key.toLowerCase()
 
   // Always show root level containers
@@ -50,26 +50,27 @@ export const getNodeImportance = (key: string, value: any, level: number, parent
   return { level: "normal", reason: "Standard field" }
 }
 
-export const shouldShowInNormalMode = (key: string, value: any, level: number, parentKey?: string): boolean => {
-  const importance = getNodeImportance(key, value, level, parentKey)
+export const shouldShowInNormalMode = (key: string, value: unknown, level: number): boolean => {
+  const importance = getNodeImportance(key, value, level)
   return importance.level === "critical" || importance.level === "important"
 }
 
-export const getHiddenFieldsCount = (data: any, level = 0, parentKey?: string): number => {
+export const getHiddenFieldsCount = (data: unknown, level = 0): number => {
   if (!data || typeof data !== "object") return 0
 
+  const dataObj = data as Record<string, unknown>
   let hiddenCount = 0
-  const keys = Array.isArray(data) ? data.map((_, i) => i.toString()) : Object.keys(data)
+  const keys = Array.isArray(data) ? data.map((_, i) => i.toString()) : Object.keys(dataObj)
 
   for (const key of keys) {
-    const importance = getNodeImportance(key, data[key], level, parentKey)
+    const importance = getNodeImportance(key, dataObj[key], level)
     if (importance.level === "hidden" || importance.level === "normal") {
       hiddenCount++
     }
 
     // Recursively count hidden fields in nested objects
-    if (typeof data[key] === "object" && data[key] !== null) {
-      hiddenCount += getHiddenFieldsCount(data[key], level + 1, key)
+    if (typeof dataObj[key] === "object" && dataObj[key] !== null) {
+      hiddenCount += getHiddenFieldsCount(dataObj[key], level + 1)
     }
   }
 

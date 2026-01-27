@@ -1,20 +1,19 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import { ChevronDown, ChevronRight, Calendar, Key, Users, Shield, Clock, FileText, Hash, Globe } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { shouldShowInNormalMode, type ViewMode } from "@/lib/view-mode-utils"
+import type { JsonValue, JsonArray, JsonObject } from "@/lib/types"
 
 interface JsonTreeViewProps {
-  jsonData: any
+  jsonData: JsonValue
   viewMode?: ViewMode
 }
 
 interface TreeNodeProps {
-  data: any
+  data: JsonValue
   keyName?: string
   level?: number
   isLast?: boolean
@@ -22,7 +21,7 @@ interface TreeNodeProps {
   viewMode?: ViewMode
 }
 
-const getValueColor = (value: any): string => {
+const getValueColor = (value: JsonValue): string => {
   if (typeof value === "string") return "text-green-600"
   if (typeof value === "number") return "text-orange-600"
   if (typeof value === "boolean") return "text-blue-600"
@@ -30,7 +29,7 @@ const getValueColor = (value: any): string => {
   return "text-gray-800"
 }
 
-const getValueIcon = (key: string, value: any) => {
+const getValueIcon = (key: string) => {
   const keyLower = key.toLowerCase()
 
   if (keyLower.includes("expire")) return <Calendar className="h-3 w-3 text-blue-500" />
@@ -45,19 +44,19 @@ const getValueIcon = (key: string, value: any) => {
   return <FileText className="h-3 w-3 text-gray-400" />
 }
 
-const getSecurityBadge = (key: string, value: any) => {
+const getSecurityBadge = () => {
   // Removed all security badges to clean up the UI
   return null
 }
 
-const formatValue = (value: any): string => {
+const formatValue = (value: JsonValue): string => {
   if (value === null) return "null"
   if (value === undefined) return "undefined"
   if (typeof value === "string") return `"${value}"`
   return String(value)
 }
 
-const getTooltipContent = (key: string, value: any, path: string) => {
+const getTooltipContent = (key: string, value: JsonValue, path: string) => {
   const keyLower = key.toLowerCase()
 
   // Root-level metadata fields
@@ -67,10 +66,10 @@ const getTooltipContent = (key: string, value: any, path: string) => {
         <div>
           <strong>Metadata Type</strong>
         </div>
-        <div>Value: {value}</div>
+        <div>Value: {value as string}</div>
         <div className="text-sm text-gray-600">
-          Specifies the type of gittuf metadata. "root" contains trust anchors and role definitions, while "targets"
-          contains security policies and rules.
+          Specifies the type of gittuf metadata. &quot;root&quot; contains trust anchors and role definitions, while
+          &quot;targets&quot; contains security policies and rules.
         </div>
         <div className="text-xs text-gray-500">Path: {path}</div>
       </div>
@@ -83,7 +82,7 @@ const getTooltipContent = (key: string, value: any, path: string) => {
         <div>
           <strong>Schema Version</strong>
         </div>
-        <div>Version: {value}</div>
+        <div>Version: {value as string | number}</div>
         <div className="text-sm text-gray-600">Defines the structure and validation rules for this metadata.</div>
         <div className="text-xs text-gray-500">Path: {path}</div>
       </div>
@@ -91,7 +90,7 @@ const getTooltipContent = (key: string, value: any, path: string) => {
   }
 
   if (keyLower.includes("expire")) {
-    const expiryDate = new Date(value)
+    const expiryDate = new Date(value as string)
     const now = new Date()
     const daysUntilExpiry = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     const isExpired = expiryDate < now
@@ -114,7 +113,7 @@ const getTooltipContent = (key: string, value: any, path: string) => {
 
   // Principal-related fields
   if (keyLower === "principals") {
-    const count = typeof value === "object" ? Object.keys(value).length : 0
+    const count = typeof value === "object" && value !== null ? Object.keys(value).length : 0
     return (
       <div className="space-y-2 max-w-sm">
         <div>
@@ -135,7 +134,7 @@ const getTooltipContent = (key: string, value: any, path: string) => {
         <div>
           <strong>Key Type</strong>
         </div>
-        <div>Type: {value}</div>
+        <div>Type: {value as string}</div>
         <div className="text-sm text-gray-600">Specifies the key algorithm used for signing.</div>
         <div className="text-xs text-gray-500">Path: {path}</div>
       </div>
@@ -148,7 +147,7 @@ const getTooltipContent = (key: string, value: any, path: string) => {
         <div>
           <strong>Signature Threshold</strong>
         </div>
-        <div>Required signatures: {value}</div>
+        <div>Required signatures: {value as number}</div>
         <div className="text-sm text-gray-600">
           Minimum number of valid signatures required from the authorized principals.
         </div>
@@ -158,7 +157,7 @@ const getTooltipContent = (key: string, value: any, path: string) => {
   }
 
   // Generic fallback with simplified context
-  const getGenericDescription = (key: string, value: any) => {
+  const getGenericDescription = (key: string, value: JsonValue) => {
     if (typeof value === "object" && value !== null) {
       const isArray = Array.isArray(value)
       const count = isArray ? value.length : Object.keys(value).length
@@ -197,7 +196,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   data,
   keyName,
   level = 0,
-  isLast = true,
   parentPath = "",
   viewMode = "advanced",
 }) => {
@@ -237,8 +235,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({
 
   const renderValue = () => {
     if (isPrimitive) {
-      const securityBadge = keyName ? getSecurityBadge(keyName, data) : null
-      const icon = keyName ? getValueIcon(keyName, data) : null
+      const securityBadge = keyName ? getSecurityBadge() : null
+      const icon = keyName ? getValueIcon(keyName) : null
 
       return (
         <TooltipProvider>
@@ -259,16 +257,16 @@ const TreeNode: React.FC<TreeNodeProps> = ({
       )
     }
 
-    const objectKeys = isObject ? Object.keys(data) : []
-    const arrayLength = isArray ? data.length : 0
+    const objectKeys = isObject && data ? Object.keys(data) : []
+    const arrayLength = isArray ? (data as JsonArray).length : 0
     const count = isObject ? objectKeys.length : arrayLength
-    const securityBadge = keyName ? getSecurityBadge(keyName, data) : null
-    const icon = keyName ? getValueIcon(keyName, data) : <FileText className="h-3 w-3 text-gray-400" />
+    const securityBadge = keyName ? getSecurityBadge() : null
+    const icon = keyName ? getValueIcon(keyName) : <FileText className="h-3 w-3 text-gray-400" />
 
     // In normal mode, count only visible children
     let visibleCount = count
-    if (viewMode === "normal" && isObject) {
-      visibleCount = objectKeys.filter((key) => shouldShowInNormalMode(key, data[key], level + 1)).length
+    if (viewMode === "normal" && isObject && data) {
+      visibleCount = objectKeys.filter((key) => shouldShowInNormalMode(key, (data as JsonObject)[key], level + 1)).length
     }
 
     return (
@@ -324,7 +322,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
               objectKeys.map((key, index) => (
                 <TreeNode
                   key={key}
-                  data={data[key]}
+                  data={(data as JsonObject)[key]}
                   keyName={key}
                   level={level + 1}
                   isLast={index === objectKeys.length - 1}
@@ -333,13 +331,13 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                 />
               ))}
             {isArray &&
-              data.map((item: any, index: number) => (
+              (data as JsonArray).map((item, index) => (
                 <TreeNode
                   key={index}
                   data={item}
                   keyName={`[${index}]`}
                   level={level + 1}
-                  isLast={index === data.length - 1}
+                  isLast={index === (data as JsonArray).length - 1}
                   parentPath={currentPath}
                   viewMode={viewMode}
                 />

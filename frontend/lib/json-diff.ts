@@ -1,37 +1,69 @@
+import { JsonValue, JsonObject } from "./types"
+
+export interface DiffEntry {
+  status: "added" | "removed" | "changed" | "unchanged"
+  value?: JsonValue
+  oldValue?: JsonValue
+  children?: Record<string, DiffEntry>
+}
+
+export type DiffResult = Record<string, DiffEntry>
+
 // Function to compare two JSON objects and identify differences
-export function compareJsonObjects(oldObj: any, newObj: any) {
+export function compareJsonObjects(
+  oldObj: JsonObject | null | undefined,
+  newObj: JsonObject | null | undefined,
+): DiffResult | DiffEntry | null {
   try {
-    const result: Record<string, any> = {}
+    const result: DiffResult = {}
 
     // Handle null or undefined objects
     if (!oldObj && !newObj) return null
-    if (!oldObj) return { status: "added", value: newObj }
-    if (!newObj) return { status: "removed", value: oldObj }
+    if (!oldObj) return { status: "added", value: newObj as JsonValue }
+    if (!newObj) return { status: "removed", value: oldObj as JsonValue }
 
     // Get all keys from both objects
-    const oldKeys = typeof oldObj === "object" && oldObj !== null ? Object.keys(oldObj) : []
-    const newKeys = typeof newObj === "object" && newObj !== null ? Object.keys(newObj) : []
+    const oldKeys = oldObj ? Object.keys(oldObj) : []
+    const newKeys = newObj ? Object.keys(newObj) : []
     const allKeys = new Set([...oldKeys, ...newKeys])
 
     allKeys.forEach((key) => {
-      const oldValue = oldObj?.[key]
-      const newValue = newObj?.[key]
+      const oldValue = oldObj ? oldObj[key] : undefined
+      const newValue = newObj ? newObj[key] : undefined
 
       // Key exists in both objects
-      if (key in oldObj && key in newObj) {
+      if (oldObj && key in oldObj && newObj && key in newObj) {
         // Both values are objects - recursively compare
-        if (typeof oldValue === "object" && oldValue !== null && typeof newValue === "object" && newValue !== null) {
-          const childDiff = compareJsonObjects(oldValue, newValue)
+        if (
+          typeof oldValue === "object" &&
+          oldValue !== null &&
+          !Array.isArray(oldValue) &&
+          typeof newValue === "object" &&
+          newValue !== null &&
+          !Array.isArray(newValue)
+        ) {
+          const childDiff = compareJsonObjects(oldValue as JsonObject, newValue as JsonObject)
 
           // If there are differences in the child objects
-          if (childDiff && Object.keys(childDiff).length > 0) {
-            result[key] = {
-              status: "unchanged",
-              value: newValue,
-              children: childDiff,
+          if (childDiff) {
+            // If childDiff is a Record<string, DiffEntry>, use it as children
+            // If it's a single DiffEntry (from null check shortcut), what do we do?
+            // The recursive call with two objects should return a DiffResult (Record)
+            // unless one was null, but we checked type===object && !== null.
+            // So childDiff should be DiffResult here.
+            
+            const hasChanges = Object.keys(childDiff).length > 0
+            if (hasChanges) {
+               result[key] = {
+                status: "unchanged",
+                value: newValue,
+                children: childDiff as Record<string, DiffEntry>,
+              }
+            } else {
+              result[key] = { status: "unchanged", value: newValue }
             }
           } else {
-            result[key] = { status: "unchanged", value: newValue }
+             result[key] = { status: "unchanged", value: newValue }
           }
         }
         // Values are different
@@ -48,7 +80,7 @@ export function compareJsonObjects(oldObj: any, newObj: any) {
         }
       }
       // Key only exists in the new object
-      else if (key in newObj) {
+      else if (newObj && key in newObj) {
         result[key] = { status: "added", value: newValue }
       }
       // Key only exists in the old object
@@ -65,16 +97,36 @@ export function compareJsonObjects(oldObj: any, newObj: any) {
 }
 
 // Function to count the number of changes in a diff object
-export function countChanges(diff: Record<string, any>) {
+export function countChanges(diff: DiffResult | DiffEntry | null) {
   let added = 0
   let removed = 0
   let changed = 0
   let unchanged = 0
 
-  const countRecursive = (obj: Record<string, any>) => {
+  if (!diff) return { added, removed, changed, unchanged }
+  
+  // Handle edge case where diff is a single DiffEntry
+  if ('status' in diff && typeof diff.status === 'string') {
+      const entry = diff as DiffEntry;
+      if (entry.status === 'added') added++;
+      else if (entry.status === 'removed') removed++;
+      else if (entry.status === 'changed') changed++;
+      else if (entry.status === 'unchanged') unchanged++;
+      
+      if (entry.children) {
+         const childrenCounts = countChanges(entry.children);
+         added += childrenCounts.added;
+         removed += childrenCounts.removed;
+         changed += childrenCounts.changed;
+         unchanged += childrenCounts.unchanged;
+      }
+      return { added, removed, changed, unchanged };
+  }
+
+  const countRecursive = (obj: Record<string, DiffEntry>) => {
     if (!obj) return
 
-    Object.values(obj).forEach((value: any) => {
+    Object.values(obj).forEach((value: DiffEntry) => {
       if (value.status === "added") {
         added++
       } else if (value.status === "removed") {
@@ -91,6 +143,6 @@ export function countChanges(diff: Record<string, any>) {
     })
   }
 
-  countRecursive(diff)
+  countRecursive(diff as Record<string, DiffEntry>)
   return { added, removed, changed, unchanged }
 }

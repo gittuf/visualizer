@@ -58,7 +58,7 @@ export interface VisualizationNode {
   id: string
   type: "role" | "person" | "key"
   label: string
-  meta?: Record<string, any>
+  meta?: Record<string, unknown>
 }
 
 export interface VisualizationEdge {
@@ -75,4 +75,25 @@ export interface ProposedChange {
   to?: string
   commit?: string
   pr_json?: string
+}
+
+export interface CustomPerson {
+  id: string
+  display_name: string
+  keyid: string
+  key_type: "ssh" | "gpg" | "sigstore"
+  has_signed: boolean
+}
+
+export interface CustomRole {
+  id: string
+  display_name: string
+  threshold: number
+  file_globs: string[]
+  assigned_people: string[]
+}
+
+export interface CustomConfig {
+  people: CustomPerson[]
+  roles: CustomRole[]
 }

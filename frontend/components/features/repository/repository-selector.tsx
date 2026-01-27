@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { REPOSITORY, FILENAMES } from "@/lib/constants"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -39,13 +40,21 @@ export default function RepositorySelector({
   error,
   currentRepository,
 }: RepositorySelectorProps) {
+interface ValidationDetails {
+    type: "remote" | "local"
+    platform?: string
+    url?: string
+    path?: string
+    isGitRepo?: boolean
+  }
+
   const [activeTab, setActiveTab] = useState<"remote" | "local">("remote")
   const [remoteUrl, setRemoteUrl] = useState("")
   const [localPath, setLocalPath] = useState("")
   const [validationStatus, setValidationStatus] = useState<{
     isValid: boolean
     message: string
-    details?: any
+    details?: ValidationDetails
   } | null>(null)
 
   const handleRemoteSubmit = async (e: React.FormEvent) => {
@@ -104,74 +113,12 @@ export default function RepositorySelector({
     onRepositorySelect(repoInfo)
   }
 
-  const handleLocalSelect = async () => {
-    try {
-      // Check if File System Access API is supported
-      if (!("showDirectoryPicker" in window)) {
-        setValidationStatus({
-          isValid: false,
-          message:
-            "Local folder selection is not supported in this browser. Please use Chrome, Edge, or another Chromium-based browser.",
-        })
-        return
-      }
 
-      const dirHandle = await (window as any).showDirectoryPicker({
-        mode: "read",
-      })
-
-      const folderPath = dirHandle.name
-      setLocalPath(folderPath)
-
-      // Validate if it's a git repository
-      let isGitRepo = false
-      try {
-        for await (const [name, handle] of dirHandle.entries()) {
-          if (name === ".git" && handle.kind === "directory") {
-            isGitRepo = true
-            break
-          }
-        }
-      } catch (error) {
-        console.warn("Could not check for .git directory:", error)
-      }
-
-      setValidationStatus({
-        isValid: true,
-        message: isGitRepo
-          ? "Git repository detected successfully"
-          : "Folder selected (Git repository not detected, but proceeding)",
-        details: {
-          type: "local",
-          path: folderPath,
-          isGitRepo,
-        },
-      })
-
-      const repoInfo: RepositoryInfo = {
-        type: "local",
-        path: folderPath,
-        name: folderPath,
-      }
-
-      onRepositorySelect(repoInfo)
-    } catch (error) {
-      if ((error as Error).name === "AbortError") {
-        // User cancelled the selection
-        return
-      }
-
-      setValidationStatus({
-        isValid: false,
-        message: "Failed to select folder. Please try again.",
-      })
-    }
-  }
 
   const handleTryDemo = () => {
     const demoRepo: RepositoryInfo = {
       type: "remote",
-      path: "https://github.com/gittuf/gittuf",
+      path: REPOSITORY.GITTUF_URL,
       name: "gittuf",
     }
 
@@ -548,8 +495,8 @@ export default function RepositorySelector({
             <li className="flex items-center space-x-2">
               <CheckCircle className="h-3 w-3 text-green-500" />
               <span>
-                Contains <code className="bg-white px-1 rounded">root.json</code> and/or{" "}
-                <code className="bg-white px-1 rounded">targets.json</code> files
+                Contains <code className="bg-white px-1 rounded">{FILENAMES.ROOT}</code> and/or{" "}
+                <code className="bg-white px-1 rounded">{FILENAMES.TARGETS}</code> files
               </span>
             </li>
             <li className="flex items-center space-x-2">

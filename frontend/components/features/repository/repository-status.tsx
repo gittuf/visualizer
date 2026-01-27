@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo } from "react"
 import { motion } from "framer-motion"
 import {
   GitBranch,
@@ -28,29 +28,21 @@ interface RepositoryStatusProps {
 }
 
 export default function RepositoryStatus({ repository, commits, onRefresh, isLoading }: RepositoryStatusProps) {
-  const [repoStats, setRepoStats] = useState<{
-    totalCommits: number
-    dateRange: { start: string; end: string } | null
-    authors: string[]
-    hasSecurityFiles: boolean
-    lastUpdate: string
-  } | null>(null)
+  const repoStats = useMemo(() => {
+    if (commits.length === 0) return null
 
-  useEffect(() => {
-    if (commits.length > 0) {
-      const sortedCommits = [...commits].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      const authors = [...new Set(commits.map((c) => c.author))]
+    const sortedCommits = [...commits].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    const authors = [...new Set(commits.map((c) => c.author))]
 
-      setRepoStats({
-        totalCommits: commits.length,
-        dateRange: {
-          start: sortedCommits[0].date,
-          end: sortedCommits[sortedCommits.length - 1].date,
-        },
-        authors,
-        hasSecurityFiles: true, // Assume true if we have commits
-        lastUpdate: sortedCommits[sortedCommits.length - 1].date,
-      })
+    return {
+      totalCommits: commits.length,
+      dateRange: {
+        start: sortedCommits[0].date,
+        end: sortedCommits[sortedCommits.length - 1].date,
+      },
+      authors,
+      hasSecurityFiles: true, // Assume true if we have commits
+      lastUpdate: sortedCommits[sortedCommits.length - 1].date,
     }
   }, [commits])
 
