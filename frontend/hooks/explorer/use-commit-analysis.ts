@@ -21,7 +21,10 @@ export function useCommitAnalysis(
   }
 
   useEffect(() => {
-    if (activeTab === "analysis" && selectedCommits.length > 0) {
+    // Only fetch if we have selected commits and any of them are missing data
+    const needsData = selectedCommits.some(commit => !commit.data)
+    
+    if (activeTab === "analysis" && selectedCommits.length > 0 && needsData) {
       const loadAnalysisData = async () => {
         setLoading(true)
         setError("")
@@ -48,11 +51,8 @@ export function useCommitAnalysis(
 
       loadAnalysisData()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, selectedCommits.length, selectedFile, currentRepository?.path, repoUrl]) 
-  // Dependency management: verify if this covers all needed updates without infinite loops.
-  // selectedCommits.length is safer than selectedCommits to avoid loops if deep equality isn't checked, 
-  // but here we are updating selectedCommits inside the effect, so we MUST correspond to the pattern.
+
+  }, [activeTab, selectedCommits.length, selectedFile, currentRepository?.path, repoUrl, selectedCommits]) 
 
   return {
     selectedCommits,

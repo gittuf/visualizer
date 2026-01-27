@@ -59,9 +59,14 @@ export function TrustGraph({
   const containerRef = useRef<HTMLDivElement>(null)
   const cyRef = useRef<Core | null>(null)
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
+  const selectedNodeRef = useRef(selectedNode)
   const [isLoading, setIsLoading] = useState(true)
   const [layoutApplied, setLayoutApplied] = useState(false)
   const [graphKey, setGraphKey] = useState(0)
+
+  useEffect(() => {
+    selectedNodeRef.current = selectedNode
+  }, [selectedNode])
 
   // Create enhanced nodes with status information - memoized to prevent unnecessary recalculations
   const enhancedNodes = useMemo(() => {
@@ -263,11 +268,11 @@ export function TrustGraph({
               },
               "border-width": (ele: CyElement) => {
                 const isFocused = focusedNodes.includes(ele.data("id") as string)
-                const isSelected = selectedNode === (ele.data("id") as string)
+                const isSelected = selectedNodeRef.current === (ele.data("id") as string)
                 return isSelected ? "4px" : isFocused ? "3px" : "2px"
               },
               "border-color": (ele: CyElement) => {
-                const isSelected = selectedNode === (ele.data("id") as string)
+                const isSelected = selectedNodeRef.current === (ele.data("id") as string)
                 const isFocused = focusedNodes.includes(ele.data("id") as string)
                 if (isSelected) return "#fbbf24"
                 if (isFocused) return "#ffffff"
@@ -383,7 +388,6 @@ export function TrustGraph({
     animatePulse,
     onNodeClick,
     focusedNodes,
-    selectedNode,
   ])
 
   // Force re-initialization when hint changes significantly
@@ -397,8 +401,7 @@ export function TrustGraph({
         cyRef.current = null
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hint.nodes.length, hint.edges.length])
+  }, [hint.nodes.length, hint.edges.length, initializeGraph])
 
   // Separate effect for updating existing graph without re-creating it
   useEffect(() => {
@@ -414,14 +417,22 @@ export function TrustGraph({
 
           // Update the background color directly
           const isFocused = focusedNodes.includes(node.data("id"))
+          const isSelected = selectedNode === node.data("id")
+          
           const newColor = getNodeColor(nodeData.type, nodeData.status, isFocused)
           node.style("background-color", newColor)
+          
+          // Update border for selection/focus
+          node.style({
+            "border-width": isSelected ? "4px" : isFocused ? "3px" : "2px",
+            "border-color": isSelected ? "#fbbf24" : isFocused ? "#ffffff" : "rgba(255, 255, 255, 0.8)"
+          })
         }
       })
     } catch (error) {
       console.error("Failed to update graph:", error)
     }
-  }, [simulatedSigners, approvalRequirements, enhancedNodes, focusedNodes, getNodeColor, layoutApplied])
+  }, [simulatedSigners, approvalRequirements, enhancedNodes, focusedNodes, getNodeColor, layoutApplied, selectedNode])
 
   useEffect(() => {
     if (!containerRef.current) return
