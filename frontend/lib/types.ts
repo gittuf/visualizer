@@ -33,3 +33,11 @@ export interface SecurityEvent {
   details: string
   impact: string
 }
+
+export interface SecurityTrend {
+  metric: string
+  trend: "improving" | "declining" | "stable"
+  current: number
+  previous: number
+  description: string
+}
