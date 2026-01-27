@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { Commit, JsonObject } from "@/lib/types"
+import { REPOSITORY } from "@/lib/constants"
 import { mockFetchMetadata } from "@/lib/mock-api"
 import type { RepositoryInfo } from "@/lib/repository-handler"
 
@@ -26,7 +27,7 @@ export function useCommitAnalysis(
         setError("")
 
         try {
-          const fallbackUrl = currentRepository?.path || repoUrl || "https://github.com/gittuf/gittuf"
+          const fallbackUrl = currentRepository?.path || repoUrl || REPOSITORY.GITTUF_URL
           const dataPromises = selectedCommits.map((commit) =>
             mockFetchMetadata(fallbackUrl, commit.hash, selectedFile),
           )

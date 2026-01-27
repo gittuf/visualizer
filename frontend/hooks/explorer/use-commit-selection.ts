@@ -6,10 +6,12 @@ import { mockFetchMetadata } from "@/lib/mock-api"
 import type { ViewMode } from "@/lib/view-mode-utils"
 import type { RepositoryInfo } from "@/lib/repository-handler"
 
+import { FILENAMES, REPOSITORY } from "@/lib/constants"
+
 export function useCommitSelection() {
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null)
   const [jsonData, setJsonData] = useState<JsonValue>(null)
-  const [selectedFile, setSelectedFile] = useState("root.json")
+  const [selectedFile, setSelectedFile] = useState<string>(FILENAMES.ROOT)
   const [globalViewMode, setGlobalViewMode] = useState<ViewMode>("normal")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -50,7 +52,7 @@ export function useCommitSelection() {
       setLoading(true)
       setError("")
       try {
-        const fallbackUrl = currentRepository?.path || repoUrl || "https://github.com/gittuf/gittuf"
+        const fallbackUrl = currentRepository?.path || repoUrl || REPOSITORY.GITTUF_URL
         const metadata = await mockFetchMetadata(fallbackUrl, selectedCommit.hash, file)
         setJsonData(metadata as JsonValue)
       } catch (err) {

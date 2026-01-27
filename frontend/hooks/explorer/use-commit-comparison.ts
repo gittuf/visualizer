@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { REPOSITORY } from "@/lib/constants"
 import type { Commit, JsonObject } from "@/lib/types"
 import { mockFetchMetadata } from "@/lib/mock-api"
 import type { RepositoryInfo } from "@/lib/repository-handler"
@@ -59,7 +60,7 @@ export function useCommitComparison() {
       setLoading(true)
       setError("")
       try {
-        const fallbackUrl = currentRepository?.path || repoUrl || "https://github.com/gittuf/gittuf"
+        const fallbackUrl = currentRepository?.path || repoUrl || REPOSITORY.GITTUF_URL
         const [baseData, compareDataResult] = await Promise.all([
           mockFetchMetadata(fallbackUrl, compareCommits.base.hash, file),
           mockFetchMetadata(fallbackUrl, compareCommits.compare.hash, file),

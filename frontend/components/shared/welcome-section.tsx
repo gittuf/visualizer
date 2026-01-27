@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Shield, GitBranch, FileText, ChevronRight, X, Play } from "lucide-react"
+import { FILENAMES } from "@/lib/constants"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
@@ -27,7 +28,7 @@ export default function WelcomeSection({ onTryDemo, onDismiss }: WelcomeSectionP
       icon: <FileText className="h-8 w-8 text-green-500" />,
       title: "Security Metadata",
       description:
-        "gittuf stores security policies in JSON files like root.json and targets.json that define who can do what in your repository.",
+        `gittuf stores security policies in JSON files like ${FILENAMES.ROOT} and ${FILENAMES.TARGETS} that define who can do what in your repository.`,
       details: "These files contain cryptographic keys, access rules, and expiration dates that protect your code.",
     },
     {

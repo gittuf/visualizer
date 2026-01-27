@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import { REPOSITORY } from "@/lib/constants"
 import { mockFetchCommits } from "@/lib/mock-api"
 import type { Commit } from "@/lib/types"
 import { RepositoryHandler, type RepositoryInfo } from "@/lib/repository-handler"
@@ -16,12 +17,12 @@ export function useRepository() {
   const [repositoryHandler] = useState(() => new RepositoryHandler())
 
   const handleTryDemo = async (onSuccess?: () => void) => {
-    setRepoUrl("https://github.com/gittuf/gittuf")
+    setRepoUrl(REPOSITORY.GITTUF_URL)
     setIsLoading(true)
     setError("")
 
     try {
-      const commitsData = await mockFetchCommits("https://github.com/gittuf/gittuf")
+      const commitsData = await mockFetchCommits(REPOSITORY.GITTUF_URL)
       setCommits(commitsData)
       if (onSuccess) onSuccess()
     } catch {

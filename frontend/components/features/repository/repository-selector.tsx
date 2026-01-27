@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { REPOSITORY, FILENAMES } from "@/lib/constants"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -117,7 +118,7 @@ interface ValidationDetails {
   const handleTryDemo = () => {
     const demoRepo: RepositoryInfo = {
       type: "remote",
-      path: "https://github.com/gittuf/gittuf",
+      path: REPOSITORY.GITTUF_URL,
       name: "gittuf",
     }
 
@@ -494,8 +495,8 @@ interface ValidationDetails {
             <li className="flex items-center space-x-2">
               <CheckCircle className="h-3 w-3 text-green-500" />
               <span>
-                Contains <code className="bg-white px-1 rounded">root.json</code> and/or{" "}
-                <code className="bg-white px-1 rounded">targets.json</code> files
+                Contains <code className="bg-white px-1 rounded">{FILENAMES.ROOT}</code> and/or{" "}
+                <code className="bg-white px-1 rounded">{FILENAMES.TARGETS}</code> files
               </span>
             </li>
             <li className="flex items-center space-x-2">

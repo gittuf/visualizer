@@ -1,6 +1,7 @@
 "use client"
 
 import { FileJson } from "lucide-react"
+import { FILENAMES } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import EnhancedViewModeToggle from "@/components/shared/enhanced-view-mode-toggle"
@@ -37,10 +38,10 @@ export default function FileSelector({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onFileChange("root.json")}
-                  className={selectedFile === "root.json" ? "bg-blue-50 border-blue-200 text-blue-700" : ""}
+                  onClick={() => onFileChange(FILENAMES.ROOT)}
+                  className={selectedFile === FILENAMES.ROOT ? "bg-blue-50 border-blue-200 text-blue-700" : ""}
                 >
-                  root.json
+                  {FILENAMES.ROOT}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -60,10 +61,10 @@ export default function FileSelector({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onFileChange("targets.json")}
-                  className={selectedFile === "targets.json" ? "bg-blue-50 border-blue-200 text-blue-700" : ""}
+                  onClick={() => onFileChange(FILENAMES.TARGETS)}
+                  className={selectedFile === FILENAMES.TARGETS ? "bg-blue-50 border-blue-200 text-blue-700" : ""}
                 >
-                  targets.json
+                  {FILENAMES.TARGETS}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
