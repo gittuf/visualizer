@@ -7,7 +7,7 @@ replace github.com/gittuf/visualizer/go-backend => .
 require (
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
-	github.com/go-git/go-git/v5 v5.16.4
+	github.com/go-git/go-git/v5 v5.16.5
 	github.com/joho/godotenv v1.5.1
 	go.uber.org/zap v1.27.1
 )
