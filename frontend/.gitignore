@@ -28,8 +28,7 @@ next-env.d.ts
 
 .DS_Store
 
-# Playwright
-node_modules/
+# Playwright 
 /test-results/
 /playwright-report/
 /blob-report/
