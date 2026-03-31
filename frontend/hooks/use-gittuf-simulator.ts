@@ -408,6 +408,11 @@ export function useGittufSimulator() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [handleRunSimulation, handleExportJson, whatIfMode, expandedGraph, showCustomConfig, setShowStory, setWhatIfMode, setExpandedGraph, setShowCustomConfig])
 
+  // Auto-show simulator content on mount (for /simulator page)
+  useEffect(() => {
+    setShowSimulator(true)
+  }, [])
+
   return {
     darkMode, setDarkMode,
     showStory, setShowStory,

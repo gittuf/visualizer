@@ -43,6 +43,7 @@ export function useGittufExplorer() {
     analysis.setSelectedCommits([])
 
     await repository.handleTryDemo(() => {
+      repository.setShowRepositorySelector(false)
       setActiveTab("commits")
       setCurrentStep(2)
     })
