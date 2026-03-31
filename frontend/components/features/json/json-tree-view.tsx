@@ -368,7 +368,7 @@ export default function JsonTreeView({ jsonData, viewMode = "normal" }: JsonTree
   }
 
   return (
-    <div className="font-mono text-sm max-h-[600px] overflow-auto">
+    <div className="font-mono text-sm max-h-[600px] overflow-auto" data-testid="json-tree-view">
       <div className="p-4">
         <TreeNode data={jsonData} viewMode={viewMode} />
       </div>

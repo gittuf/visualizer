@@ -32,9 +32,9 @@ const NODE_WIDTH = 220
 const NODE_HEIGHT = 80
 
 // Animated node wrapper
-const AnimatedNode = ({ children }: { children: React.ReactNode }) => {
+const AnimatedNode = ({ children, testId }: { children: React.ReactNode; testId?: string }) => {
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
+    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }} data-testid={testId}>
       {children}
     </motion.div>
   )
@@ -169,7 +169,7 @@ function DiffRootNode({ data, isConnectable }: { data: DiffNodeData; isConnectab
 
 function DiffAddedNode({ data, isConnectable }: { data: DiffNodeData; isConnectable: boolean }) {
   return (
-    <AnimatedNode>
+    <AnimatedNode testId="diff-added">
       <DiffNodeTooltip data={data} type="diffAdded">
         <CollapsibleCard
           title={data.label || "Added"}
@@ -713,7 +713,9 @@ export default function JsonDiffVisualization({
   }, [baseData, compareData, expandedNodes, toggleNodeExpansion, showUnchanged, setNodes, setEdges])
 
   return (
-    <ReactFlow
+    <div data-testid="json-diff-viewer">
+      <div data-testid="json-diff-container">
+        <ReactFlow
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
@@ -758,5 +760,7 @@ export default function JsonDiffVisualization({
         </div>
       )}
     </ReactFlow>
+      </div>
+    </div>
   )
 }
