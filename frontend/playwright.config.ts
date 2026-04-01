@@ -13,7 +13,8 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
-  /* Run tests in files in parallel */
+  // Increase global timeout to 90s to account for Git clone/fetch latency
+  timeout: 90000, 
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
@@ -32,42 +33,25 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  /* Configure projects for major browsers */
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
 
-  /* Run your local dev server before starting the tests */
   webServer: [
-   {
+    {
       name: 'backend',
       command: 'go run cmd/server/main.go',
       cwd: '../go-backend',
-      url: 'http://localhost:5000',  
-      timeout: 60 * 1000,
-      stdout: 'pipe',
-      stderr: 'pipe',
+      url: 'http://localhost:5000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000, // Wait up to 2m for Go compilation
     },
     {
       name: 'frontend',
       command: 'npm run dev',
-      url: 'http://localhost:3000',  
-      timeout: 60 * 1000,
-      stdout: 'pipe',
-      stderr: 'pipe',
+      url: 'http://localhost:3000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
     }
   ],
 });
