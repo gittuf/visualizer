@@ -16,8 +16,14 @@ test.describe('Repository Selector', () => {
   });
 
   test('allows selecting demo repository', async ({ page }) => {
-    // Click the try demo button
+    // Click the try demo button and wait for commits API response
+    const commitFetch = page.waitForResponse(
+      resp => resp.url().includes('/commits') && resp.status() === 200,
+      { timeout: 60000 } // Extended timeout for Git clone
+    );
     await page.locator(selectors.repository.tryDemoButton).click();
+    await commitFetch;
+    
     // Check if demo repository is selected
     await expect(page.locator(selectors.repository.selectedRepository)).toBeVisible();
   });
