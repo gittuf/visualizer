@@ -11,7 +11,9 @@ on:
       - "frontend/**"
       - ".github/workflows/frontend.yml"
     branches: [ 'main' ]
+
 permissions: read-all
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -19,14 +21,14 @@ jobs:
       run:
         working-directory: 'frontend'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+        uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: "npm"
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: 'frontend/package-lock.json'
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
@@ -40,23 +42,60 @@ jobs:
       run:
         working-directory: 'frontend'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+        uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: "npm"
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: 'frontend/package-lock.json'
 
-      # Install dependencies
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      # Run build
       - name: Run build
         run: npm run build
 
-      # Run tests (if available)
       - name: Run tests
         run: npm test || echo "No tests yet"
+
+  playwright:
+    name: Playwright Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: 'frontend'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
