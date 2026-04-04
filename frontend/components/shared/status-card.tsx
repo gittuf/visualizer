@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 
 interface StatusCardProps {
+  "data-testid"?: string  // Added for E2E testing
   result: "allowed" | "blocked"
   reasons: string[]
   className?: string
 }
 
-export function StatusCard({ result, reasons, className = "" }: StatusCardProps) {
+export function StatusCard({ "data-testid": testId, result, reasons, className = "" }: StatusCardProps) {
   const [explainLikeIm5, setExplainLikeIm5] = useState(false)
 
   const getSimpleExplanation = () => {
@@ -30,6 +31,7 @@ export function StatusCard({ result, reasons, className = "" }: StatusCardProps)
 
   return (
     <motion.div
+      data-testid={testId}  // Added for E2E testing
       initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -50,9 +52,9 @@ export function StatusCard({ result, reasons, className = "" }: StatusCardProps)
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             >
               {result === "allowed" ? (
-                <CheckCircle className="w-12 h-12 text-green-600" />
+                <CheckCircle className="w-12 h-12 text-green-600" data-testid="status-card-allowed-icon" />
               ) : (
-                <XCircle className="w-12 h-12 text-red-600" />
+                <XCircle className="w-12 h-12 text-red-600" data-testid="status-card-blocked-icon" />
               )}
             </motion.div>
 
@@ -65,6 +67,7 @@ export function StatusCard({ result, reasons, className = "" }: StatusCardProps)
                   className={`text-2xl font-bold capitalize ${
                     result === "allowed" ? "text-green-800" : "text-red-800"
                   }`}
+                  data-testid="status-card-result"
                 >
                   {result}
                 </motion.h2>
@@ -85,6 +88,7 @@ export function StatusCard({ result, reasons, className = "" }: StatusCardProps)
                     size="sm"
                     onClick={() => setExplainLikeIm5(!explainLikeIm5)}
                     className="text-xs h-6 px-2"
+                    data-testid="status-card-toggle-explanation"
                   >
                     {explainLikeIm5 ? "Show Details" : "Explain like I'm 5"}
                   </Button>
@@ -98,6 +102,7 @@ export function StatusCard({ result, reasons, className = "" }: StatusCardProps)
                   className={`${
                     result === "allowed" ? "text-green-700" : "text-red-700"
                   } leading-relaxed ${explainLikeIm5 ? "text-base" : "text-sm"}`}
+                  data-testid="status-card-explanation"
                 >
                   {explainLikeIm5 ? getSimpleExplanation() : getDetailedExplanation()}
                 </motion.p>

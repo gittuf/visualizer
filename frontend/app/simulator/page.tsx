@@ -26,12 +26,14 @@ export default function SimulatorPage() {
 
   return (
     <div
+      data-testid="homepage-container"
       className={`min-h-screen transition-colors duration-300 ${
         darkMode ? "bg-gray-900 text-white" : "bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
       }`}
     >
       {/* Story Modal */}
       <StoryModal
+        data-testid="story-modal"
         isOpen={showStory}
         onClose={() => setShowStory(false)}
         fixture={fixture}
@@ -49,18 +51,23 @@ export default function SimulatorPage() {
         <AnimatePresence>
           {showSimulator && (
             <motion.div
+              data-testid="simulator-content"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
               {/* Status Card */}
-              <StatusCard result={displayResult.result} reasons={displayResult.reasons} />
+              <StatusCard 
+                data-testid="status-card"
+                result={displayResult.result} 
+                reasons={displayResult.reasons} 
+              />
 
               {/* Main Content Area */}
               <div className={`grid gap-6 ${expandedGraph ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-4"}`}>
-                <SimulatorControls state={state} />
-                <SimulatorGraph state={state} />
+                <SimulatorControls state={state} data-testid="simulator-controls"/>
+                <SimulatorGraph state={state} data-testid="simulator-graph" />
               </div>
 
               {/* Detailed Results */}
@@ -70,7 +77,7 @@ export default function SimulatorPage() {
         </AnimatePresence>
 
         {/* Footer Glossary */}
-        <SimulatorGlossary state={state} />
+        <SimulatorGlossary data-testid="simulator-glossary" state={state} />
       </div>
 
       {/* Custom Config Dialog */}

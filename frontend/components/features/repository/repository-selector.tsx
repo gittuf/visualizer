@@ -137,7 +137,7 @@ interface ValidationDetails {
   }
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm border-slate-200 shadow-lg">
+    <Card className="bg-white/90 backdrop-blur-sm border-slate-200 shadow-lg" data-testid="repository-selector">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -152,7 +152,7 @@ interface ValidationDetails {
             </div>
           </div>
           {currentRepository && (
-            <div className="text-right">
+            <div className="text-right" data-testid="selected-repository">
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Connected
@@ -165,11 +165,11 @@ interface ValidationDetails {
       <CardContent className="space-y-6">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "remote" | "local")}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="remote" className="flex items-center">
+            <TabsTrigger value="remote" className="flex items-center" data-testid="repository-option">
               <Globe className="h-4 w-4 mr-2" />
               Remote Repository
             </TabsTrigger>
-            <TabsTrigger value="local" className="flex items-center">
+            <TabsTrigger value="local" className="flex items-center" data-testid="repository-option">
               <HardDrive className="h-4 w-4 mr-2" />
               Local Repository
             </TabsTrigger>
@@ -229,6 +229,7 @@ interface ValidationDetails {
                     onClick={handleTryDemo}
                     disabled={isLoading}
                     className="text-blue-600 border-blue-200 hover:bg-blue-50 bg-transparent"
+                    data-testid="try-demo-button"
                   >
                     Try Demo
                   </Button>

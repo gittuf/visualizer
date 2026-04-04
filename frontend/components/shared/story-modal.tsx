@@ -23,6 +23,7 @@ import { TrustGraph } from "@/components/features/visualization/trust-graph"
 import type { SimulatorResponse } from "@/lib/simulator-types"
 
 interface StoryModalProps {
+  "data-testid"?: string 
   isOpen: boolean
   onClose: () => void
   fixture: SimulatorResponse
@@ -68,7 +69,7 @@ const storySteps = [
   },
 ]
 
-export function StoryModal({ isOpen, onClose, fixture, onOpenSimulator }: StoryModalProps) {
+export function StoryModal({ "data-testid": testId, isOpen, onClose, fixture, onOpenSimulator }: StoryModalProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [autoPlay, setAutoPlay] = useState(false)
   const [animatePulse, setAnimatePulse] = useState(false)
@@ -151,6 +152,7 @@ export function StoryModal({ isOpen, onClose, fixture, onOpenSimulator }: StoryM
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          data-testid={testId}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -183,7 +185,12 @@ export function StoryModal({ isOpen, onClose, fixture, onOpenSimulator }: StoryM
                   {autoPlay ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   {autoPlay ? "Pause" : "Auto-play"}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={onClose}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onClose}
+                  data-testid="story-modal-close" 
+                >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
@@ -264,6 +271,7 @@ export function StoryModal({ isOpen, onClose, fixture, onOpenSimulator }: StoryM
                     onClick={onOpenSimulator}
                     className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                     size="lg"
+                    data-testid="story-modal-open-simulator"
                   >
                     <FileText className="w-4 h-4 mr-2" />
                     Try the Full Simulator

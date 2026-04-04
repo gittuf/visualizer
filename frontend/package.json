@@ -68,8 +68,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/dagre": "^0.7.54",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.2.2",
+    "@types/dagre": "^0.7.54",
     "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",

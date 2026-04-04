@@ -52,7 +52,7 @@ export default function Home() {
   } = useGittufExplorer()
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50" data-testid="homepage-container">
       <div className="max-w-7xl mx-auto p-4 md:p-8">
         <Header
           currentRepository={currentRepository}
@@ -98,6 +98,7 @@ export default function Home() {
               <TabsList className="mb-6 bg-white/80 backdrop-blur-sm p-1 rounded-lg shadow-sm">
                 <TabsTrigger
                   value="commits"
+                  data-testid="tab-commits"
                   className="flex items-center data-[state=active]:bg-blue-500 data-[state=active]:text-white"
                 >
                   <GitCommit className="h-4 w-4 mr-2" />
@@ -106,6 +107,7 @@ export default function Home() {
                 <TabsTrigger
                   value="visualization"
                   disabled={!selectedCommit}
+                  data-testid="tab-visualization"
                   className="flex items-center data-[state=active]:bg-green-500 data-[state=active]:text-white"
                 >
                   <FileJson className="h-4 w-4 mr-2" />
@@ -114,6 +116,7 @@ export default function Home() {
                 <TabsTrigger
                   value="tree"
                   disabled={!selectedCommit}
+                  data-testid="tab-tree"
                   className="flex items-center data-[state=active]:bg-purple-500 data-[state=active]:text-white"
                 >
                   <FileJson className="h-4 w-4 mr-2" />
@@ -122,6 +125,7 @@ export default function Home() {
                 <TabsTrigger
                   value="compare"
                   disabled={!compareCommits.base || !compareCommits.compare}
+                  data-testid="tab-compare"
                   className="flex items-center data-[state=active]:bg-orange-500 data-[state=active]:text-white"
                 >
                   <GitCompare className="h-4 w-4 mr-2" />
@@ -130,6 +134,7 @@ export default function Home() {
                 <TabsTrigger
                   value="analysis"
                   disabled={selectedCommits.length < 2}
+                  data-testid="tab-analysis"
                   className="flex items-center data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
                 >
                   <BarChart3 className="h-4 w-4 mr-2" />

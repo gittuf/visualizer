@@ -12,10 +12,11 @@ import type { SimulatorState } from "@/hooks/use-gittuf-simulator"
 
 interface SimulatorControlsProps {
   state: SimulatorState
+  "data-testid"?: string 
 }
 
-export function SimulatorControls({ state }: SimulatorControlsProps) {
-  const {
+export function SimulatorControls({ state, "data-testid": testId }: SimulatorControlsProps) {
+    const {
     expandedGraph,
     showControls,
     setShowControls,
@@ -33,7 +34,7 @@ export function SimulatorControls({ state }: SimulatorControlsProps) {
   if (expandedGraph) return null
 
   return (
-    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-1 space-y-4">
+    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-1 space-y-4" data-testid={testId}>
       <Card className={darkMode ? "bg-gray-800 border-gray-700" : "bg-white"}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">

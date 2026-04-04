@@ -75,7 +75,7 @@ export default function CommitList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="commit-list">
       <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
@@ -226,6 +226,7 @@ export default function CommitList({
                   ? "bg-blue-50 border-blue-200"
                   : "bg-white border-slate-200 hover:border-slate-300"
               }`}
+              data-testid="commit-item"
             >
               <div className="flex items-start justify-between">
                 {selectionMode === "range" && (
