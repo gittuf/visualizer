@@ -507,6 +507,7 @@ export function TrustGraph({
     <div
       key={graphKey}
       className={`relative w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden ${className}`}
+      data-testid="trust-graph"
     >
       {/* Loading overlay */}
       {isLoading && (

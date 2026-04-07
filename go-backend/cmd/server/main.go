@@ -46,6 +46,11 @@ func main() {
 	router.POST("/commits-local", handlers.ListCommitsLocal)
 	router.POST("/metadata-local", handlers.GetMetadataLocal)
 
+	// Health check
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"
