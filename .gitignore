@@ -53,6 +53,9 @@ venv/
 backend/.venv/
 backend/venv/
 
+# Go test artifacts
+go-backend/tests/TEST_DESCRIPTIONS.md
+
 # Misc
 *.pid
 *.seed
