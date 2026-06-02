@@ -2,53 +2,52 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import {
-  Github,
-  Folder,
-  Globe,
-  HardDrive,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  GitBranch,
-  Calendar,
-  User,
-} from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Image from "next/image"
+import { useMemo, useState } from "react"
+import { AlertCircle, CheckCircle, Loader2 } from "lucide-react"
+import clipIcon from "@/assets/clip.png"
 import { Button } from "@/components/ui/button"
-import { REPOSITORY, FILENAMES } from "@/lib/constants"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { RepositoryInfo } from "@/lib/repository-handler"
-
+import type { RepositoryInfo } from "@/lib/repository-handler"
 
 interface RepositorySelectorProps {
   onRepositorySelect: (info: RepositoryInfo) => void
+  onTryDemo: () => void
   isLoading: boolean
   error: string | null
   currentRepository: RepositoryInfo | null
 }
 
+interface ValidationDetails {
+  type: "remote" | "local"
+  platform?: string
+  url?: string
+  path?: string
+}
+
+const SURFACE_BORDER = "#D9D9D9"
+const CONTROL_BORDER = "#04080E"
+const PARAGRAPH_COLOR = "#7E7E7E"
+const BUTTON_COLOR = "#BAD2EB"
+
+function StepIndicator({ step }: { step: number }) {
+  return (
+    <div
+      className="flex h-11 w-11 items-center justify-center rounded-full text-2xl font-medium text-black"
+      style={{ backgroundColor: SURFACE_BORDER }}
+    >
+      {step}
+    </div>
+  )
+}
+
 export default function RepositorySelector({
   onRepositorySelect,
+  onTryDemo,
   isLoading,
   error,
   currentRepository,
 }: RepositorySelectorProps) {
-interface ValidationDetails {
-    type: "remote" | "local"
-    platform?: string
-    url?: string
-    path?: string
-    isGitRepo?: boolean
-  }
-
-  const [activeTab, setActiveTab] = useState<"remote" | "local">("remote")
   const [remoteUrl, setRemoteUrl] = useState("")
   const [localPath, setLocalPath] = useState("")
   const [validationStatus, setValidationStatus] = useState<{
@@ -57,20 +56,26 @@ interface ValidationDetails {
     details?: ValidationDetails
   } | null>(null)
 
+  const selectedPolicyLabel = useMemo(() => {
+    if (!currentRepository) return "Select a repository to load policy commits"
+    return currentRepository.type === "remote" ? currentRepository.path : currentRepository.name
+  }, [currentRepository])
+
   const handleRemoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!remoteUrl.trim()) {
       setValidationStatus({
         isValid: false,
-        message: "Please enter a repository URL",
+        message: "Please enter a repository URL.",
       })
       return
     }
 
-    // Validate URL format
+    const normalizedUrl = /^https?:\/\//i.test(remoteUrl.trim()) ? remoteUrl.trim() : `https://${remoteUrl.trim()}`
+
     try {
-      const url = new URL(remoteUrl)
+      const url = new URL(normalizedUrl)
       if (
         !url.hostname.includes("github.com") &&
         !url.hostname.includes("gitlab.com") &&
@@ -78,242 +83,51 @@ interface ValidationDetails {
       ) {
         setValidationStatus({
           isValid: false,
-          message: "Please enter a valid Git repository URL (GitHub, GitLab, or Bitbucket)",
+          message: "Please enter a GitHub, GitLab, or Bitbucket repository URL.",
         })
         return
       }
     } catch {
       setValidationStatus({
         isValid: false,
-        message: "Please enter a valid URL",
+        message: "Please enter a valid URL.",
       })
       return
     }
 
-    setValidationStatus({
-      isValid: true,
-      message: "Repository URL validated successfully",
-      details: {
-        type: "remote",
-        platform: remoteUrl.includes("github.com")
-          ? "GitHub"
-          : remoteUrl.includes("gitlab.com")
-            ? "GitLab"
-            : "Bitbucket",
-        url: remoteUrl,
-      },
-    })
-
     const repoInfo: RepositoryInfo = {
       type: "remote",
-      path: remoteUrl,
-      name: remoteUrl.split("/").pop()?.replace(".git", "") || "Unknown Repository",
+      path: normalizedUrl,
+      name: normalizedUrl.split("/").pop()?.replace(".git", "") || "Unknown Repository",
     }
+
+    setValidationStatus({
+      isValid: true,
+      message: "Repository URL validated successfully.",
+      details: {
+        type: "remote",
+        platform: normalizedUrl.includes("github.com")
+          ? "GitHub"
+          : normalizedUrl.includes("gitlab.com")
+            ? "GitLab"
+            : "Bitbucket",
+        url: normalizedUrl,
+      },
+    })
 
     onRepositorySelect(repoInfo)
   }
 
-
-
-  const handleTryDemo = () => {
-    const demoRepo: RepositoryInfo = {
-      type: "remote",
-      path: REPOSITORY.GITTUF_URL,
-      name: "gittuf",
-    }
-
-    setRemoteUrl(demoRepo.path)
-    setValidationStatus({
-      isValid: true,
-      message: "Demo repository loaded",
-      details: {
-        type: "remote",
-        platform: "GitHub",
-        url: demoRepo.path,
-      },
-    })
-
-    onRepositorySelect(demoRepo)
-  }
-
-  return (
-    <Card className="bg-white/90 backdrop-blur-sm border-slate-200 shadow-lg">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <GitBranch className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <CardTitle className="text-xl text-slate-800">Repository Selection</CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                Choose a repository to analyze security metadata and compare commits
-              </p>
-            </div>
-          </div>
-          {currentRepository && (
-            <div className="text-right">
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Connected
-              </Badge>
-              <p className="text-xs text-slate-500 mt-1">{currentRepository.name}</p>
-            </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "remote" | "local")}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="remote" className="flex items-center">
-              <Globe className="h-4 w-4 mr-2" />
-              Remote Repository
-            </TabsTrigger>
-            <TabsTrigger value="local" className="flex items-center">
-              <HardDrive className="h-4 w-4 mr-2" />
-              Local Repository
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="remote" className="space-y-4">
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-medium text-slate-800 mb-2 flex items-center">
-                  <Github className="h-4 w-4 mr-2" />
-                  Remote Repository URL
-                </h3>
-                <p className="text-sm text-slate-600 mb-3">
-                  Enter the URL of a Git repository (GitHub, GitLab, or Bitbucket) that contains gittuf security
-                  metadata.
-                </p>
-
-                <form onSubmit={handleRemoteSubmit} className="space-y-3">
-                  <div className="flex gap-2">
-                    <Input
-                      type="url"
-                      placeholder="https://github.com/username/repository"
-                      value={remoteUrl}
-                      onChange={(e) => setRemoteUrl(e.target.value)}
-                      className="flex-grow"
-                      disabled={isLoading}
-                    />
-                    <Button type="submit" disabled={isLoading || !remoteUrl.trim()} className="min-w-[100px]">
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Github className="h-4 w-4 mr-2" />
-                          Connect
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-
-                <div className="flex items-center justify-between mt-3">
-                  <div className="flex items-center space-x-2 text-xs text-slate-500">
-                    <span>Supported platforms:</span>
-                    <Badge variant="outline" className="text-xs">
-                      GitHub
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      GitLab
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      Bitbucket
-                    </Badge>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleTryDemo}
-                    disabled={isLoading}
-                    className="text-blue-600 border-blue-200 hover:bg-blue-50 bg-transparent"
-                  >
-                    Try Demo
-                  </Button>
-                </div>
-              </div>
-
-              {/* Remote Repository Features */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Globe className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-800">Cloud Access</span>
-                  </div>
-                  <p className="text-xs text-blue-700">Access repositories from anywhere</p>
-                </div>
-                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <GitBranch className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-800">Full History</span>
-                  </div>
-                  <p className="text-xs text-green-700">Complete commit history available</p>
-                </div>
-                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <User className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-800">Collaboration</span>
-                  </div>
-                  <p className="text-xs text-purple-700">Team repository analysis</p>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="local" className="space-y-4">
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-medium text-slate-800 mb-2 flex items-center">
-                  <Folder className="h-4 w-4 mr-2" />
-                  Local Repository Folder
-                </h3>
-                <p className="text-sm text-slate-600 mb-3">
-                  Select a local Git repository folder from your computer that contains gittuf security metadata files.
-                </p>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    {/* <Button
-                      onClick={handleLocalSelect}
-                      disabled={isLoading}
-                      className="min-w-[140px] bg-transparent"
-                      variant="outline"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <Folder className="h-4 w-4 mr-2" />
-                      )}
-                      Select Folder
-                    </Button> */}
-                    <form
-  onSubmit={(e) => {
+  const handleLocalSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!localPath.trim()) {
       setValidationStatus({
         isValid: false,
-        message: "Please enter a local repository path",
+        message: "Please enter a local repository path.",
       })
       return
     }
-
-    // Very basic validation – you can expand this as needed
-    const isGitRepo = true // Optionally, check for .git folder existence via IPC/electron/native bridge in a real app
-
-    setValidationStatus({
-      isValid: true,
-      message: isGitRepo
-        ? "Local repository path accepted"
-        : "Path entered (Git repo not verified, but accepted)",
-      details: {
-        type: "local",
-        path: localPath,
-        isGitRepo,
-      },
-    })
 
     const repoInfo: RepositoryInfo = {
       type: "local",
@@ -321,195 +135,177 @@ interface ValidationDetails {
       name: localPath.split("/").pop() || "Local Repo",
     }
 
+    setValidationStatus({
+      isValid: true,
+      message: "Local repository path accepted.",
+      details: {
+        type: "local",
+        path: localPath,
+      },
+    })
+
     onRepositorySelect(repoInfo)
-  }}
-  className="space-y-3 w-full"
->
-  <div className="flex gap-2">
-    <Input
-      type="text"
-      placeholder="/path/to/local/repo"
-      value={localPath}
-      onChange={(e) => setLocalPath(e.target.value)}
-      disabled={isLoading}
-      className="flex-grow"
-    />
-    <Button type="submit" disabled={isLoading || !localPath.trim()} className="min-w-[100px]">
-      {isLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <>
-          <HardDrive className="h-4 w-4 mr-2" />
-          Connect
-        </>
-      )}
-    </Button>
-  </div>
-</form>
+  }
 
-                    {localPath && (
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-800">Selected:</p>
-                        <p className="text-xs text-slate-600 font-mono bg-slate-100 px-2 py-1 rounded">{localPath}</p>
-                      </div>
-                    )}
-                  </div>
+  return (
+    <section className="px-4 py-6">
+      <div className="mx-auto w-full max-w-[980px]">
+        <div className="space-y-3">
+          <h1 className="text-[36px] font-bold leading-[1.15] text-black">Getting started with gittuf</h1>
+          <p className="text-[20px] leading-[1.35]" style={{ color: PARAGRAPH_COLOR }}>
+          In order to get started with gittuf visualizer, please select a repository you would like to visualize. The
+          following platforms are supported on gittuf: github, gitlab, bitbucket.
+          </p>
+        </div>
 
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Alert className="bg-amber-50 border-amber-200">
-                          <AlertCircle className="h-4 w-4 text-amber-600" />
-                          <AlertDescription className="text-amber-800">
-                            <strong>Browser Compatibility:</strong> Local folder selection requires a modern browser
-                            (Chrome 86+, Edge 86+) with File System Access API support.
-                          </AlertDescription>
-                        </Alert>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="max-w-md">
-                        <div className="space-y-2">
-                          <p className="font-medium">Supported Browsers:</p>
-                          <ul className="text-sm space-y-1">
-                            <li>• Chrome 86+ ✅</li>
-                            <li>• Microsoft Edge 86+ ✅</li>
-                            <li>• Opera 72+ ✅</li>
-                            <li>• Firefox ❌ (not supported)</li>
-                            <li>• Safari ❌ (not supported)</li>
-                          </ul>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </div>
+        <div className="mt-5">
+          <Button
+            type="button"
+            onClick={onTryDemo}
+            disabled={isLoading}
+            className="h-11 rounded-[5px] border px-6 text-[16px] font-normal text-black shadow-none hover:opacity-90 disabled:opacity-100"
+            style={{ backgroundColor: BUTTON_COLOR, borderColor: CONTROL_BORDER }}
+          >
+            Try Demo
+          </Button>
+        </div>
 
-              {/* Local Repository Features */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <HardDrive className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-800">Offline Access</span>
+        <div className="relative mt-14 grid grid-cols-[72px_minmax(0,1fr)] gap-x-6 gap-y-14">
+          <div
+            className="absolute left-[35px] top-[22px] bottom-[22px] w-[3px]"
+            style={{ backgroundColor: SURFACE_BORDER }}
+          />
+
+          <div className="relative z-10 flex justify-center">
+            <StepIndicator step={1} />
+          </div>
+
+          <div className="space-y-5">
+            <h2 className="text-[24px] font-normal leading-[1.25] text-black">Connect a repository</h2>
+            <div className="space-y-6">
+              <form onSubmit={handleRemoteSubmit} className="space-y-2">
+                <p className="text-[14px] leading-[1.4]" style={{ color: PARAGRAPH_COLOR }}>
+                  Enter the URL of a git repository that contains gittuf security metadata
+                </p>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                  <div className="flex flex-1 items-center gap-4">
+                    <span className="shrink-0 text-[16px] font-normal leading-none text-black md:text-[16px]">
+                      https://
+                    </span>
+                    <Input
+                      type="text"
+                      placeholder="github.com/username/repository"
+                      value={remoteUrl}
+                      onChange={(e) => setRemoteUrl(e.target.value.replace(/^https?:\/\//i, ""))}
+                      disabled={isLoading}
+                      className="h-11 rounded-[5px] border px-4 text-[16px] text-black placeholder:text-[#A0A0A0] focus-visible:ring-0 focus-visible:ring-offset-0 md:text-[16px]"
+                      style={{ borderColor: CONTROL_BORDER }}
+                    />
                   </div>
-                  <p className="text-xs text-green-700">Work without internet connection</p>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !remoteUrl.trim()}
+                    className="h-11 min-w-[120px] rounded-[5px] border px-6 text-[16px] font-normal text-black shadow-none hover:opacity-90 disabled:opacity-100"
+                    style={{ backgroundColor: BUTTON_COLOR, borderColor: CONTROL_BORDER }}
+                  >
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Connect"}
+                  </Button>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <CheckCircle className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-800">Privacy</span>
-                  </div>
-                  <p className="text-xs text-blue-700">Data stays on your computer</p>
+              </form>
+
+              <div className="text-center text-[20px] leading-none text-black">or</div>
+
+              <form onSubmit={handleLocalSubmit} className="space-y-2">
+                <p className="text-[14px] leading-[1.4]" style={{ color: PARAGRAPH_COLOR }}>
+                  Select a local Git repository folder from your computer that contains gittuf security metadata
+                </p>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                  <Input
+                    type="text"
+                    placeholder="/path/to/local/repo"
+                    value={localPath}
+                    onChange={(e) => setLocalPath(e.target.value)}
+                    disabled={isLoading}
+                    className="h-11 rounded-[5px] border px-4 text-[16px] text-black placeholder:text-[#A0A0A0] focus-visible:ring-0 focus-visible:ring-offset-0 md:text-[16px]"
+                    style={{ borderColor: CONTROL_BORDER }}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !localPath.trim()}
+                    className="h-11 min-w-[120px] rounded-[5px] border px-6 text-[16px] font-normal text-black shadow-none hover:opacity-90 disabled:opacity-100"
+                    style={{ backgroundColor: BUTTON_COLOR, borderColor: CONTROL_BORDER }}
+                  >
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Connect"}
+                  </Button>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Calendar className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-800">Real-time</span>
-                  </div>
-                  <p className="text-xs text-purple-700">Analyze latest changes instantly</p>
-                </div>
+              </form>
+            </div>
+          </div>
+
+          <div className="relative z-10 flex justify-center">
+            <StepIndicator step={2} />
+          </div>
+
+          <div className="space-y-5 pb-10">
+            <h2 className="text-[24px] font-normal leading-[1.25] text-black">Select policy source</h2>
+            <div className="space-y-3">
+              <label className="block text-[14px] leading-[1.4]" style={{ color: PARAGRAPH_COLOR }}>
+                Choose the policy version you want to inspect
+              </label>
+              <div
+                className="flex min-h-11 items-center rounded-[5px] border px-4 text-[16px]"
+                style={{ borderColor: CONTROL_BORDER, color: currentRepository ? "black" : PARAGRAPH_COLOR }}
+              >
+                {selectedPolicyLabel}
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
 
-        {/* Validation Status */}
-        <AnimatePresence>
-          {validationStatus && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Alert className={validationStatus.isValid ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}>
+            {currentRepository && (
+              <div className="space-y-3">
+                <h3 className="text-[20px] font-normal leading-[1.3] text-black">Metadata Found:</h3>
+                <div
+                  className="inline-flex min-h-11 items-center gap-2 rounded-[5px] border px-3 py-2 text-[14px] text-black"
+                  style={{ borderColor: CONTROL_BORDER }}
+                >
+                  <Image src={clipIcon} alt="" className="h-5 w-5" />
+                  <span>Metadata file ready to inspect</span>
+                </div>
+              </div>
+            )}
+
+            {validationStatus && (
+              <div
+                className="flex items-start gap-3 rounded-[5px] border px-4 py-3 text-[14px]"
+                style={{
+                  borderColor: validationStatus.isValid ? "#B9E1C2" : "#F0B9B9",
+                  backgroundColor: validationStatus.isValid ? "#F5FCF7" : "#FFF7F7",
+                  color: validationStatus.isValid ? "#2C6B3F" : "#A53B3B",
+                }}
+              >
                 {validationStatus.isValid ? (
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 ) : (
-                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 )}
-                <AlertDescription className={validationStatus.isValid ? "text-green-800" : "text-red-800"}>
-                  {validationStatus.message}
-                  {validationStatus.details && (
-                    <div className="mt-2 text-xs">
-                      {validationStatus.details.type === "remote" && (
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline" className="bg-white">
-                            {validationStatus.details.platform}
-                          </Badge>
-                          <span className="font-mono">{validationStatus.details.url}</span>
-                        </div>
-                      )}
-                      {validationStatus.details.type === "local" && (
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-2">
-                            <span>Path:</span>
-                            <span className="font-mono bg-white px-1 rounded">{validationStatus.details.path}</span>
-                          </div>
-                          {validationStatus.details.isGitRepo !== undefined && (
-                            <div className="flex items-center space-x-2">
-                              <span>Git Repository:</span>
-                              <Badge
-                                variant="outline"
-                                className={
-                                  validationStatus.details.isGitRepo
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-yellow-100 text-yellow-700"
-                                }
-                              >
-                                {validationStatus.details.isGitRepo ? "Detected" : "Not Detected"}
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <div className="space-y-1">
+                  <p>{validationStatus.message}</p>
+                  {validationStatus.details?.url && <p className="break-all">{validationStatus.details.url}</p>}
+                  {validationStatus.details?.path && <p className="break-all">{validationStatus.details.path}</p>}
+                </div>
+              </div>
+            )}
 
-        {/* Error Display */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Alert className="bg-red-50 border-red-200">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
-                  <strong>Error:</strong> {error}
-                </AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Repository Requirements */}
-        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-          <h4 className="font-medium text-slate-800 mb-2">Repository Requirements</h4>
-          <ul className="text-sm text-slate-600 space-y-1">
-            <li className="flex items-center space-x-2">
-              <CheckCircle className="h-3 w-3 text-green-500" />
-              <span>
-                Contains <code className="bg-white px-1 rounded">{FILENAMES.ROOT}</code> and/or{" "}
-                <code className="bg-white px-1 rounded">{FILENAMES.TARGETS}</code> files
-              </span>
-            </li>
-            <li className="flex items-center space-x-2">
-              <CheckCircle className="h-3 w-3 text-green-500" />
-              <span>Has commit history with gittuf metadata changes</span>
-            </li>
-            <li className="flex items-center space-x-2">
-              <CheckCircle className="h-3 w-3 text-green-500" />
-              <span>Accessible via Git protocol (for remote) or local file system</span>
-            </li>
-          </ul>
+            {error && (
+              <div
+                className="rounded-[5px] border px-4 py-3 text-[14px]"
+                style={{ borderColor: "#F0B9B9", backgroundColor: "#FFF7F7", color: "#A53B3B" }}
+              >
+                {error}
+              </div>
+            )}
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }

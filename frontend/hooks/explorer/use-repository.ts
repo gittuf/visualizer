@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { REPOSITORY } from "@/lib/constants"
+import { demoVisualizerData } from "@/lib/demo-visualizer-data"
 import { mockFetchCommits } from "@/lib/mock-api"
 import type { Commit } from "@/lib/types"
 import { RepositoryHandler, type RepositoryInfo } from "@/lib/repository-handler"
@@ -17,16 +18,20 @@ export function useRepository() {
   const [repositoryHandler] = useState(() => new RepositoryHandler())
 
   const handleTryDemo = async (onSuccess?: () => void) => {
+    const demoRepository: RepositoryInfo = demoVisualizerData.repository
+
     setRepoUrl(REPOSITORY.GITTUF_URL)
+    setCurrentRepository(demoRepository)
     setIsLoading(true)
     setError("")
 
     try {
-      const commitsData = await mockFetchCommits(REPOSITORY.GITTUF_URL)
-      setCommits(commitsData)
+      await repositoryHandler.setRepository(demoRepository)
+      setCommits(demoVisualizerData.commits)
+      setShowRepositorySelector(false)
       if (onSuccess) onSuccess()
-    } catch {
-      setError("Failed to load demo data. Please try again.")
+    } catch (err) {
+      setError(`Failed to load demo data: ${err instanceof Error ? err.message : "Unknown error"}`)
     } finally {
       setIsLoading(false)
     }
