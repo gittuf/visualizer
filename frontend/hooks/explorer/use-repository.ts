@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { REPOSITORY } from "@/lib/constants"
+import { demoVisualizerData, type DemoVisualizerData } from "@/lib/demo-visualizer-data"
 import { mockFetchCommits } from "@/lib/mock-api"
 import type { Commit } from "@/lib/types"
 import { RepositoryHandler, type RepositoryInfo } from "@/lib/repository-handler"
@@ -13,20 +14,26 @@ export function useRepository() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [currentRepository, setCurrentRepository] = useState<RepositoryInfo | null>(null)
+  const [currentRepositoryData, setCurrentRepositoryData] = useState<DemoVisualizerData | null>(null)
   const [showRepositorySelector, setShowRepositorySelector] = useState(true)
   const [repositoryHandler] = useState(() => new RepositoryHandler())
 
   const handleTryDemo = async (onSuccess?: () => void) => {
+    const demoRepository: RepositoryInfo = demoVisualizerData.repository
+
     setRepoUrl(REPOSITORY.GITTUF_URL)
+    setCurrentRepository(demoRepository)
+    setCurrentRepositoryData(demoVisualizerData)
     setIsLoading(true)
     setError("")
 
     try {
-      const commitsData = await mockFetchCommits(REPOSITORY.GITTUF_URL)
-      setCommits(commitsData)
+      await repositoryHandler.setRepository(demoRepository)
+      setCommits(demoVisualizerData.commits)
+      setShowRepositorySelector(false)
       if (onSuccess) onSuccess()
-    } catch {
-      setError("Failed to load demo data. Please try again.")
+    } catch (err) {
+      setError(`Failed to load demo data: ${err instanceof Error ? err.message : "Unknown error"}`)
     } finally {
       setIsLoading(false)
     }
@@ -34,6 +41,7 @@ export function useRepository() {
 
   const handleRepositorySelect = async (repoInfo: RepositoryInfo, onSuccess?: () => void) => {
     setCurrentRepository(repoInfo)
+    setCurrentRepositoryData(null)
     setIsLoading(true)
     setError("")
 
@@ -88,17 +96,29 @@ export function useRepository() {
     }
   }
 
+  const handleDisconnect = () => {
+    setRepoUrl("")
+    setCommits([])
+    setIsLoading(false)
+    setError("")
+    setCurrentRepository(null)
+    setCurrentRepositoryData(null)
+    setShowRepositorySelector(true)
+  }
+
   return {
     repoUrl,
     setRepoUrl,
     commits,
     setCommits,
+    currentRepositoryData,
     isLoading,
     error,
     setError, // Exposed to allow other hooks to set error if needed, or clear it
     currentRepository,
     showRepositorySelector,
     setShowRepositorySelector,
+    handleDisconnect,
     handleTryDemo,
     handleRepositorySelect,
     handleRepositoryRefresh,
