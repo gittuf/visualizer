@@ -11,8 +11,7 @@ Ensure that you have [Docker] installed on your computer before proceeding.
 ### Frontend
 
 ```bash
-docker build -t visualizer-frontend -f frontend/Dockerfile .
-docker run --rm -p 3000:3000 visualizer-frontend
+docker compose up --build
 # App at http://localhost:3000
 ```
 
@@ -36,6 +35,7 @@ proceeding.
 First, build start the backend:
 
 Go (Gin) on port 5000:
+
 ```bash
 cd go-backend
 go mod download
@@ -58,6 +58,7 @@ commits, view/compare metadata, and analyze changes.
 ## Frontend usage
 
 From the home page:
+
 1. Enter a repository:
    - Remote: full Git URL (e.g., `https://github.com/gittuf/gittuf.git`)
    - Local: absolute path to a local Git repo
