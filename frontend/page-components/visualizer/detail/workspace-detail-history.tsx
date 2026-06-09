@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   demoVisualizerData,
   type DemoVisualizerData,
@@ -14,9 +14,15 @@ import {
 
 interface DetailPanelHistoryProps {
   workspaceData?: DemoVisualizerData | null;
+  selectedCommitHash?: string | null;
+  onSelectedCommitChange?: (commitHash: string) => void;
 }
 
-export function DetailPanelHistory({ workspaceData }: DetailPanelHistoryProps) {
+export function DetailPanelHistory({
+  workspaceData,
+  selectedCommitHash,
+  onSelectedCommitChange,
+}: DetailPanelHistoryProps) {
   const historyData =
     workspaceData?.workspaceDetails.history ??
     demoVisualizerData.workspaceDetails.history;
@@ -41,6 +47,7 @@ export function DetailPanelHistory({ workspaceData }: DetailPanelHistoryProps) {
   }, [baseCommits, selectedSort]);
   const {
     commitListRef,
+    commitsPerPage,
     currentPage,
     selectedCommitId,
     setCurrentPage,
@@ -49,8 +56,26 @@ export function DetailPanelHistory({ workspaceData }: DetailPanelHistoryProps) {
     totalPages,
     touchedCommitId,
     visibleCommits,
-  } = useWorkspaceHistory(commits, historyData?.selectedCommitHash);
-  
+  } = useWorkspaceHistory(commits, selectedCommitHash ?? historyData?.selectedCommitHash);
+
+  useEffect(() => {
+    if (!selectedCommitHash) return;
+
+    const nextSelectedCommitId = commits.findIndex(
+      (commit) => commit.hash === selectedCommitHash,
+    );
+    if (nextSelectedCommitId < 0 || nextSelectedCommitId === selectedCommitId) return;
+
+    setSelectedCommitId(nextSelectedCommitId);
+    setCurrentPage(Math.floor(nextSelectedCommitId / commitsPerPage) + 1);
+  }, [
+    commits,
+    commitsPerPage,
+    selectedCommitHash,
+    selectedCommitId,
+    setCurrentPage,
+    setSelectedCommitId,
+  ]);
 
   return (
     <div className="flex h-full flex-col px-1 pb-4">
@@ -76,7 +101,16 @@ export function DetailPanelHistory({ workspaceData }: DetailPanelHistoryProps) {
               author={commit.authorLabel ?? `opened by ${commit.author}`}
               isSelected={selectedCommitId === commit.id}
               isTouched={touchedCommitId === commit.id}
-              onSelect={setSelectedCommitId}
+              onSelect={(commitId) => {
+                setSelectedCommitId(commitId);
+                const selectedCommit = commits.find(
+                  (historyCommit) => historyCommit.id === commitId,
+                );
+                if (!selectedCommit || !onSelectedCommitChange) return;
+                if (selectedCommit.hash === selectedCommitHash) return;
+
+                onSelectedCommitChange(selectedCommit.hash);
+              }}
               onTouch={setTouchedCommitId}
             />
           ))}

@@ -8,6 +8,22 @@ import fileIcon from "@/assets/file.png";
 import usersIcon from "@/assets/Users.png";
 import userIcon from "@/assets/user.png";
 
+export interface PolicyGraphLane {
+  key: string;
+  pathLabel: string;
+  roleLabel: string;
+  approvals: string;
+}
+
+export interface PolicyGraphCanvasVariant {
+  repositoryLabel?: string;
+  branchLabel?: string;
+  lanes?: PolicyGraphLane[];
+  principalNames?: string[];
+  boundaryFill?: string;
+  repositoryLabelColor?: string;
+}
+
 interface PolicyGraphCanvasProps {
   graphId: string;
   zoom: number;
@@ -19,6 +35,7 @@ interface PolicyGraphCanvasProps {
   };
   onOffsetChange: (offset: { x: number; y: number }) => void;
   onDelete?: () => void;
+  variant?: PolicyGraphCanvasVariant;
 }
 
 const layoutWidth = 980;
@@ -32,7 +49,7 @@ const rowY = {
   role: 500,
   principals: 760,
 };
-const lanes = [
+const defaultLanes = [
   {
     key: "left",
     pathLabel: "src/**",
@@ -46,7 +63,7 @@ const lanes = [
     approvals: "Requires: 2 approvals",
   },
 ] as const;
-const principalNames = ["Alice", "Carol", "Bob"];
+const defaultPrincipalNames = ["Alice", "Carol", "Bob"];
 const branchBox = { width: 140, height: 92 };
 const fileBox = { width: 120, height: 118 };
 const roleBox = { width: 180, height: 132 };
@@ -61,8 +78,15 @@ export function PolicyGraphCanvas({
   offset,
   onOffsetChange,
   onDelete,
+  variant,
 }: PolicyGraphCanvasProps) {
   const [isDraggingBoundary, setIsDraggingBoundary] = useState(false);
+  const lanes = variant?.lanes ?? [...defaultLanes];
+  const principalNames = variant?.principalNames ?? defaultPrincipalNames;
+  const repositoryLabel = variant?.repositoryLabel ?? "gittuf_repo";
+  const repositoryLabelColor = variant?.repositoryLabelColor ?? "#7E7E7E";
+  const branchLabel = variant?.branchLabel ?? "Branch: main";
+  const boundaryFill = variant?.boundaryFill ?? "none";
   const scaledWidth = layoutWidth * zoom;
   const scaledHeight = layoutHeight * zoom;
   const canvasWidth = Math.max(scaledWidth + scrollPadding * 2, viewportWidth);
@@ -226,7 +250,7 @@ export function PolicyGraphCanvas({
                 y={boundary.y}
                 width={boundary.width}
                 height={boundary.height}
-                fill="none"
+                fill={boundaryFill}
                 stroke={isDraggingBoundary ? "#61A1D1" : "#9CA3AF"}
                 strokeWidth="1.5"
                 strokeDasharray="6 6"
@@ -274,13 +298,14 @@ export function PolicyGraphCanvas({
             ) : null}
 
             <div
-              className="absolute text-[16px] font-medium leading-[1.3] text-[#7E7E7E]"
+              className="absolute text-[16px] font-bold leading-[1.3]"
               style={{
-                left: `${boundary.x + 16}px`,
-                top: `${boundary.y - 4}px`,
+                left: `${boundary.x}px`,
+                top: `${boundary.y - 32}px`,
+                color: repositoryLabelColor,
               }}
             >
-              gittuf_repo
+              {repositoryLabel}
             </div>
 
             {lanes.map((lane, laneIndex) => {
@@ -304,7 +329,7 @@ export function PolicyGraphCanvas({
                       draggable={false}
                     />
                     <div className="mt-2 text-[16px] leading-[1.3] text-black">
-                      Branch: main
+                      {branchLabel}
                     </div>
                   </div>
 

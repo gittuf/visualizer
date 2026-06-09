@@ -2,6 +2,7 @@
 
 import { WorkspaceSearchField } from "@/components/visualizer/workspace-search-field";
 import Image, { type StaticImageData } from "next/image";
+import type { ReactNode } from "react";
 
 interface WorkspacePanelHeaderProps {
   title: string;
@@ -9,6 +10,7 @@ interface WorkspacePanelHeaderProps {
   searchIcon: StaticImageData;
   titleIcon?: StaticImageData;
   className?: string;
+  centerSlot?: ReactNode;
 }
 
 export function WorkspacePanelHeader({
@@ -17,10 +19,11 @@ export function WorkspacePanelHeader({
   searchIcon,
   titleIcon,
   className = "bg-white",
+  centerSlot,
 }: WorkspacePanelHeaderProps) {
   return (
     <div
-      className={`flex min-h-[36px] items-center justify-between border-b border-[#D9D9D9] px-3 ${className}`}
+      className={`relative flex min-h-[36px] items-center justify-between border-b border-[#D9D9D9] px-3 ${className}`}
     >
       <div className="flex items-center gap-3">
         {titleIcon ? (
@@ -28,6 +31,11 @@ export function WorkspacePanelHeader({
         ) : null}
         <h3 className="text-[18px] font-normal text-black">{title}</h3>
       </div>
+      {centerSlot ? (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="pointer-events-auto">{centerSlot}</div>
+        </div>
+      ) : null}
       <WorkspaceSearchField placeholder={placeholder} icon={searchIcon} />
     </div>
   );

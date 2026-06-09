@@ -50,6 +50,7 @@ export function useWorkspaceHistory(
 
   return {
     commitListRef,
+    commitsPerPage,
     currentPage: effectiveCurrentPage,
     setCurrentPage,
     totalPages,

@@ -1,7 +1,8 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useDefaultLayout } from "react-resizable-panels";
 import compareIcon from "@/assets/compare.png";
 import addIcon from "@/assets/add.png";
@@ -17,6 +18,12 @@ import zoomInIcon from "@/assets/zoom-in.png";
 import zoomOutIcon from "@/assets/zoom-out.png";
 import type { PanelImperativeHandle } from "react-resizable-panels";
 import { PolicyGraphCanvas } from "@/page-components/visualizer/policy-graph-canvas";
+import {
+  getDefaultHistoryCommitId,
+  getHistoryTimelineCommits,
+  WorkspaceHistoryCanvas,
+  WorkspaceHistoryTimelineStrip,
+} from "@/page-components/visualizer/workspace-history-canvas";
 import { WorkspaceDetailContent } from "@/page-components/visualizer/workspace-detail-content";
 import { WorkspaceActionButton } from "@/components/visualizer/workspace-action-button";
 import { WorkspaceBottomBar } from "@/components/visualizer/workspace-bottom-bar";
@@ -44,6 +51,8 @@ interface VisualizerWorkspaceProps {
 interface GraphWorkspaceTab {
   id: string;
   label: string;
+  closable?: boolean;
+  editable?: boolean;
   graphs: Array<{
     id: string;
     offset: {
@@ -52,6 +61,8 @@ interface GraphWorkspaceTab {
     };
   }>;
 }
+
+const historyTabId = "history-tab";
 
 const menuItems: Array<{
   id: WorkspacePanelId;
@@ -94,6 +105,8 @@ export default function VisualizerWorkspace({
     {
       id: "graph-tab-1",
       label: "Policy Graph",
+      closable: true,
+      editable: true,
       graphs: [
         {
           id: "graph-instance-1",
@@ -108,6 +121,18 @@ export default function VisualizerWorkspace({
   const detailPanelRef = useRef<PanelImperativeHandle | null>(null);
   const nextGraphTabNumberRef = useRef(2);
   const nextGraphInstanceNumberRef = useRef(2);
+  const historyCommits = useMemo(
+    () => getHistoryTimelineCommits(workspaceData),
+    [workspaceData],
+  );
+  const defaultHistoryCommitId = useMemo(
+    () => getDefaultHistoryCommitId(workspaceData) ?? historyCommits[0]?.id ?? null,
+    [historyCommits, workspaceData],
+  );
+  const [activeHistoryCommitId, setActiveHistoryCommitId] = useState<string | null>(
+    defaultHistoryCommitId,
+  );
+  const [isHistoryStripCollapsed, setIsHistoryStripCollapsed] = useState(false);
 
   const activeLabel =
     menuItems.find((item) => item.id === activePanel)?.label ?? "Graph Source";
@@ -115,10 +140,46 @@ export default function VisualizerWorkspace({
     menuItems.find((item) => item.id === activePanel)?.icon ?? graphSourceIcon;
   const activeGraphTab =
     graphTabs.find((tab) => tab.id === activeGraphTabId) ?? graphTabs[0];
+  const isHistoryPanel = activePanel === "history";
   const footerLeftWidthPx =
     panelGroupWidth > 0
       ? panelGroupWidth * ((menuPanelWidth + detailPanelWidth) / 100) + 2
       : 0;
+
+  useEffect(() => {
+    setActiveHistoryCommitId(defaultHistoryCommitId);
+  }, [defaultHistoryCommitId]);
+
+  useEffect(() => {
+    if (activePanel !== "history") return;
+
+    setGraphTabs((currentTabs) => {
+      if (currentTabs.some((tab) => tab.id === historyTabId)) {
+        return currentTabs;
+      }
+
+      return [
+        ...currentTabs,
+        {
+          id: historyTabId,
+          label: "History",
+          closable: false,
+          editable: false,
+          graphs: [],
+        },
+      ];
+    });
+    setActiveGraphTabId(historyTabId);
+  }, [activePanel]);
+
+  useEffect(() => {
+    if (activePanel === "history" || activeGraphTabId !== historyTabId) return;
+
+    const fallbackTab = graphTabs.find((tab) => tab.id !== historyTabId);
+    if (fallbackTab) {
+      setActiveGraphTabId(fallbackTab.id);
+    }
+  }, [activeGraphTabId, activePanel, graphTabs]);
 
   useEffect(() => {
     const panelGroup = panelGroupRef.current;
@@ -329,7 +390,12 @@ export default function VisualizerWorkspace({
                       icon={item.icon}
                       isActive={item.id === activePanel}
                       isCompact={isMenuCompact}
-                      onClick={() => setActivePanel(item.id)}
+                      onClick={() => {
+                        setActivePanel(item.id);
+                        if (item.id === "history") {
+                          setActiveGraphTabId(historyTabId);
+                        }
+                      }}
                     />
                   );
                 })}
@@ -365,6 +431,8 @@ export default function VisualizerWorkspace({
                   repository={repository}
                   workspaceData={workspaceData}
                   onRegenerate={handleGenerateGraph}
+                  selectedHistoryCommitHash={activeHistoryCommitId}
+                  onHistoryCommitSelect={setActiveHistoryCommitId}
                 />
               </ScrollArea>
             </section>
@@ -389,14 +457,53 @@ export default function VisualizerWorkspace({
             minSize="35%"
           >
             <section className="flex h-full min-h-0 flex-col overflow-hidden bg-white">
+              {isHistoryPanel && !isHistoryStripCollapsed ? (
+                <WorkspaceHistoryTimelineStrip
+                  commits={historyCommits}
+                  activeCommitId={activeHistoryCommitId}
+                  onSelect={setActiveHistoryCommitId}
+                />
+              ) : null}
+              {isHistoryPanel ? (
+                <div className="relative flex h-[26px] items-center justify-center border-b border-[#D9D9D9] bg-white">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setIsHistoryStripCollapsed((collapsed) => !collapsed)
+                    }
+                    className="flex h-[26px] w-[54px] items-center justify-center border border-[#B7B7B7] bg-[#EEF3F6] hover:bg-[#E2E8F0]"
+                    aria-label={
+                      isHistoryStripCollapsed
+                        ? "Expand commit history strip"
+                        : "Collapse commit history strip"
+                    }
+                    title={
+                      isHistoryStripCollapsed
+                        ? "Expand commit history strip"
+                        : "Collapse commit history strip"
+                    }
+                  >
+                    <Image
+                      src={rightArrowIcon}
+                      alt=""
+                      className={`h-[18px] w-[18px] ${
+                        isHistoryStripCollapsed ? "rotate-90" : "-rotate-90"
+                      }`}
+                    />
+                  </button>
+                </div>
+              ) : null}
               <WorkspacePanelHeader
-                title={activeGraphTab?.label ?? "Policy Graph"}
-                placeholder="Search graph"
+                title={isHistoryPanel ? "Policy Graph" : activeGraphTab?.label ?? "Policy Graph"}
+                placeholder={isHistoryPanel ? "Search" : "Search graph"}
                 searchIcon={searchIcon}
                 className="bg-[#C7DCF1]"
               />
-              <div className="relative min-h-0 flex-1 bg-[linear-gradient(to_right,rgba(4,8,14,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(4,8,14,0.06)_1px,transparent_1px)] bg-[size:24px_24px]">
-                <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+              <div className="relative min-h-0 flex-1">
+                <div
+                  className="absolute right-4 z-10 flex items-center gap-2"
+                  style={{ top: "16px" }}
+                >
                   <WorkspaceActionButton
                     label="Zoom In"
                     icon={zoomInIcon}
@@ -416,40 +523,50 @@ export default function VisualizerWorkspace({
                     }
                   />
                 </div>
-                <ScrollArea
-                  className="h-full w-full"
-                  viewportRef={graphViewportRef}
-                >
-                  <div className="flex min-h-full min-w-full items-start touch-none">
-                    <div className="flex min-h-full min-w-full w-max items-start gap-6 p-6">
-                      {activeGraphTab?.graphs.length ? (
-                        activeGraphTab.graphs.map((graph) => (
-                          <div
-                            key={graph.id}
-                            className="h-[980px] w-[980px] shrink-0"
-                          >
-                            <PolicyGraphCanvas
-                              graphId={graph.id}
-                              zoom={graphZoom}
-                              viewportWidth={980}
-                              viewportHeight={Math.max(
-                                graphViewportSize.height - 48,
-                                720,
-                              )}
-                              offset={graph.offset}
-                              onOffsetChange={(nextOffset) =>
-                                handleGraphOffsetChange(graph.id, nextOffset)
-                              }
-                              onDelete={() => handleDeleteGraphInstance(graph.id)}
-                            />
-                          </div>
-                        ))
-                      ) : (
-                        <div className="min-h-[980px] min-w-[980px] shrink-0" />
-                      )}
-                    </div>
+                {isHistoryPanel ? (
+                  <WorkspaceHistoryCanvas
+                    commits={historyCommits}
+                    activeCommitId={activeHistoryCommitId}
+                    zoom={graphZoom}
+                  />
+                ) : (
+                  <div className="h-full bg-[linear-gradient(to_right,rgba(4,8,14,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(4,8,14,0.06)_1px,transparent_1px)] bg-[size:24px_24px]">
+                    <ScrollArea
+                      className="h-full w-full"
+                      viewportRef={graphViewportRef}
+                    >
+                      <div className="flex min-h-full min-w-full items-start touch-none">
+                        <div className="flex min-h-full min-w-full w-max items-start gap-6 p-6">
+                          {activeGraphTab?.graphs.length ? (
+                            activeGraphTab.graphs.map((graph) => (
+                              <div
+                                key={graph.id}
+                                className="h-[980px] w-[980px] shrink-0"
+                              >
+                                <PolicyGraphCanvas
+                                  graphId={graph.id}
+                                  zoom={graphZoom}
+                                  viewportWidth={980}
+                                  viewportHeight={Math.max(
+                                    graphViewportSize.height - 48,
+                                    720,
+                                  )}
+                                  offset={graph.offset}
+                                  onOffsetChange={(nextOffset) =>
+                                    handleGraphOffsetChange(graph.id, nextOffset)
+                                  }
+                                  onDelete={() => handleDeleteGraphInstance(graph.id)}
+                                />
+                              </div>
+                            ))
+                          ) : (
+                            <div className="min-h-[980px] min-w-[980px] shrink-0" />
+                          )}
+                        </div>
+                      </div>
+                    </ScrollArea>
                   </div>
-                </ScrollArea>
+                )}
               </div>
             </section>
           </ResizablePanel>
@@ -457,10 +574,27 @@ export default function VisualizerWorkspace({
       </div>
       <WorkspaceBottomBar
         leftWidthPx={footerLeftWidthPx}
-        tabs={graphTabs.map(({ id, label }) => ({ id, label }))}
-        activeTabId={activeGraphTabId}
+        tabs={graphTabs.map(({ id, label, closable, editable }) => ({
+          id,
+          label,
+          closable,
+          editable,
+        }))}
+        activeTabId={isHistoryPanel ? historyTabId : activeGraphTabId}
         addIcon={addIcon}
-        onTabSelect={setActiveGraphTabId}
+        onTabSelect={(tabId) => {
+          if (tabId === historyTabId) {
+            setActivePanel("history");
+            setActiveGraphTabId(historyTabId);
+            return;
+          }
+
+          setActiveGraphTabId(tabId);
+
+          if (activePanel === "history") {
+            setActivePanel("graph-source");
+          }
+        }}
         onTabRename={(tabId, nextLabel) => {
           setGraphTabs((currentTabs) =>
             currentTabs.map((tab) =>

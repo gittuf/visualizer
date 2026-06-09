@@ -19,6 +19,8 @@ interface WorkspaceDetailContentProps {
   repository: RepositoryInfo;
   workspaceData?: DemoVisualizerData | null;
   onRegenerate: () => void;
+  selectedHistoryCommitHash?: string | null;
+  onHistoryCommitSelect?: (commitHash: string) => void;
 }
 
 export function WorkspaceDetailContent({
@@ -26,6 +28,8 @@ export function WorkspaceDetailContent({
   repository,
   workspaceData,
   onRegenerate,
+  selectedHistoryCommitHash,
+  onHistoryCommitSelect,
 }: WorkspaceDetailContentProps) {
   const policyQueryDefaults =
     workspaceData?.workspaceDetails.policyQuery ??
@@ -87,7 +91,13 @@ export function WorkspaceDetailContent({
         />
       );
     case "history":
-      return <DetailPanelHistory workspaceData={workspaceData} />;
+      return (
+        <DetailPanelHistory
+          workspaceData={workspaceData}
+          selectedCommitHash={selectedHistoryCommitHash}
+          onSelectedCommitChange={onHistoryCommitSelect}
+        />
+      );
     case "compare":
       return (
         <DetailPanelCompare

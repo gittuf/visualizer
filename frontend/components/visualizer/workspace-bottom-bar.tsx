@@ -6,6 +6,8 @@ import Image, { type StaticImageData } from "next/image";
 interface GraphTab {
   id: string;
   label: string;
+  closable?: boolean;
+  editable?: boolean;
 }
 
 interface WorkspaceBottomBarProps {
@@ -64,6 +66,8 @@ export function WorkspaceBottomBar({
           {tabs.map((tab) => {
             const isActive = tab.id === activeTabId;
             const isEditing = tab.id === editingTabId;
+            const isEditable = tab.editable ?? true;
+            const isClosable = tab.closable ?? true;
 
             return (
               <div
@@ -76,6 +80,7 @@ export function WorkspaceBottomBar({
                   type="button"
                   onClick={() => onTabSelect(tab.id)}
                   onDoubleClick={() => {
+                    if (!isEditable) return;
                     setEditingTabId(tab.id);
                     setDraftLabel(tab.label);
                   }}
@@ -102,7 +107,7 @@ export function WorkspaceBottomBar({
                     <span className="truncate">{tab.label}</span>
                   )}
                 </button>
-                {tabs.length > 1 ? (
+                {tabs.length > 1 && isClosable ? (
                   <button
                     type="button"
                     aria-label={`Delete ${tab.label}`}
