@@ -4,6 +4,7 @@ import Image from "next/image";
 import branchIcon from "@/assets/branch.png";
 import fileIcon from "@/assets/file.png";
 import usersIcon from "@/assets/Users.png";
+import userIcon from "@/assets/user.png";
 
 interface PolicyGraphCanvasProps {
   zoom: number;
@@ -275,7 +276,7 @@ export function PolicyGraphCanvas({
                         }}
                       >
                         <Image
-                          src={usersIcon}
+                          src={userIcon}
                           alt=""
                           className="mt-1 h-10 w-10 grayscale"
                           draggable={false}

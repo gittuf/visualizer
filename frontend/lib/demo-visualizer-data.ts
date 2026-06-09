@@ -30,6 +30,9 @@ export interface DemoGraphSourceData {
   selectedPolicyVersionChips: string[]
   selectedMetadataChips: string[]
   selectedActiveModeChips: string[]
+  policyVersionChipsByOption?: Record<string, string[]>
+  metadataChipsByOption?: Record<string, string[]>
+  activeModeChipsByOption?: Record<string, string[]>
 }
 
 export interface DemoPolicyRequirement {
@@ -51,6 +54,14 @@ export interface DemoPolicyQueryData {
     requiredApprovals: number
   }
   authorizedUsers: string[]
+  queryScenarios?: Array<{
+    branch: string
+    changedPath: string
+    matchedBranch: string
+    matchedRule: string
+    requiredApprovals: number
+    authorizedUsers: string[]
+  }>
 }
 
 export interface DemoMetadataOverview {
@@ -89,6 +100,16 @@ export interface DemoCompareData {
     value: string
     label: string
   }>
+  comparisonsByPair?: Record<
+    string,
+    {
+      changedMetadata: string[]
+      stats: Array<{
+        value: string
+        label: string
+      }>
+    }
+  >
 }
 
 export interface DemoMetadataPanelData {
@@ -200,6 +221,20 @@ export const demoVisualizerData: DemoVisualizerData = {
     selectedPolicyVersionChips: ["gittuf/gittuf_repo"],
     selectedMetadataChips: ["targets.json", "root.json"],
     selectedActiveModeChips: ["Approval Check"],
+    policyVersionChipsByOption: {
+      "Latest - d4e5f6g7": ["gittuf/gittuf_repo"],
+      "May 30 - c3d4e5f6": ["gittuf/gittuf_repo", "commit c3d4e5f6"],
+      "May 28 - b2c3d4e5": ["gittuf/gittuf_repo", "commit b2c3d4e5"],
+    },
+    metadataChipsByOption: {
+      "targets.json": ["targets.json", "active rules"],
+      "root.json": ["root.json", "trusted keys"],
+    },
+    activeModeChipsByOption: {
+      "Approval Check": ["Approval Check"],
+      "Threshold Review": ["Threshold Review", "2 approvals"],
+      "Signature Audit": ["Signature Audit", "1 signature"],
+    },
   },
   policyGraph: {
     title: "Policy Graph",
@@ -252,6 +287,20 @@ export const demoVisualizerData: DemoVisualizerData = {
       selectedPolicyVersionChips: ["gittuf/gittuf_repo"],
       selectedMetadataChips: ["targets.json", "root.json"],
       selectedActiveModeChips: ["Approval Check"],
+      policyVersionChipsByOption: {
+        "Latest - d4e5f6g7": ["gittuf/gittuf_repo"],
+        "May 30 - c3d4e5f6": ["gittuf/gittuf_repo", "commit c3d4e5f6"],
+        "May 28 - b2c3d4e5": ["gittuf/gittuf_repo", "commit b2c3d4e5"],
+      },
+      metadataChipsByOption: {
+        "targets.json": ["targets.json", "active rules"],
+        "root.json": ["root.json", "trusted keys"],
+      },
+      activeModeChipsByOption: {
+        "Approval Check": ["Approval Check"],
+        "Threshold Review": ["Threshold Review", "2 approvals"],
+        "Signature Audit": ["Signature Audit", "1 signature"],
+      },
     },
     policyQuery: {
       branchOptions: ["main", "release", "hotfix"],
@@ -264,6 +313,32 @@ export const demoVisualizerData: DemoVisualizerData = {
         requiredApprovals: 2,
       },
       authorizedUsers: ["Alice", "Carol", "Bob"],
+      queryScenarios: [
+        {
+          branch: "main",
+          changedPath: "src/auth/login.go",
+          matchedBranch: "main",
+          matchedRule: "src/**",
+          requiredApprovals: 2,
+          authorizedUsers: ["Alice", "Carol", "Bob"],
+        },
+        {
+          branch: "release",
+          changedPath: "docs/**",
+          matchedBranch: "release",
+          matchedRule: "docs/**",
+          requiredApprovals: 1,
+          authorizedUsers: ["Alice", "Carol"],
+        },
+        {
+          branch: "hotfix",
+          changedPath: "src/**",
+          matchedBranch: "main",
+          matchedRule: "src/**",
+          requiredApprovals: 2,
+          authorizedUsers: ["Alice", "Bob"],
+        },
+      ],
     },
     history: {
       sortOptions: ["date", "oldest", "author"],
@@ -332,6 +407,26 @@ export const demoVisualizerData: DemoVisualizerData = {
         { value: "1 ↑", label: "threshold" },
         { value: "1", label: "principal removed" },
       ],
+      comparisonsByPair: {
+        "a1b1cd • May 1 • Add policy|a2b3cd • May 5 • Update policy": {
+          changedMetadata: ["Trust setup", "File rules", "Root metadata"],
+          stats: [
+            { value: "2", label: "roles changed" },
+            { value: "1", label: "rule added" },
+            { value: "1 ↑", label: "threshold" },
+            { value: "1", label: "principal removed" },
+          ],
+        },
+        "91fe2a • Apr 28 • Update policy|b4c5de • May 8 • Tighten thresholds": {
+          changedMetadata: ["File rules", "Root metadata"],
+          stats: [
+            { value: "1", label: "roles changed" },
+            { value: "2", label: "rules added" },
+            { value: "2 ↑", label: "threshold" },
+            { value: "0", label: "principal removed" },
+          ],
+        },
+      },
     },
     metadata: {
       policyFiles: ["Trust setup: root.json", "File rules: target.json"],
