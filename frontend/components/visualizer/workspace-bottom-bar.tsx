@@ -1,19 +1,57 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
+
+interface GraphTab {
+  id: string;
+  label: string;
+}
 
 interface WorkspaceBottomBarProps {
   leftWidthPx: number;
-  currentGraphLabel: string;
+  tabs: GraphTab[];
+  activeTabId: string;
   addIcon: StaticImageData;
+  onTabSelect: (tabId: string) => void;
+  onTabRename: (tabId: string, nextLabel: string) => void;
+  onTabAdd: () => void;
+  onTabDelete: (tabId: string) => void;
 }
 
 export function WorkspaceBottomBar({
   leftWidthPx,
-  currentGraphLabel,
+  tabs,
+  activeTabId,
   addIcon,
+  onTabSelect,
+  onTabRename,
+  onTabAdd,
+  onTabDelete,
 }: WorkspaceBottomBarProps) {
   const clampedLeftWidth = Math.max(0, leftWidthPx);
+  const [editingTabId, setEditingTabId] = useState<string | null>(null);
+  const [draftLabel, setDraftLabel] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (editingTabId) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editingTabId]);
+
+  const commitRename = () => {
+    if (!editingTabId) return;
+
+    const nextLabel = draftLabel.trim();
+    if (nextLabel) {
+      onTabRename(editingTabId, nextLabel);
+    }
+
+    setEditingTabId(null);
+    setDraftLabel("");
+  };
 
   return (
     <div className="flex h-[25px] w-full border-t border-[#6B7280] bg-white">
@@ -21,13 +59,67 @@ export function WorkspaceBottomBar({
         className="h-full border-r border-[#6B7280] bg-white"
         style={{ width: `${clampedLeftWidth}px` }}
       />
-      <div className="flex h-full flex-1 items-center gap-2 bg-[#DBE3E5] pr-2">
-        <div className="flex h-full items-center border-r border-[#6B7280] bg-white px-6 text-[12px] text-black">
-          {currentGraphLabel}
+      <div className="flex h-full flex-1 items-center gap-2 overflow-hidden bg-[#DBE3E5] pr-2">
+        <div className="flex h-full items-center overflow-x-auto">
+          {tabs.map((tab) => {
+            const isActive = tab.id === activeTabId;
+            const isEditing = tab.id === editingTabId;
+
+            return (
+              <div
+                key={tab.id}
+                className={`flex h-full items-center border-r border-[#6B7280] text-[12px] ${
+                  isActive ? "bg-white text-black" : "bg-[#DBE3E5] text-[#4B5563]"
+                } ${isEditing ? "min-w-[188px]" : "min-w-[108px]"}`}
+              >
+                <button
+                  type="button"
+                  onClick={() => onTabSelect(tab.id)}
+                  onDoubleClick={() => {
+                    setEditingTabId(tab.id);
+                    setDraftLabel(tab.label);
+                  }}
+                  className="flex h-full min-w-0 flex-1 items-center px-4 text-left"
+                >
+                  {isEditing ? (
+                    <input
+                      ref={inputRef}
+                      value={draftLabel}
+                      onChange={(event) => setDraftLabel(event.target.value)}
+                      onBlur={commitRename}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          commitRename();
+                        }
+                        if (event.key === "Escape") {
+                          setEditingTabId(null);
+                          setDraftLabel("");
+                        }
+                      }}
+                      className="w-full min-w-[140px] bg-transparent outline-none"
+                    />
+                  ) : (
+                    <span className="truncate">{tab.label}</span>
+                  )}
+                </button>
+                {tabs.length > 1 ? (
+                  <button
+                    type="button"
+                    aria-label={`Delete ${tab.label}`}
+                    onClick={() => onTabDelete(tab.id)}
+                    className="flex h-full w-7 items-center justify-center text-[12px] text-[#6B7280] transition-colors duration-150 hover:bg-[#F3F4F4] hover:text-black"
+                  >
+                    x
+                  </button>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
         <button
           type="button"
           aria-label="Add graph tab"
+          onClick={onTabAdd}
           className="flex h-[18px] w-[18px] items-center justify-center bg-transparent"
         >
           <Image src={addIcon} alt="" className="h-[18px] w-[18px]" />

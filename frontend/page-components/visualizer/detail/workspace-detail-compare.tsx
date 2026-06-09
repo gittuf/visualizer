@@ -83,7 +83,7 @@ export function DetailPanelCompare({
         <button
           type="button"
           onClick={onCompare}
-          className="rounded-[10px] px-5 py-3 text-[14px] font-medium text-black"
+          className="rounded-[8px] border border-[#8B949E] px-4 py-2.5 text-[13px] font-medium text-black"
           style={{ backgroundColor: detailColors.bullet }}
         >
           Compare

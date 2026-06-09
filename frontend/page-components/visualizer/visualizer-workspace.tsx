@@ -41,6 +41,18 @@ interface VisualizerWorkspaceProps {
   onDisconnect: () => void;
 }
 
+interface GraphWorkspaceTab {
+  id: string;
+  label: string;
+  graphs: Array<{
+    id: string;
+    offset: {
+      x: number;
+      y: number;
+    };
+  }>;
+}
+
 const menuItems: Array<{
   id: WorkspacePanelId;
   label: string;
@@ -78,21 +90,31 @@ export default function VisualizerWorkspace({
     width: 0,
     height: 0,
   });
+  const [graphTabs, setGraphTabs] = useState<GraphWorkspaceTab[]>([
+    {
+      id: "graph-tab-1",
+      label: "Policy Graph",
+      graphs: [
+        {
+          id: "graph-instance-1",
+          offset: { x: 0, y: 0 },
+        },
+      ],
+    },
+  ]);
+  const [activeGraphTabId, setActiveGraphTabId] = useState("graph-tab-1");
   const panelGroupRef = useRef<HTMLDivElement | null>(null);
   const graphViewportRef = useRef<HTMLDivElement | null>(null);
   const detailPanelRef = useRef<PanelImperativeHandle | null>(null);
-  const dragStateRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    originScrollLeft: number;
-    originScrollTop: number;
-  } | null>(null);
+  const nextGraphTabNumberRef = useRef(2);
+  const nextGraphInstanceNumberRef = useRef(2);
 
   const activeLabel =
     menuItems.find((item) => item.id === activePanel)?.label ?? "Graph Source";
   const activePanelIcon =
     menuItems.find((item) => item.id === activePanel)?.icon ?? graphSourceIcon;
+  const activeGraphTab =
+    graphTabs.find((tab) => tab.id === activeGraphTabId) ?? graphTabs[0];
   const footerLeftWidthPx =
     panelGroupWidth > 0
       ? panelGroupWidth * ((menuPanelWidth + detailPanelWidth) / 100) + 2
@@ -163,59 +185,6 @@ export default function VisualizerWorkspace({
     };
   }, [graphViewportSize.height, graphViewportSize.width, graphZoom]);
 
-  const handleGraphPointerDown = (
-    event: React.PointerEvent<HTMLDivElement>,
-  ) => {
-    if (event.button !== 0) return;
-
-    event.preventDefault();
-
-    const viewport = graphViewportRef.current;
-    if (!viewport) return;
-
-    dragStateRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      originScrollLeft: viewport.scrollLeft,
-      originScrollTop: viewport.scrollTop,
-    };
-
-    const target = event.currentTarget;
-    target.setPointerCapture(event.pointerId);
-
-    const handlePointerMove = (moveEvent: PointerEvent) => {
-      if (
-        !dragStateRef.current ||
-        moveEvent.pointerId !== dragStateRef.current.pointerId
-      )
-        return;
-
-      const deltaX = moveEvent.clientX - dragStateRef.current.startX;
-      const deltaY = moveEvent.clientY - dragStateRef.current.startY;
-
-      viewport.scrollLeft = dragStateRef.current.originScrollLeft - deltaX;
-      viewport.scrollTop = dragStateRef.current.originScrollTop - deltaY;
-    };
-
-    const handlePointerEnd = (endEvent: PointerEvent) => {
-      if (
-        !dragStateRef.current ||
-        endEvent.pointerId !== dragStateRef.current.pointerId
-      )
-        return;
-      dragStateRef.current = null;
-      target.releasePointerCapture(endEvent.pointerId);
-      target.removeEventListener("pointermove", handlePointerMove);
-      target.removeEventListener("pointerup", handlePointerEnd);
-      target.removeEventListener("pointercancel", handlePointerEnd);
-    };
-
-    target.addEventListener("pointermove", handlePointerMove);
-    target.addEventListener("pointerup", handlePointerEnd);
-    target.addEventListener("pointercancel", handlePointerEnd);
-  };
-
   const handleDetailPanelToggle = () => {
     if (!detailPanelRef.current) return;
 
@@ -227,6 +196,89 @@ export default function VisualizerWorkspace({
 
     detailPanelRef.current.collapse();
     setIsDetailCollapsed(true);
+  };
+
+  const handleGenerateGraph = () => {
+    setGraphTabs((currentTabs) =>
+      currentTabs.map((tab) =>
+        tab.id === activeGraphTabId
+          ? {
+              ...tab,
+              graphs: [
+                ...tab.graphs,
+                {
+                  id: `graph-instance-${nextGraphInstanceNumberRef.current++}`,
+                  offset: { x: 0, y: 0 },
+                },
+              ],
+            }
+          : tab,
+      ),
+    );
+    onReload();
+  };
+
+  const handleAddGraphTab = () => {
+    const nextTabId = `graph-tab-${nextGraphTabNumberRef.current}`;
+    const nextTabLabel = `Canvas ${nextGraphTabNumberRef.current}`;
+
+    nextGraphTabNumberRef.current += 1;
+
+    setGraphTabs((currentTabs) => [
+      ...currentTabs,
+      {
+        id: nextTabId,
+        label: nextTabLabel,
+        graphs: [],
+      },
+    ]);
+    setActiveGraphTabId(nextTabId);
+  };
+
+  const handleDeleteGraphTab = (tabId: string) => {
+    if (graphTabs.length <= 1) return;
+
+    const tabIndex = graphTabs.findIndex((tab) => tab.id === tabId);
+    const nextTabs = graphTabs.filter((tab) => tab.id !== tabId);
+
+    setGraphTabs(nextTabs);
+
+    if (tabId === activeGraphTabId) {
+      const fallbackTab =
+        nextTabs[Math.max(0, tabIndex - 1)] ?? nextTabs[0];
+      setActiveGraphTabId(fallbackTab.id);
+    }
+  };
+
+  const handleGraphOffsetChange = (
+    graphId: string,
+    nextOffset: { x: number; y: number },
+  ) => {
+    setGraphTabs((currentTabs) =>
+      currentTabs.map((tab) =>
+        tab.id === activeGraphTabId
+          ? {
+              ...tab,
+              graphs: tab.graphs.map((graph) =>
+                graph.id === graphId ? { ...graph, offset: nextOffset } : graph,
+              ),
+            }
+          : tab,
+      ),
+    );
+  };
+
+  const handleDeleteGraphInstance = (graphId: string) => {
+    setGraphTabs((currentTabs) =>
+      currentTabs.map((tab) =>
+        tab.id === activeGraphTabId
+          ? {
+              ...tab,
+              graphs: tab.graphs.filter((graph) => graph.id !== graphId),
+            }
+          : tab,
+      ),
+    );
   };
 
   return (
@@ -312,7 +364,7 @@ export default function VisualizerWorkspace({
                   activePanel={activePanel}
                   repository={repository}
                   workspaceData={workspaceData}
-                  onRegenerate={onReload}
+                  onRegenerate={handleGenerateGraph}
                 />
               </ScrollArea>
             </section>
@@ -338,7 +390,7 @@ export default function VisualizerWorkspace({
           >
             <section className="flex h-full min-h-0 flex-col overflow-hidden bg-white">
               <WorkspacePanelHeader
-                title="Policy Graph"
+                title={activeGraphTab?.label ?? "Policy Graph"}
                 placeholder="Search graph"
                 searchIcon={searchIcon}
                 className="bg-[#C7DCF1]"
@@ -368,17 +420,33 @@ export default function VisualizerWorkspace({
                   className="h-full w-full"
                   viewportRef={graphViewportRef}
                 >
-                  <div
-                    className="flex min-h-full min-w-full items-center justify-center touch-none"
-                    onPointerDown={handleGraphPointerDown}
-                    style={{ cursor: "grab" }}
-                  >
-                    <div className="min-h-full min-w-full w-max">
-                      <PolicyGraphCanvas
-                        zoom={graphZoom}
-                        viewportWidth={graphViewportSize.width}
-                        viewportHeight={graphViewportSize.height}
-                      />
+                  <div className="flex min-h-full min-w-full items-start touch-none">
+                    <div className="flex min-h-full min-w-full w-max items-start gap-6 p-6">
+                      {activeGraphTab?.graphs.length ? (
+                        activeGraphTab.graphs.map((graph) => (
+                          <div
+                            key={graph.id}
+                            className="h-[980px] w-[980px] shrink-0"
+                          >
+                            <PolicyGraphCanvas
+                              graphId={graph.id}
+                              zoom={graphZoom}
+                              viewportWidth={980}
+                              viewportHeight={Math.max(
+                                graphViewportSize.height - 48,
+                                720,
+                              )}
+                              offset={graph.offset}
+                              onOffsetChange={(nextOffset) =>
+                                handleGraphOffsetChange(graph.id, nextOffset)
+                              }
+                              onDelete={() => handleDeleteGraphInstance(graph.id)}
+                            />
+                          </div>
+                        ))
+                      ) : (
+                        <div className="min-h-[980px] min-w-[980px] shrink-0" />
+                      )}
                     </div>
                   </div>
                 </ScrollArea>
@@ -389,8 +457,19 @@ export default function VisualizerWorkspace({
       </div>
       <WorkspaceBottomBar
         leftWidthPx={footerLeftWidthPx}
-        currentGraphLabel="Policy Graph"
+        tabs={graphTabs.map(({ id, label }) => ({ id, label }))}
+        activeTabId={activeGraphTabId}
         addIcon={addIcon}
+        onTabSelect={setActiveGraphTabId}
+        onTabRename={(tabId, nextLabel) => {
+          setGraphTabs((currentTabs) =>
+            currentTabs.map((tab) =>
+              tab.id === tabId ? { ...tab, label: nextLabel } : tab,
+            ),
+          );
+        }}
+        onTabAdd={handleAddGraphTab}
+        onTabDelete={handleDeleteGraphTab}
       />
     </section>
   );

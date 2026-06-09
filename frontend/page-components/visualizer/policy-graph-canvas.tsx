@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+import { useState } from "react";
 import Image from "next/image";
 import branchIcon from "@/assets/branch.png";
 import fileIcon from "@/assets/file.png";
@@ -7,9 +9,16 @@ import usersIcon from "@/assets/Users.png";
 import userIcon from "@/assets/user.png";
 
 interface PolicyGraphCanvasProps {
+  graphId: string;
   zoom: number;
   viewportWidth: number;
   viewportHeight: number;
+  offset: {
+    x: number;
+    y: number;
+  };
+  onOffsetChange: (offset: { x: number; y: number }) => void;
+  onDelete?: () => void;
 }
 
 const layoutWidth = 980;
@@ -45,10 +54,15 @@ const principalBox = { width: 92, height: 108 };
 const scrollPadding = 96;
 
 export function PolicyGraphCanvas({
+  graphId,
   zoom,
   viewportWidth,
   viewportHeight,
+  offset,
+  onOffsetChange,
+  onDelete,
 }: PolicyGraphCanvasProps) {
+  const [isDraggingBoundary, setIsDraggingBoundary] = useState(false);
   const scaledWidth = layoutWidth * zoom;
   const scaledHeight = layoutHeight * zoom;
   const canvasWidth = Math.max(scaledWidth + scrollPadding * 2, viewportWidth);
@@ -64,6 +78,14 @@ export function PolicyGraphCanvas({
     scaledHeight + scrollPadding * 2 <= viewportHeight
       ? (viewportHeight - scaledHeight) / 2
       : scrollPadding;
+  const graphLeft = Math.min(
+    Math.max(0, canvasOffsetX + offset.x),
+    Math.max(0, canvasWidth - scaledWidth),
+  );
+  const graphTop = Math.min(
+    Math.max(0, canvasOffsetY + offset.y),
+    Math.max(0, canvasHeight - scaledHeight),
+  );
 
   const verticalPaths = laneCenters.flatMap((centerX) => [
     {
@@ -107,6 +129,48 @@ export function PolicyGraphCanvas({
     ];
   });
 
+  const handleBoundaryPointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    if (event.button !== 0) return;
+
+    event.preventDefault();
+
+    const target = event.currentTarget;
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startOffset = offset;
+
+    target.setPointerCapture(event.pointerId);
+    setIsDraggingBoundary(true);
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const nextOffsetX = startOffset.x + (moveEvent.clientX - startX);
+      const nextOffsetY = startOffset.y + (moveEvent.clientY - startY);
+      const minOffsetX = -canvasOffsetX;
+      const maxOffsetX = canvasWidth - scaledWidth - canvasOffsetX;
+      const minOffsetY = -canvasOffsetY;
+      const maxOffsetY = canvasHeight - scaledHeight - canvasOffsetY;
+
+      onOffsetChange({
+        x: Math.min(maxOffsetX, Math.max(minOffsetX, nextOffsetX)),
+        y: Math.min(maxOffsetY, Math.max(minOffsetY, nextOffsetY)),
+      });
+    };
+
+    const handlePointerEnd = (endEvent: PointerEvent) => {
+      setIsDraggingBoundary(false);
+      target.releasePointerCapture(endEvent.pointerId);
+      target.removeEventListener("pointermove", handlePointerMove);
+      target.removeEventListener("pointerup", handlePointerEnd);
+      target.removeEventListener("pointercancel", handlePointerEnd);
+    };
+
+    target.addEventListener("pointermove", handlePointerMove);
+    target.addEventListener("pointerup", handlePointerEnd);
+    target.addEventListener("pointercancel", handlePointerEnd);
+  };
+
   return (
     <div className="relative h-full w-full overflow-hidden select-none">
       <div
@@ -119,8 +183,8 @@ export function PolicyGraphCanvas({
         <div
           className="absolute origin-top-left"
           style={{
-            left: `${canvasOffsetX}px`,
-            top: `${canvasOffsetY}px`,
+            left: `${graphLeft}px`,
+            top: `${graphTop}px`,
             width: `${scaledWidth}px`,
             height: `${scaledHeight}px`,
           }}
@@ -140,7 +204,7 @@ export function PolicyGraphCanvas({
             >
               <defs>
                 <marker
-                  id="policy-arrow"
+                  id={`policy-arrow-${graphId}`}
                   markerWidth="10"
                   markerHeight="10"
                   refX="8"
@@ -163,7 +227,7 @@ export function PolicyGraphCanvas({
                 width={boundary.width}
                 height={boundary.height}
                 fill="none"
-                stroke="#9CA3AF"
+                stroke={isDraggingBoundary ? "#61A1D1" : "#9CA3AF"}
                 strokeWidth="1.5"
                 strokeDasharray="6 6"
               />
@@ -175,10 +239,39 @@ export function PolicyGraphCanvas({
                   stroke="#04080E"
                   strokeWidth="1.5"
                   fill="none"
-                  markerEnd={path.arrow ? "url(#policy-arrow)" : undefined}
+                  markerEnd={
+                    path.arrow ? `url(#policy-arrow-${graphId})` : undefined
+                  }
                 />
               ))}
             </svg>
+
+            <div
+              className="absolute"
+              style={{
+                left: `${boundary.x}px`,
+                top: `${boundary.y}px`,
+                width: `${boundary.width}px`,
+                height: `${boundary.height}px`,
+                cursor: "grab",
+              }}
+              onPointerDown={handleBoundaryPointerDown}
+            />
+
+            {onDelete ? (
+              <button
+                type="button"
+                aria-label="Delete graph"
+                onClick={onDelete}
+                className="absolute z-20 flex h-7 w-7 items-center justify-center bg-transparent text-[18px] font-bold leading-none text-[#C53B3B] transition-colors duration-150 hover:text-[#9F1D1D]"
+                style={{
+                  left: `${boundary.x + boundary.width - 24}px`,
+                  top: `${boundary.y + 2}px`,
+                }}
+              >
+                x
+              </button>
+            ) : null}
 
             <div
               className="absolute text-[16px] font-medium leading-[1.3] text-[#7E7E7E]"
