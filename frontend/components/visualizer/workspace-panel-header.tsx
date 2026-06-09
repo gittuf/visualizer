@@ -1,6 +1,6 @@
 "use client";
 
-import { WorkspaceSearchField } from "@/components/features/visualizer/workspace-search-field";
+import { WorkspaceSearchField } from "@/components/visualizer/workspace-search-field";
 import type { StaticImageData } from "next/image";
 
 interface WorkspacePanelHeaderProps {

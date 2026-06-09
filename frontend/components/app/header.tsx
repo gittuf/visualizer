@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import logo from "@/assets/Logo.png"
-import ProgressIndicator from "@/components/shared/progress-indicator"
+import ProgressIndicator from "@/components/common/progress-indicator"
 
 interface HeaderProps {
   hasCommits: boolean

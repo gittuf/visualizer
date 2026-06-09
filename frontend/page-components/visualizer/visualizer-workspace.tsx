@@ -16,12 +16,12 @@ import settingsIcon from "@/assets/Settings.png";
 import zoomInIcon from "@/assets/zoom-in.png";
 import zoomOutIcon from "@/assets/zoom-out.png";
 import type { PanelImperativeHandle } from "react-resizable-panels";
-import { PolicyGraphCanvas } from "@/components/features/visualizer/policy-graph-canvas";
-import { WorkspaceActionButton } from "@/components/features/visualizer/workspace-action-button";
-import { WorkspaceBottomBar } from "@/components/features/visualizer/workspace-bottom-bar";
-import { WorkspaceDetailToggle } from "@/components/features/visualizer/workspace-detail-toggle";
-import { WorkspaceMenuItem } from "@/components/features/visualizer/workspace-menu-item";
-import { WorkspacePanelHeader } from "@/components/features/visualizer/workspace-panel-header";
+import { PolicyGraphCanvas } from "@/page-components/visualizer/policy-graph-canvas";
+import { WorkspaceActionButton } from "@/components/visualizer/workspace-action-button";
+import { WorkspaceBottomBar } from "@/components/visualizer/workspace-bottom-bar";
+import { WorkspaceDetailToggle } from "@/components/visualizer/workspace-detail-toggle";
+import { WorkspaceMenuItem } from "@/components/visualizer/workspace-menu-item";
+import { WorkspacePanelHeader } from "@/components/visualizer/workspace-panel-header";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RepositoryInfo } from "@/lib/repository-handler";
-import type { WorkspacePanelId } from "@/components/features/visualizer/visualizer-workspace-types";
+import type { WorkspacePanelId } from "@/page-components/visualizer/visualizer-workspace-types";
 
 interface VisualizerWorkspaceProps {
   repository: RepositoryInfo;

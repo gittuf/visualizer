@@ -1,15 +1,15 @@
 "use client"
 
 import { AnimatePresence, motion } from "framer-motion"
-import { StoryModal } from "@/components/shared/story-modal"
-import { StatusCard } from "@/components/shared/status-card"
+import { StoryModal } from "@/components/common/story-modal"
+import { StatusCard } from "@/components/common/status-card"
 import { useGittufSimulator } from "@/hooks/use-gittuf-simulator"
-import { SimulatorHeader } from "@/components/features/simulator/simulator-header"
-import { SimulatorControls } from "@/components/features/simulator/simulator-controls"
-import { SimulatorGraph } from "@/components/features/simulator/simulator-graph"
-import { SimulatorAnalysis } from "@/components/features/simulator/simulator-analysis"
-import { SimulatorGlossary } from "@/components/features/simulator/simulator-glossary"
-import { SimulatorConfigModal } from "@/components/features/simulator/simulator-config-modal"
+import { SimulatorHeader } from "@/page-components/simulator/simulator-header"
+import { SimulatorControls } from "@/page-components/simulator/simulator-controls"
+import { SimulatorGraph } from "@/page-components/simulator/simulator-graph"
+import { SimulatorAnalysis } from "@/page-components/simulator/simulator-analysis"
+import { SimulatorGlossary } from "@/page-components/simulator/simulator-glossary"
+import { SimulatorConfigModal } from "@/page-components/simulator/simulator-config-modal"
 
 export default function SimulatorPage() {
   const state = useGittufSimulator()
