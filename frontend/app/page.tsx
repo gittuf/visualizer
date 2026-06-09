@@ -11,6 +11,7 @@ export default function Home() {
     isLoading,
     error,
     currentRepository,
+    currentRepositoryData,
     showRepositorySelector,
     setShowRepositorySelector,
     handleTryDemo,
@@ -43,6 +44,7 @@ export default function Home() {
           {currentRepository && !showRepositorySelector && (
             <VisualizerWorkspace
               repository={currentRepository}
+              workspaceData={currentRepositoryData}
               isLoading={isLoading}
               onReload={handleRepositoryRefresh}
               onDisconnect={() => setShowRepositorySelector(true)}

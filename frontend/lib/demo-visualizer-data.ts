@@ -24,6 +24,12 @@ export interface DemoGraphSourceData {
   policyVersion: string
   metadataFile: string
   activeMode: string
+  policyVersionOptions: string[]
+  metadataOptions: string[]
+  activeModeOptions: string[]
+  selectedPolicyVersionChips: string[]
+  selectedMetadataChips: string[]
+  selectedActiveModeChips: string[]
 }
 
 export interface DemoPolicyRequirement {
@@ -35,9 +41,16 @@ export interface DemoPolicyRequirement {
 }
 
 export interface DemoPolicyQueryData {
-  selectedCommit: string
-  selectedFile: string
-  requiredApprovals: DemoPolicyRequirement[]
+  branchOptions: string[]
+  selectedBranch: string
+  changedPathOptions: string[]
+  selectedChangedPath: string
+  queryResult: {
+    matchedBranch: string
+    matchedRule: string
+    requiredApprovals: number
+  }
+  authorizedUsers: string[]
 }
 
 export interface DemoMetadataOverview {
@@ -53,6 +66,74 @@ export interface DemoMetadataOverview {
   }>
 }
 
+export interface DemoCommitHistoryData {
+  sortOptions: string[]
+  selectedSort: string
+  commits: Array<{
+    hash: string
+    message: string
+    author: string
+    authorLabel: string
+    date: string
+  }>
+  selectedCommitHash: string
+}
+
+export interface DemoCompareData {
+  baseVersionOptions: string[]
+  compareVersionOptions: string[]
+  selectedBaseVersion: string
+  selectedCompareVersion: string
+  changedMetadata: string[]
+  stats: Array<{
+    value: string
+    label: string
+  }>
+}
+
+export interface DemoMetadataPanelData {
+  policyFiles: string[]
+  status: {
+    payloadDecoded: boolean
+    signaturesFound: string
+    sourceCommit: string
+  }
+  views: string[]
+  selectedView: string
+  summary: Array<{
+    value: string
+    label: string
+  }>
+}
+
+export interface DemoSettingsData {
+  detailLevels: string[]
+  selectedDetailLevel: string
+  layoutDirections: string[]
+  selectedLayoutDirection: string
+  visibleNodeTypes: Array<{
+    label: string
+    checked: boolean
+  }>
+  labels: Array<{
+    label: string
+    enabled: boolean
+  }>
+  dataOptions: Array<{
+    label: string
+    enabled: boolean
+  }>
+}
+
+export interface DemoWorkspaceDetails {
+  graphSource: DemoGraphSourceData
+  policyQuery: DemoPolicyQueryData
+  history: DemoCommitHistoryData
+  compare: DemoCompareData
+  metadata: DemoMetadataPanelData
+  settings: DemoSettingsData
+}
+
 export interface DemoVisualizerData {
   repository: RepositoryInfo
   commits: Commit[]
@@ -63,6 +144,7 @@ export interface DemoVisualizerData {
     edges: DemoPolicyGraphEdge[]
   }
   policyQuery: DemoPolicyQueryData
+  workspaceDetails: DemoWorkspaceDetails
   metadataOverview: DemoMetadataOverview
   metadataByCommit: Record<
     string,
@@ -112,6 +194,12 @@ export const demoVisualizerData: DemoVisualizerData = {
     policyVersion: "Latest - d4e5f6g7",
     metadataFile: "targets.json",
     activeMode: "Approval Check",
+    policyVersionOptions: ["Latest - d4e5f6g7", "May 30 - c3d4e5f6", "May 28 - b2c3d4e5"],
+    metadataOptions: ["targets.json", "root.json"],
+    activeModeOptions: ["Approval Check", "Threshold Review", "Signature Audit"],
+    selectedPolicyVersionChips: ["gittuf/gittuf_repo"],
+    selectedMetadataChips: ["targets.json", "root.json"],
+    selectedActiveModeChips: ["Approval Check"],
   },
   policyGraph: {
     title: "Policy Graph",
@@ -140,24 +228,151 @@ export const demoVisualizerData: DemoVisualizerData = {
     ],
   },
   policyQuery: {
-    selectedCommit: "d4e5f6g7",
-    selectedFile: "targets.json",
-    requiredApprovals: [
-      {
-        role: "maintainers",
-        threshold: 2,
-        principals: ["Alice", "Bob", "Carol"],
-        paths: ["src/**", "docs/**"],
-        status: "satisfied",
+    branchOptions: ["main", "release", "hotfix"],
+    selectedBranch: "main",
+    changedPathOptions: ["src/auth/login.go", "src/**", "docs/**"],
+    selectedChangedPath: "src/auth/login.go",
+    queryResult: {
+      matchedBranch: "main",
+      matchedRule: "src/**",
+      requiredApprovals: 2,
+    },
+    authorizedUsers: ["Alice", "Carol", "Bob"],
+  },
+  workspaceDetails: {
+    graphSource: {
+      repository: "gittuf/gittuf_repo",
+      policyRef: "refs/gittuf/policy",
+      policyVersion: "Latest - d4e5f6g7",
+      metadataFile: "targets.json",
+      activeMode: "Approval Check",
+      policyVersionOptions: ["Latest - d4e5f6g7", "May 30 - c3d4e5f6", "May 28 - b2c3d4e5"],
+      metadataOptions: ["targets.json", "root.json"],
+      activeModeOptions: ["Approval Check", "Threshold Review", "Signature Audit"],
+      selectedPolicyVersionChips: ["gittuf/gittuf_repo"],
+      selectedMetadataChips: ["targets.json", "root.json"],
+      selectedActiveModeChips: ["Approval Check"],
+    },
+    policyQuery: {
+      branchOptions: ["main", "release", "hotfix"],
+      selectedBranch: "main",
+      changedPathOptions: ["src/auth/login.go", "src/**", "docs/**"],
+      selectedChangedPath: "src/auth/login.go",
+      queryResult: {
+        matchedBranch: "main",
+        matchedRule: "src/**",
+        requiredApprovals: 2,
       },
-      {
-        role: "docs-reviewers",
-        threshold: 1,
-        principals: ["Alice", "Carol"],
-        paths: ["docs/**"],
-        status: "pending",
+      authorizedUsers: ["Alice", "Carol", "Bob"],
+    },
+    history: {
+      sortOptions: ["date", "oldest", "author"],
+      selectedSort: "date",
+      selectedCommitHash: "c3d4e5f6",
+      commits: [
+        {
+          hash: "f6a7b8c9",
+          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-06-03T10:45:00.000Z",
+        },
+        {
+          hash: "e5f6a7b8",
+          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-06-02T09:20:00.000Z",
+        },
+        {
+          hash: "c3d4e5f6",
+          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-06-01T12:10:00.000Z",
+        },
+        {
+          hash: "b2c3d4e5",
+          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-05-31T18:40:00.000Z",
+        },
+        {
+          hash: "a1b2c3d4",
+          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-05-30T14:00:00.000Z",
+        },
+        {
+          hash: "98ab76cd",
+          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-05-29T11:15:00.000Z",
+        },
+      ],
+    },
+    compare: {
+      baseVersionOptions: [
+        "a1b1cd • May 1 • Add policy",
+        "91fe2a • Apr 28 • Update policy",
+      ],
+      compareVersionOptions: [
+        "a2b3cd • May 5 • Update policy",
+        "b4c5de • May 8 • Tighten thresholds",
+      ],
+      selectedBaseVersion: "a1b1cd • May 1 • Add policy",
+      selectedCompareVersion: "a2b3cd • May 5 • Update policy",
+      changedMetadata: ["Trust setup", "File rules", "Root metadata"],
+      stats: [
+        { value: "2", label: "roles changed" },
+        { value: "1", label: "rule added" },
+        { value: "1 ↑", label: "threshold" },
+        { value: "1", label: "principal removed" },
+      ],
+    },
+    metadata: {
+      policyFiles: ["Trust setup: root.json", "File rules: target.json"],
+      status: {
+        payloadDecoded: true,
+        signaturesFound: "1 signature found",
+        sourceCommit: "a1b2c3d",
       },
-    ],
+      views: ["Summary", "Decoded JSON", "Envelope"],
+      selectedView: "Summary",
+      summary: [
+        { value: "3", label: "roles" },
+        { value: "5", label: "principals" },
+        { value: "4", label: "File rules" },
+        { value: "1", label: "signatures" },
+        { value: "June 12, 2026", label: "expires" },
+      ],
+    },
+    settings: {
+      detailLevels: ["Simple", "Detailed"],
+      selectedDetailLevel: "Simple",
+      layoutDirections: ["Top → Bottom", "Left →right"],
+      selectedLayoutDirection: "Top → Bottom",
+      visibleNodeTypes: [
+        { label: "File rules", checked: true },
+        { label: "Roles", checked: true },
+        { label: "Principals", checked: true },
+        { label: "Thresholds", checked: true },
+        { label: "Signatures", checked: false },
+        { label: "Expiration", checked: false },
+      ],
+      labels: [
+        { label: "show edge labels", enabled: true },
+        { label: "show approval counts", enabled: true },
+        { label: "show legend", enabled: false },
+      ],
+      dataOptions: [
+        { label: "Use latest policy by default", enabled: true },
+        { label: "Show raw metadata warnings", enabled: false },
+      ],
+    },
   },
   metadataOverview: {
     policyFiles: [

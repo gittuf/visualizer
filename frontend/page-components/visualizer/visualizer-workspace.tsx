@@ -17,6 +17,7 @@ import zoomInIcon from "@/assets/zoom-in.png";
 import zoomOutIcon from "@/assets/zoom-out.png";
 import type { PanelImperativeHandle } from "react-resizable-panels";
 import { PolicyGraphCanvas } from "@/page-components/visualizer/policy-graph-canvas";
+import { WorkspaceDetailContent } from "@/page-components/visualizer/workspace-detail-content";
 import { WorkspaceActionButton } from "@/components/visualizer/workspace-action-button";
 import { WorkspaceBottomBar } from "@/components/visualizer/workspace-bottom-bar";
 import { WorkspaceDetailToggle } from "@/components/visualizer/workspace-detail-toggle";
@@ -29,10 +30,12 @@ import {
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RepositoryInfo } from "@/lib/repository-handler";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
 import type { WorkspacePanelId } from "@/page-components/visualizer/visualizer-workspace-types";
 
 interface VisualizerWorkspaceProps {
   repository: RepositoryInfo;
+  workspaceData?: DemoVisualizerData | null;
   isLoading: boolean;
   onReload: () => void;
   onDisconnect: () => void;
@@ -53,6 +56,7 @@ const menuItems: Array<{
 
 export default function VisualizerWorkspace({
   repository,
+  workspaceData,
   isLoading,
   onReload,
   onDisconnect,
@@ -87,6 +91,8 @@ export default function VisualizerWorkspace({
 
   const activeLabel =
     menuItems.find((item) => item.id === activePanel)?.label ?? "Graph Source";
+  const activePanelIcon =
+    menuItems.find((item) => item.id === activePanel)?.icon ?? graphSourceIcon;
   const footerLeftWidthPx =
     panelGroupWidth > 0
       ? panelGroupWidth * ((menuPanelWidth + detailPanelWidth) / 100) + 2
@@ -299,8 +305,16 @@ export default function VisualizerWorkspace({
                 title={activeLabel}
                 placeholder="Search"
                 searchIcon={searchIcon}
+                titleIcon={activePanelIcon}
               />
-              <div className="min-h-0 flex-1 bg-white" />
+              <ScrollArea className="min-h-0 flex-1 bg-white">
+                <WorkspaceDetailContent
+                  activePanel={activePanel}
+                  repository={repository}
+                  workspaceData={workspaceData}
+                  onRegenerate={onReload}
+                />
+              </ScrollArea>
             </section>
           </ResizablePanel>
 

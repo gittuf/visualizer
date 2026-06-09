@@ -140,6 +140,7 @@ export function useGittufExplorer() {
     setRepoUrl: repository.setRepoUrl,
     commits: repository.commits,
     currentRepository: repository.currentRepository,
+    currentRepositoryData: repository.currentRepositoryData,
     showRepositorySelector: repository.showRepositorySelector,
     setShowRepositorySelector: repository.setShowRepositorySelector,
     handleRepositoryRefresh: repository.handleRepositoryRefresh,

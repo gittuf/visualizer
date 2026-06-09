@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { REPOSITORY } from "@/lib/constants"
-import { demoVisualizerData } from "@/lib/demo-visualizer-data"
+import { demoVisualizerData, type DemoVisualizerData } from "@/lib/demo-visualizer-data"
 import { mockFetchCommits } from "@/lib/mock-api"
 import type { Commit } from "@/lib/types"
 import { RepositoryHandler, type RepositoryInfo } from "@/lib/repository-handler"
@@ -14,6 +14,7 @@ export function useRepository() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [currentRepository, setCurrentRepository] = useState<RepositoryInfo | null>(null)
+  const [currentRepositoryData, setCurrentRepositoryData] = useState<DemoVisualizerData | null>(null)
   const [showRepositorySelector, setShowRepositorySelector] = useState(true)
   const [repositoryHandler] = useState(() => new RepositoryHandler())
 
@@ -22,6 +23,7 @@ export function useRepository() {
 
     setRepoUrl(REPOSITORY.GITTUF_URL)
     setCurrentRepository(demoRepository)
+    setCurrentRepositoryData(demoVisualizerData)
     setIsLoading(true)
     setError("")
 
@@ -39,6 +41,7 @@ export function useRepository() {
 
   const handleRepositorySelect = async (repoInfo: RepositoryInfo, onSuccess?: () => void) => {
     setCurrentRepository(repoInfo)
+    setCurrentRepositoryData(null)
     setIsLoading(true)
     setError("")
 
@@ -98,6 +101,7 @@ export function useRepository() {
     setRepoUrl,
     commits,
     setCommits,
+    currentRepositoryData,
     isLoading,
     error,
     setError, // Exposed to allow other hooks to set error if needed, or clear it
