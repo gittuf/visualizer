@@ -96,6 +96,16 @@ export function useRepository() {
     }
   }
 
+  const handleDisconnect = () => {
+    setRepoUrl("")
+    setCommits([])
+    setIsLoading(false)
+    setError("")
+    setCurrentRepository(null)
+    setCurrentRepositoryData(null)
+    setShowRepositorySelector(true)
+  }
+
   return {
     repoUrl,
     setRepoUrl,
@@ -108,6 +118,7 @@ export function useRepository() {
     currentRepository,
     showRepositorySelector,
     setShowRepositorySelector,
+    handleDisconnect,
     handleTryDemo,
     handleRepositorySelect,
     handleRepositoryRefresh,

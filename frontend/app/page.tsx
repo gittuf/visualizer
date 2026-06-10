@@ -1,7 +1,7 @@
 "use client"
 
-import RepositorySelector from "@/pages/repository/repository-selector"
-import VisualizerWorkspace from "@/pages/visualizer/visualizer-workspace"
+import RepositorySelector from "@/page-views/repository/repository-selector"
+import VisualizerWorkspace from "@/page-views/visualizer/visualizer-workspace"
 
 import Header from "@/components/app/header"
 import { useGittufExplorer } from "@/hooks/use-gittuf-explorer"
@@ -13,7 +13,7 @@ export default function Home() {
     currentRepository,
     currentRepositoryData,
     showRepositorySelector,
-    setShowRepositorySelector,
+    handleDisconnect,
     handleTryDemo,
     handleRepositorySelect,
     handleRepositoryRefresh,
@@ -47,7 +47,7 @@ export default function Home() {
               workspaceData={currentRepositoryData}
               isLoading={isLoading}
               onReload={handleRepositoryRefresh}
-              onDisconnect={() => setShowRepositorySelector(true)}
+              onDisconnect={handleDisconnect}
             />
           )}
         </div>

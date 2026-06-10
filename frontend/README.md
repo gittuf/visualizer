@@ -71,7 +71,7 @@ frontend/
 │   ├── page.tsx                    # Home route: repository entry + visualizer workspace
 │   └── playground/
 │       └── page.tsx                # Interactive visualizer tools route
-├── pages/
+├── page-views/
 │   ├── repository/
 │   │   └── repository-selector.tsx # Repository selection screen
 │   ├── playground/                 # Route-sized playground sections and trust graph

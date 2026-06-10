@@ -14,7 +14,7 @@ import {
   detailColors,
   SelectField,
 } from "@/components/visualizer/detail/workspace-detail-primitives";
-import type { HistorySortField } from "@/pages/visualizer/workspace-history-canvas";
+import type { HistorySortField } from "@/page-views/visualizer/workspace-history-canvas";
 
 interface DetailPanelHistoryProps {
   workspaceData?: DemoVisualizerData | null;

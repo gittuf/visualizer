@@ -11,9 +11,9 @@ import {
   DetailPanelMetadata,
   DetailPanelPolicyQuery,
   DetailPanelSettings,
-} from "@/pages/visualizer/panel-tabs/workspace-detail-panels";
-import type { HistorySortField } from "@/pages/visualizer/workspace-history-canvas";
-import type { WorkspacePanelId } from "@/pages/visualizer/visualizer-workspace-types";
+} from "@/page-views/visualizer/panel-tabs/workspace-detail-panels";
+import type { HistorySortField } from "@/page-views/visualizer/workspace-history-canvas";
+import type { WorkspacePanelId } from "@/page-views/visualizer/visualizer-workspace-types";
 
 interface WorkspaceDetailContentProps {
   activePanel: WorkspacePanelId;
@@ -35,6 +35,13 @@ interface WorkspaceDetailContentProps {
   isHistorySortAscending: boolean;
   onHistorySortChange: (sortField: HistorySortField) => void;
   onHistorySortDirectionToggle: () => void;
+  selectedBaseVersion: string;
+  selectedCompareVersion: string;
+  hasCompared: boolean;
+  onBaseVersionChange: (value: string) => void;
+  onCompareVersionChange: (value: string) => void;
+  onSwapVersions: () => void;
+  onCompare: () => void;
 }
 
 export function WorkspaceDetailContent({
@@ -50,13 +57,17 @@ export function WorkspaceDetailContent({
   isHistorySortAscending,
   onHistorySortChange,
   onHistorySortDirectionToggle,
+  selectedBaseVersion,
+  selectedCompareVersion,
+  hasCompared,
+  onBaseVersionChange,
+  onCompareVersionChange,
+  onSwapVersions,
+  onCompare,
 }: WorkspaceDetailContentProps) {
   const policyQueryDefaults =
     workspaceData?.workspaceDetails.policyQuery ??
     demoVisualizerData.workspaceDetails.policyQuery;
-  const compareDefaults =
-    workspaceData?.workspaceDetails.compare ??
-    demoVisualizerData.workspaceDetails.compare;
   const [selectedBranch, setSelectedBranch] = useState(
     policyQueryDefaults.selectedBranch ?? policyQueryDefaults.branchOptions[0],
   );
@@ -71,13 +82,6 @@ export function WorkspaceDetailContent({
     requiredApprovals: policyQueryDefaults.queryResult.requiredApprovals,
     authorizedUsers: policyQueryDefaults.authorizedUsers,
   });
-  const [selectedBaseVersion, setSelectedBaseVersion] = useState(
-    compareDefaults.selectedBaseVersion ?? compareDefaults.baseVersionOptions[0],
-  );
-  const [selectedCompareVersion, setSelectedCompareVersion] = useState(
-    compareDefaults.selectedCompareVersion ?? compareDefaults.compareVersionOptions[0],
-  );
-  const [hasCompared, setHasCompared] = useState(false);
 
   switch (activePanel) {
     case "graph-source":
@@ -134,20 +138,10 @@ export function WorkspaceDetailContent({
           selectedBaseVersion={selectedBaseVersion}
           selectedCompareVersion={selectedCompareVersion}
           hasCompared={hasCompared}
-          onBaseVersionChange={(value) => {
-            setSelectedBaseVersion(value);
-            setHasCompared(false);
-          }}
-          onCompareVersionChange={(value) => {
-            setSelectedCompareVersion(value);
-            setHasCompared(false);
-          }}
-          onSwapVersions={() => {
-            setSelectedBaseVersion(selectedCompareVersion);
-            setSelectedCompareVersion(selectedBaseVersion);
-            setHasCompared(false);
-          }}
-          onCompare={() => setHasCompared(true)}
+          onBaseVersionChange={onBaseVersionChange}
+          onCompareVersionChange={onCompareVersionChange}
+          onSwapVersions={onSwapVersions}
+          onCompare={onCompare}
         />
       );
     case "metadata":

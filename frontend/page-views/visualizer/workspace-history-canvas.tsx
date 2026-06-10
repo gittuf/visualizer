@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
 import { demoVisualizerData } from "@/lib/demo-visualizer-data";
-import { PolicyGraphCanvas } from "@/pages/visualizer/policy-graph-canvas";
+import { PolicyGraphCanvas } from "@/page-views/visualizer/policy-graph-canvas";
 
 interface WorkspaceHistoryCanvasProps {
   commits: HistoryTimelineCommit[];
@@ -30,8 +30,8 @@ export type HistorySortField = "date" | "author";
 
 const historyCanvasWidth = 980;
 const historyCanvasHeight = 980;
-const selectedCommitColor = "#DBE3E5";
-const selectedGraphColor = "#E8F4FF";
+const selectedCommitColor = "rgba(186, 209, 234, 0.5)";
+const selectedGraphColor = "rgba(232, 244, 255, 0.5)";
 
 function formatHistoryDate(date: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -187,7 +187,7 @@ export function WorkspaceHistoryCanvas({
         ref={canvasViewportRef}
         className="h-full w-full overflow-x-auto overflow-y-auto"
       >
-        <div className="flex min-h-full min-w-full w-max items-start gap-8 p-6">
+        <div className="flex min-h-full min-w-full w-max items-start gap-2 p-4 overflow-visible">
           {commits.map((commit) => (
             <div
               key={commit.id}
@@ -195,7 +195,7 @@ export function WorkspaceHistoryCanvas({
                 graphRefs.current[commit.id] = node;
               }}
               data-commit-id={commit.id}
-              className="relative h-[980px] w-[980px] shrink-0"
+              className="relative h-[980px] w-[980px] shrink-0 overflow-visible"
             >
               <PolicyGraphCanvas
                 graphId={`history-${commit.id}`}
@@ -210,6 +210,7 @@ export function WorkspaceHistoryCanvas({
                     [commit.id]: nextOffset,
                   }));
                 }}
+                allowOverflowDrag
                 variant={{
                   repositoryLabel: commit.hash.slice(0, 7),
                   repositoryLabelColor:

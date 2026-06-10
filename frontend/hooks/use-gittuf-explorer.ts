@@ -143,6 +143,7 @@ export function useGittufExplorer() {
     currentRepositoryData: repository.currentRepositoryData,
     showRepositorySelector: repository.showRepositorySelector,
     setShowRepositorySelector: repository.setShowRepositorySelector,
+    handleDisconnect: repository.handleDisconnect,
     handleRepositoryRefresh: repository.handleRepositoryRefresh,
 
     // Selection State

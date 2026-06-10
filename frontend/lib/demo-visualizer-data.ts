@@ -90,6 +90,32 @@ export interface DemoCommitHistoryData {
   selectedCommitHash: string
 }
 
+export type DemoCompareDiffStatus = "added" | "removed" | "modified" | "unchanged"
+
+export interface DemoCompareGraphPrincipal {
+  name: string
+  status?: DemoCompareDiffStatus
+}
+
+export interface DemoCompareGraphLane {
+  key: string
+  pathLabel: string
+  roleLabel: string
+  approvals: string
+  status?: DemoCompareDiffStatus
+  pathStatus?: DemoCompareDiffStatus
+  roleStatus?: DemoCompareDiffStatus
+  approvalsStatus?: DemoCompareDiffStatus
+  principals?: DemoCompareGraphPrincipal[]
+}
+
+export interface DemoCompareGraph {
+  repositoryLabel?: string
+  branchLabel?: string
+  lanes: DemoCompareGraphLane[]
+  showLegend?: boolean
+}
+
 export interface DemoCompareData {
   baseVersionOptions: string[]
   compareVersionOptions: string[]
@@ -100,6 +126,7 @@ export interface DemoCompareData {
     value: string
     label: string
   }>
+  graphsByVersion: Record<string, DemoCompareGraph>
   comparisonsByPair?: Record<
     string,
     {
@@ -108,6 +135,7 @@ export interface DemoCompareData {
         value: string
         label: string
       }>
+      compareGraph: DemoCompareGraph
     }
   >
 }
@@ -402,20 +430,104 @@ export const demoVisualizerData: DemoVisualizerData = {
       selectedCompareVersion: "a2b3cd • May 5 • Update policy",
       changedMetadata: ["Trust setup", "File rules", "Root metadata"],
       stats: [
-        { value: "2", label: "roles changed" },
-        { value: "1", label: "rule added" },
+        { value: "1", label: "role changed" },
+        { value: "0", label: "rules added" },
         { value: "1 ↑", label: "threshold" },
         { value: "1", label: "principal removed" },
       ],
+      graphsByVersion: {
+        "a1b1cd • May 1 • Add policy": {
+          repositoryLabel: "a1b1cd",
+          branchLabel: "Branch: main",
+          lanes: [
+            {
+              key: "src",
+              pathLabel: "src/**",
+              roleLabel: "Authorized users",
+              approvals: "Requires: 2 approvals",
+              principals: [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }],
+            },
+          ],
+        },
+        "91fe2a • Apr 28 • Update policy": {
+          repositoryLabel: "91fe2a",
+          branchLabel: "Branch: main",
+          lanes: [
+            {
+              key: "src",
+              pathLabel: "src/**",
+              roleLabel: "Authorized users",
+              approvals: "Requires: 1 approval",
+              principals: [{ name: "Alice" }, { name: "Bob" }, { name: "Carol" }],
+            },
+          ],
+        },
+        "a2b3cd • May 5 • Update policy": {
+          repositoryLabel: "a2b3cd",
+          branchLabel: "Branch: main",
+          lanes: [
+            {
+              key: "src",
+              pathLabel: "src/**",
+              roleLabel: "Authorized users",
+              approvals: "Requires: 3 approvals",
+              principals: [
+                { name: "Alice" },
+                { name: "Carol" },
+                { name: "Bob" },
+                { name: "Steve" },
+              ],
+            },
+          ],
+        },
+        "b4c5de • May 8 • Tighten thresholds": {
+          repositoryLabel: "b4c5de",
+          branchLabel: "Branch: main",
+          lanes: [
+            {
+              key: "src",
+              pathLabel: "src/**",
+              roleLabel: "Authorized users",
+              approvals: "Requires: 3 approvals",
+              principals: [
+                { name: "Alice" },
+                { name: "Carol" },
+                { name: "Bob" },
+                { name: "Steve" },
+              ],
+            },
+          ],
+        },
+      },
       comparisonsByPair: {
         "a1b1cd • May 1 • Add policy|a2b3cd • May 5 • Update policy": {
           changedMetadata: ["Trust setup", "File rules", "Root metadata"],
           stats: [
-            { value: "2", label: "roles changed" },
-            { value: "1", label: "rule added" },
+            { value: "1", label: "role changed" },
+            { value: "0", label: "rules added" },
             { value: "1 ↑", label: "threshold" },
             { value: "1", label: "principal removed" },
           ],
+          compareGraph: {
+            repositoryLabel: "a2b3cd",
+            branchLabel: "Branch: main",
+            showLegend: true,
+            lanes: [
+              {
+                key: "src",
+                pathLabel: "src/**",
+                roleLabel: "Authorized users",
+                approvals: "Requires: 3 approvals",
+                approvalsStatus: "modified",
+                principals: [
+                  { name: "Alice", status: "unchanged" },
+                  { name: "Carol", status: "unchanged" },
+                  { name: "Bob", status: "removed" },
+                  { name: "Steve", status: "added" },
+                ],
+              },
+            ],
+          },
         },
         "91fe2a • Apr 28 • Update policy|b4c5de • May 8 • Tighten thresholds": {
           changedMetadata: ["File rules", "Root metadata"],
@@ -425,6 +537,49 @@ export const demoVisualizerData: DemoVisualizerData = {
             { value: "2 ↑", label: "threshold" },
             { value: "0", label: "principal removed" },
           ],
+          compareGraph: {
+            repositoryLabel: "b4c5de",
+            branchLabel: "Branch: main",
+            showLegend: true,
+            lanes: [
+              {
+                key: "src",
+                pathLabel: "src/**",
+                roleLabel: "Authorized users",
+                approvals: "Requires: 3 approvals",
+                approvalsStatus: "modified",
+                principals: [
+                  { name: "Alice", status: "unchanged" },
+                  { name: "Bob", status: "unchanged" },
+                  { name: "Carol", status: "unchanged" },
+                ],
+              },
+              {
+                key: "docs",
+                pathLabel: "docs/**",
+                roleLabel: "Docs reviewers",
+                approvals: "Requires: 2 approvals",
+                approvalsStatus: "modified",
+                principals: [
+                  { name: "Alice", status: "unchanged" },
+                  { name: "Carol", status: "unchanged" },
+                  { name: "Bob", status: "unchanged" },
+                ],
+              },
+              {
+                key: "ops",
+                pathLabel: "ops/**",
+                roleLabel: "Ops maintainers",
+                approvals: "Requires: 2 approvals",
+                status: "added",
+                principals: [
+                  { name: "Alice", status: "added" },
+                  { name: "Carol", status: "added" },
+                  { name: "Bob", status: "added" },
+                ],
+              },
+            ],
+          },
         },
       },
     },

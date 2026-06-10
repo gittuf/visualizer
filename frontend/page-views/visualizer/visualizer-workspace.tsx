@@ -17,7 +17,8 @@ import settingsIcon from "@/assets/Settings.png";
 import zoomInIcon from "@/assets/zoom-in.png";
 import zoomOutIcon from "@/assets/zoom-out.png";
 import type { PanelImperativeHandle } from "react-resizable-panels";
-import { PolicyGraphCanvas } from "@/pages/visualizer/policy-graph-canvas";
+import { PolicyGraphCanvas } from "@/page-views/visualizer/policy-graph-canvas";
+import { WorkspaceCompareCanvas } from "@/page-views/visualizer/workspace-compare-canvas";
 import {
   getDefaultHistorySortState,
   getDefaultHistoryCommitId,
@@ -26,8 +27,8 @@ import {
   type HistorySortField,
   WorkspaceHistoryCanvas,
   WorkspaceHistoryTimelineStrip,
-} from "@/pages/visualizer/workspace-history-canvas";
-import { WorkspaceDetailContent } from "@/pages/visualizer/workspace-detail-content";
+} from "@/page-views/visualizer/workspace-history-canvas";
+import { WorkspaceDetailContent } from "@/page-views/visualizer/workspace-detail-content";
 import { WorkspaceActionButton } from "@/components/visualizer/workspace-action-button";
 import { WorkspaceBottomBar } from "@/components/visualizer/workspace-bottom-bar";
 import { WorkspaceDetailToggle } from "@/components/visualizer/workspace-detail-toggle";
@@ -40,8 +41,11 @@ import {
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RepositoryInfo } from "@/lib/repository-handler";
-import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
-import type { WorkspacePanelId } from "@/pages/visualizer/visualizer-workspace-types";
+import {
+  demoVisualizerData,
+  type DemoVisualizerData,
+} from "@/lib/demo-visualizer-data";
+import type { WorkspacePanelId } from "@/page-views/visualizer/visualizer-workspace-types";
 
 interface VisualizerWorkspaceProps {
   repository: RepositoryInfo;
@@ -66,6 +70,7 @@ interface GraphWorkspaceTab {
 }
 
 const historyTabId = "history-tab";
+const compareTabId = "compare-tab";
 
 const menuItems: Array<{
   id: WorkspacePanelId;
@@ -182,6 +187,56 @@ export default function VisualizerWorkspace({
     defaultHistoryCommitId,
   );
   const [isHistoryStripCollapsed, setIsHistoryStripCollapsed] = useState(false);
+  const compareData =
+    workspaceData?.workspaceDetails.compare ??
+    demoVisualizerData.workspaceDetails.compare;
+  const [selectedBaseVersion, setSelectedBaseVersion] = useState(
+    compareData.selectedBaseVersion ?? compareData.baseVersionOptions[0],
+  );
+  const [selectedCompareVersion, setSelectedCompareVersion] = useState(
+    compareData.selectedCompareVersion ?? compareData.compareVersionOptions[0],
+  );
+  const [hasCompared, setHasCompared] = useState(false);
+  const comparePairKey = `${selectedBaseVersion}|${selectedCompareVersion}`;
+  const activeComparison = useMemo(
+    () => compareData.comparisonsByPair?.[comparePairKey],
+    [compareData, comparePairKey],
+  );
+  const baseCompareGraph = useMemo(
+    () => {
+      const baseGraph = compareData.graphsByVersion[selectedBaseVersion];
+      return {
+        repositoryLabel: baseGraph?.repositoryLabel ?? selectedBaseVersion.split(" • ")[0],
+        branchLabel: baseGraph?.branchLabel ?? "Branch: main",
+        lanes: baseGraph?.lanes,
+      };
+    },
+    [compareData.graphsByVersion, selectedBaseVersion],
+  );
+  const compareGraph = useMemo(
+    () => {
+      if (activeComparison?.compareGraph) {
+        return {
+          repositoryLabel:
+            activeComparison.compareGraph.repositoryLabel ??
+            selectedCompareVersion.split(" • ")[0],
+          branchLabel: activeComparison.compareGraph.branchLabel ?? "Branch: main",
+          lanes: activeComparison.compareGraph.lanes,
+          showCompareLegend: activeComparison.compareGraph.showLegend ?? true,
+        };
+      }
+
+      const fallbackGraph = compareData.graphsByVersion[selectedCompareVersion];
+      return {
+        repositoryLabel:
+          fallbackGraph?.repositoryLabel ?? selectedCompareVersion.split(" • ")[0],
+        branchLabel: fallbackGraph?.branchLabel ?? "Branch: main",
+        lanes: fallbackGraph?.lanes,
+        showCompareLegend: true,
+      };
+    },
+    [activeComparison, compareData.graphsByVersion, selectedCompareVersion],
+  );
 
   const activeLabel =
     menuItems.find((item) => item.id === activePanel)?.label ?? "Graph Source";
@@ -189,7 +244,8 @@ export default function VisualizerWorkspace({
     menuItems.find((item) => item.id === activePanel)?.icon ?? graphSourceIcon;
   const activeGraphTab =
     graphTabs.find((tab) => tab.id === activeGraphTabId) ?? graphTabs[0];
-  const isHistoryPanel = activePanel === "history";
+  const isHistoryPanel = activeGraphTabId === historyTabId;
+  const isComparePanel = activeGraphTabId === compareTabId;
   const footerLeftWidthPx =
     panelGroupWidth > 0
       ? panelGroupWidth * ((menuPanelWidth + detailPanelWidth) / 100) + 2
@@ -203,6 +259,14 @@ export default function VisualizerWorkspace({
     setHistorySortField(defaultHistorySortState.sortField);
     setIsHistorySortAscending(defaultHistorySortState.isAscending);
   }, [defaultHistorySortState]);
+
+  useEffect(() => {
+    setSelectedBaseVersion(compareData.selectedBaseVersion ?? compareData.baseVersionOptions[0]);
+    setSelectedCompareVersion(
+      compareData.selectedCompareVersion ?? compareData.compareVersionOptions[0],
+    );
+    setHasCompared(false);
+  }, [compareData]);
 
   useEffect(() => {
     if (activePanel !== "history") return;
@@ -227,9 +291,23 @@ export default function VisualizerWorkspace({
   }, [activePanel]);
 
   useEffect(() => {
-    if (activePanel === "history" || activeGraphTabId !== historyTabId) return;
+    if (activeGraphTabId !== historyTabId) return;
+    if (activePanel === "history") return;
 
     const fallbackTab = graphTabs.find((tab) => tab.id !== historyTabId);
+    if (fallbackTab) {
+      setActiveGraphTabId(fallbackTab.id);
+    }
+  }, [activeGraphTabId, activePanel, graphTabs]);
+
+  useEffect(() => {
+    if (activeGraphTabId !== compareTabId) return;
+    if (activePanel === "compare") return;
+
+    const compareTab = graphTabs.find((tab) => tab.id === compareTabId);
+    if (compareTab) return;
+
+    const fallbackTab = graphTabs.find((tab) => tab.id !== compareTabId);
     if (fallbackTab) {
       setActiveGraphTabId(fallbackTab.id);
     }
@@ -331,6 +409,36 @@ export default function VisualizerWorkspace({
       ),
     );
     onReload();
+  };
+
+  const handleGenerateCompareGraph = () => {
+    setGraphTabs((currentTabs) => {
+      const existingCompareTab = currentTabs.find((tab) => tab.id === compareTabId);
+      if (existingCompareTab) {
+        return currentTabs.map((tab) =>
+          tab.id === compareTabId
+            ? {
+                ...tab,
+                label: `Compare ${selectedBaseVersion.split(" • ")[0]} vs ${selectedCompareVersion.split(" • ")[0]}`,
+              }
+            : tab,
+        );
+      }
+
+      return [
+        ...currentTabs,
+        {
+          id: compareTabId,
+          label: `Compare ${selectedBaseVersion.split(" • ")[0]} vs ${selectedCompareVersion.split(" • ")[0]}`,
+          closable: true,
+          editable: false,
+          graphs: [],
+        },
+      ];
+    });
+    setHasCompared(true);
+    setActivePanel("compare");
+    setActiveGraphTabId(compareTabId);
   };
 
   const handleAddGraphTab = () => {
@@ -497,6 +605,23 @@ export default function VisualizerWorkspace({
                   onHistorySortDirectionToggle={() =>
                     setIsHistorySortAscending((current) => !current)
                   }
+                  selectedBaseVersion={selectedBaseVersion}
+                  selectedCompareVersion={selectedCompareVersion}
+                  hasCompared={hasCompared}
+                  onBaseVersionChange={(value) => {
+                    setSelectedBaseVersion(value);
+                    setHasCompared(false);
+                  }}
+                  onCompareVersionChange={(value) => {
+                    setSelectedCompareVersion(value);
+                    setHasCompared(false);
+                  }}
+                  onSwapVersions={() => {
+                    setSelectedBaseVersion(selectedCompareVersion);
+                    setSelectedCompareVersion(selectedBaseVersion);
+                    setHasCompared(false);
+                  }}
+                  onCompare={handleGenerateCompareGraph}
                 />
               </ScrollArea>
             </section>
@@ -559,7 +684,13 @@ export default function VisualizerWorkspace({
               ) : null}
               <WorkspacePanelHeader
                 title={isHistoryPanel ? "Policy Graph" : activeGraphTab?.label ?? "Policy Graph"}
-                placeholder={isHistoryPanel ? "Search" : "Search graph"}
+                placeholder={
+                  isHistoryPanel
+                    ? "Search"
+                    : isComparePanel
+                      ? "Search compare graph"
+                      : "Search graph"
+                }
                 searchIcon={searchIcon}
                 className="bg-[#C7DCF1]"
                 searchValue={graphSearchQuery}
@@ -596,6 +727,19 @@ export default function VisualizerWorkspace({
                     zoom={graphZoom}
                     searchQuery={graphSearchQuery}
                   />
+                ) : isComparePanel ? (
+                  hasCompared ? (
+                    <WorkspaceCompareCanvas
+                      baseVersionLabel={selectedBaseVersion}
+                      compareVersionLabel={selectedCompareVersion}
+                      baseGraph={baseCompareGraph}
+                      compareGraph={compareGraph}
+                      zoom={graphZoom}
+                      searchQuery={graphSearchQuery}
+                    />
+                  ) : (
+                    <div className="h-full bg-[linear-gradient(to_right,rgba(4,8,14,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(4,8,14,0.06)_1px,transparent_1px)] bg-[size:24px_24px]" />
+                  )
                 ) : (
                   <div className="h-full bg-[linear-gradient(to_right,rgba(4,8,14,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(4,8,14,0.06)_1px,transparent_1px)] bg-[size:24px_24px]">
                     <ScrollArea
@@ -657,9 +801,15 @@ export default function VisualizerWorkspace({
             return;
           }
 
+          if (tabId === compareTabId) {
+            setActivePanel("compare");
+            setActiveGraphTabId(compareTabId);
+            return;
+          }
+
           setActiveGraphTabId(tabId);
 
-          if (activePanel === "history") {
+          if (activePanel === "history" || activePanel === "compare") {
             setActivePanel("graph-source");
           }
         }}
