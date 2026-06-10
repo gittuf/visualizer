@@ -25,10 +25,10 @@ interface ValidationDetails {
   path?: string
 }
 
-const SURFACE_BORDER = "#D9D9D9"
-const CONTROL_BORDER = "#04080E"
-const PARAGRAPH_COLOR = "#7E7E7E"
-const BUTTON_COLOR = "#BAD2EB"
+const SURFACE_BORDER = "var(--secondary-color)"
+const CONTROL_BORDER = "var(--tertiary-color)"
+const PARAGRAPH_COLOR = "var(--dark-gray)"
+const BUTTON_COLOR = "var(--secondary-color)"
 
 function StepIndicator({ step }: { step: number }) {
   return (
@@ -198,7 +198,7 @@ export default function RepositorySelector({
                       value={remoteUrl}
                       onChange={(e) => setRemoteUrl(e.target.value.replace(/^https?:\/\//i, ""))}
                       disabled={isLoading}
-                      className="h-11 rounded-[5px] border px-4 text-[16px] text-black placeholder:text-[#A0A0A0] focus-visible:ring-0 focus-visible:ring-offset-0 md:text-[16px]"
+                      className="h-11 rounded-[5px] border px-4 text-[16px] text-black placeholder:text-[var(--dark-gray)] focus-visible:ring-0 focus-visible:ring-offset-0 md:text-[16px]"
                       style={{ borderColor: CONTROL_BORDER }}
                     />
                   </div>
@@ -226,7 +226,7 @@ export default function RepositorySelector({
                     value={localPath}
                     onChange={(e) => setLocalPath(e.target.value)}
                     disabled={isLoading}
-                    className="h-11 rounded-[5px] border px-4 text-[16px] text-black placeholder:text-[#A0A0A0] focus-visible:ring-0 focus-visible:ring-offset-0 md:text-[16px]"
+                    className="h-11 rounded-[5px] border px-4 text-[16px] text-black placeholder:text-[var(--dark-gray)] focus-visible:ring-0 focus-visible:ring-offset-0 md:text-[16px]"
                     style={{ borderColor: CONTROL_BORDER }}
                   />
                   <Button
@@ -277,9 +277,11 @@ export default function RepositorySelector({
               <div
                 className="flex items-start gap-3 rounded-[5px] border px-4 py-3 text-[14px]"
                 style={{
-                  borderColor: validationStatus.isValid ? "#B9E1C2" : "#F0B9B9",
-                  backgroundColor: validationStatus.isValid ? "#F5FCF7" : "#FFF7F7",
-                  color: validationStatus.isValid ? "#2C6B3F" : "#A53B3B",
+                  borderColor: validationStatus.isValid ? "var(--approve-color)" : "var(--reject-color)",
+                  backgroundColor: validationStatus.isValid
+                    ? "var(--approve-color-12)"
+                    : "var(--reject-color-12)",
+                  color: validationStatus.isValid ? "var(--approve-color)" : "var(--reject-color)",
                 }}
               >
                 {validationStatus.isValid ? (
@@ -298,7 +300,11 @@ export default function RepositorySelector({
             {error && (
               <div
                 className="rounded-[5px] border px-4 py-3 text-[14px]"
-                style={{ borderColor: "#F0B9B9", backgroundColor: "#FFF7F7", color: "#A53B3B" }}
+                style={{
+                  borderColor: "var(--reject-color)",
+                  backgroundColor: "var(--reject-color-12)",
+                  color: "var(--reject-color)",
+                }}
               >
                 {error}
               </div>

@@ -38,22 +38,22 @@ export const DIFF_COLORS = {
   unchanged: {
     text: "text-black",
     icon: "text-black",
-    edge: "#111827",
+    edge: "var(--tertiary-color)",
   },
   added: {
     text: "text-green-500",
     icon: "text-green-500",
-    edge: "#22C55E",
+    edge: "var(--approve-color)",
   },
   removed: {
     text: "text-red-500",
     icon: "text-red-500",
-    edge: "#EF4444",
+    edge: "var(--reject-color)",
   },
   modified: {
     text: "text-blue-500",
     icon: "text-blue-500",
-    edge: "#3B82F6",
+    edge: "var(--modified-color)",
   },
 } as const satisfies Record<
   PolicyGraphChangeStatus,
@@ -68,6 +68,6 @@ export const defaultPolicyGraphVariant: Required<
   Pick<PolicyGraphCanvasVariant, "repositoryLabel" | "repositoryLabelColor" | "branchLabel">
 > = {
   repositoryLabel: "gittuf_repo",
-  repositoryLabelColor: "#7E7E7E",
+  repositoryLabelColor: "var(--dark-gray)",
   branchLabel: "Branch: main",
 };

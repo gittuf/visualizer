@@ -67,13 +67,13 @@ export function WorkspaceCompareCanvas({
         </div>
       </div>
       <div className="pointer-events-none absolute inset-0 z-30">
-        <div className="absolute bottom-6 left-6 border border-[#8F8F8F] bg-transparent px-4 py-3">
+        <div className="absolute bottom-6 left-6 border border-[var(--dark-gray)] bg-transparent px-4 py-3">
           <div className="space-y-2.5 text-[14px] leading-[1.35] text-black">
             {[
-              ["Added", "#79BC89"],
-              ["Removed", "#CB5151"],
-              ["Modified", "#5690C8"],
-              ["Unchanged", "#8F8F8F"],
+              ["Added", "var(--approve-color)"],
+              ["Removed", "var(--reject-color)"],
+              ["Modified", "var(--modified-color)"],
+              ["Unchanged", "var(--dark-gray)"],
             ].map(([label, color]) => (
               <div key={label} className="flex items-center gap-3">
                 <span

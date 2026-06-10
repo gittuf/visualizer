@@ -230,7 +230,7 @@ export function PolicyGraphCanvas({
             >
               <defs>
                 {[
-                  { id: "default", color: "#04080E" },
+                  { id: "default", color: "var(--tertiary-color)" },
                   ...Object.entries(compareStatusColors).map(([id, color]) => ({
                     id,
                     color,
@@ -262,7 +262,11 @@ export function PolicyGraphCanvas({
                 width={boundary.width}
                 height={boundary.height}
                 fill={boundaryFill}
-                stroke={isDraggingBoundary ? "#61A1D1" : "#9CA3AF"}
+                stroke={
+                  isDraggingBoundary
+                    ? "var(--modified-color)"
+                    : "var(--dark-gray)"
+                }
                 strokeWidth="1.5"
                 strokeDasharray="6 6"
               />
@@ -300,7 +304,7 @@ export function PolicyGraphCanvas({
                 type="button"
                 aria-label="Delete graph"
                 onClick={onDelete}
-                className="absolute z-20 flex h-7 w-7 items-center justify-center bg-transparent text-[18px] font-bold leading-none text-[#C53B3B] transition-colors duration-150 hover:text-[#9F1D1D]"
+                className="absolute z-20 flex h-7 w-7 items-center justify-center bg-transparent text-[18px] font-bold leading-none text-[var(--reject-color)] transition-colors duration-150 hover:opacity-80"
                 style={{
                   left: `${boundary.x + boundary.width - 24}px`,
                   top: `${boundary.y + 2}px`,

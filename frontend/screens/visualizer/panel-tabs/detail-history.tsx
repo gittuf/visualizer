@@ -154,7 +154,7 @@ export function DetailPanelHistory({
             <button
               type="button"
               onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-              className="rounded-[4px] border border-[#8B949E] px-3 py-1 text-[12px] text-black"
+              className="rounded-[4px] border border-[var(--secondary-color)] px-3 py-1 text-[12px] text-black"
             >
               &lt; Previous
             </button>
@@ -169,7 +169,7 @@ export function DetailPanelHistory({
                     type="button"
                     onClick={() => setCurrentPage(pageNumber)}
                     className={`rounded-[4px] px-2 py-1 ${
-                      isActive ? "text-black" : "text-[#7E7E7E]"
+                      isActive ? "text-black" : "text-[var(--dark-gray)]"
                     }`}
                     style={isActive ? { backgroundColor: detailColors.bullet } : undefined}
                   >
@@ -181,7 +181,7 @@ export function DetailPanelHistory({
             <button
               type="button"
               onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-              className="rounded-[4px] border border-[#8B949E] px-3 py-1 text-[12px] text-black"
+              className="rounded-[4px] border border-[var(--secondary-color)] px-3 py-1 text-[12px] text-black"
             >
               Next &gt;
             </button>

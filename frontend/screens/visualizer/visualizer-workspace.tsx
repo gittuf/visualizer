@@ -91,7 +91,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
 
   return (
     <section className="flex h-full min-h-0 w-full flex-col overflow-hidden">
-      <div className="flex min-h-[44px] items-center justify-between border-b border-[#D9D9D9] bg-[#F5F5F5] px-4 md:px-6">
+      <div className="flex min-h-[44px] items-center justify-between border-b border-[var(--secondary-color)] bg-[var(--light-gray)] px-4 md:px-6">
         <h2 className="text-[18px] font-medium text-black">{props.repository.name}</h2>
         <div className="flex items-center gap-3">
           <WorkspaceActionButton
@@ -137,7 +137,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
             </aside>
           </ResizablePanel>
 
-          <ResizableHandle className="bg-[#D9D9D9] after:w-2 hover:bg-[#9BBDE0] focus-visible:bg-[#9BBDE0]" />
+          <ResizableHandle className="bg-[var(--secondary-color)] after:w-2 hover:bg-[var(--primary-color)] focus-visible:bg-[var(--primary-color)]" />
 
           <ResizablePanel
             id="workspace-detail-panel"
@@ -199,7 +199,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
             </section>
           </ResizablePanel>
 
-          <ResizableHandle className="bg-[#D9D9D9] after:w-2 hover:bg-[#9BBDE0] focus-visible:bg-[#9BBDE0]">
+          <ResizableHandle className="bg-[var(--secondary-color)] after:w-2 hover:bg-[var(--primary-color)] focus-visible:bg-[var(--primary-color)]">
             <WorkspaceDetailToggle
               isCollapsed={isDetailCollapsed}
               leftIcon={leftArrowIcon}
@@ -222,11 +222,11 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                 />
               ) : null}
               {isHistoryPanel ? (
-                <div className="relative flex h-[26px] items-center justify-center border-b border-[#D9D9D9] bg-white">
+                <div className="relative flex h-[26px] items-center justify-center border-b border-[var(--secondary-color)] bg-white">
                   <button
                     type="button"
                     onClick={() => setIsHistoryStripCollapsed((collapsed) => !collapsed)}
-                    className="flex h-[26px] w-[54px] items-center justify-center border border-[#B7B7B7] bg-[#EEF3F6] hover:bg-[#E2E8F0]"
+                    className="flex h-[26px] w-[54px] items-center justify-center border border-[var(--secondary-color)] bg-[var(--selected-color)] hover:bg-[var(--primary-color)]"
                     aria-label={
                       isHistoryStripCollapsed
                         ? "Expand commit history strip"
@@ -258,7 +258,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                       : "Search graph"
                 }
                 searchIcon={searchIcon}
-                className="bg-[#C7DCF1]"
+                className="bg-[var(--logo-blue)]"
                 searchValue={graphSearchQuery}
                 onSearchChange={setGraphSearchQuery}
               />

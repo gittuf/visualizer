@@ -24,8 +24,8 @@ interface WorkspaceHistoryTimelineStripProps {
 
 const historyCanvasWidth = 980;
 const historyCanvasHeight = 980;
-const selectedCommitColor = "rgba(186, 209, 234, 0.5)";
-const selectedGraphColor = "rgba(232, 244, 255, 0.5)";
+const selectedCommitColor = "var(--selected-color-50)";
+const selectedGraphColor = "var(--selected-color-50)";
 
 function formatHistoryDate(date: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -115,7 +115,7 @@ export function WorkspaceHistoryTimelineStrip({
   }, [activeCommitId]);
 
   return (
-    <div className="border-b border-[#D9D9D9] bg-white">
+    <div className="border-b border-[var(--secondary-color)] bg-white">
       <div className="flex overflow-x-auto">
         {commits.map((commit) => {
           const isActive = commit.id === activeCommitId;
@@ -128,22 +128,22 @@ export function WorkspaceHistoryTimelineStrip({
               }}
               type="button"
               onClick={() => onSelect(commit.id)}
-              className="flex h-[66px] min-w-[110px] shrink-0 flex-col justify-between border-r border-[#B7B7B7] px-2 py-1 text-left transition-colors duration-150"
+              className="flex h-[66px] min-w-[110px] shrink-0 flex-col justify-between border-r border-[var(--secondary-color)] px-2 py-1 text-left transition-colors duration-150"
               style={{
-                backgroundColor: isActive ? selectedCommitColor : "#FFFFFF",
+                backgroundColor: isActive ? selectedCommitColor : "white",
               }}
             >
-              <div className="text-[11px] leading-none text-[#5F6B76]">
+              <div className="text-[11px] leading-none text-[var(--dark-gray)]">
                 {formatHistoryDate(commit.date)}
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#111827]">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-black">
                 <span className="relative inline-flex h-[8px] w-5 items-center">
-                  <span className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 bg-[#111827]" />
-                  <span className="absolute left-[5px] top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full border border-[#111827] bg-white" />
+                  <span className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 bg-[var(--tertiary-color)]" />
+                  <span className="absolute left-[5px] top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full border border-[var(--tertiary-color)] bg-white" />
                 </span>
                 {commit.hash.slice(0, 7)}
               </div>
-              <div className="truncate text-[10px] text-[#7A7A7A]">
+              <div className="truncate text-[10px] text-[var(--dark-gray)]">
                 {commit.authorLabel ?? commit.author}
               </div>
             </button>
@@ -209,7 +209,9 @@ export function WorkspaceHistoryCanvas({
                 variant={{
                   repositoryLabel: commit.hash.slice(0, 7),
                   repositoryLabelColor:
-                    commit.id === activeCommitId ? "#3B82F6" : "#7E7E7E",
+                    commit.id === activeCommitId
+                      ? "var(--modified-color)"
+                      : "var(--dark-gray)",
                   boundaryFill:
                     commit.id === activeCommitId ? selectedGraphColor : "none",
                 }}

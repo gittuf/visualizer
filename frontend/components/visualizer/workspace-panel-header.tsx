@@ -27,7 +27,7 @@ export function WorkspacePanelHeader({
 }: WorkspacePanelHeaderProps) {
   return (
     <div
-      className={`relative flex min-h-[36px] items-center justify-between border-b border-[#D9D9D9] px-3 ${className}`}
+      className={`relative flex min-h-[36px] items-center justify-between border-b border-[var(--secondary-color)] px-3 ${className}`}
     >
       <div className="flex items-center gap-3">
         {titleIcon ? (

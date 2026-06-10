@@ -56,12 +56,12 @@ export function WorkspaceBottomBar({
   };
 
   return (
-    <div className="flex h-[25px] w-full border-t border-[#6B7280] bg-white">
+    <div className="flex h-[25px] w-full border-t border-[var(--dark-gray)] bg-white">
       <div
-        className="h-full border-r border-[#6B7280] bg-white"
+        className="h-full border-r border-[var(--dark-gray)] bg-white"
         style={{ width: `${clampedLeftWidth}px` }}
       />
-      <div className="flex h-full flex-1 items-center gap-2 overflow-hidden bg-[#DBE3E5] pr-2">
+      <div className="flex h-full flex-1 items-center gap-2 overflow-hidden bg-[var(--background-color)] pr-2">
         <div className="flex h-full items-center overflow-x-auto">
           {tabs.map((tab) => {
             const isActive = tab.id === activeTabId;
@@ -72,8 +72,10 @@ export function WorkspaceBottomBar({
             return (
               <div
                 key={tab.id}
-                className={`flex h-full items-center border-r border-[#6B7280] text-[12px] ${
-                  isActive ? "bg-white text-black" : "bg-[#DBE3E5] text-[#4B5563]"
+                className={`flex h-full items-center border-r border-[var(--dark-gray)] text-[12px] ${
+                  isActive
+                    ? "bg-white text-black"
+                    : "bg-[var(--background-color)] text-[var(--dark-gray)]"
                 } ${isEditing ? "min-w-[188px]" : "min-w-[108px]"}`}
               >
                 <button
@@ -112,7 +114,7 @@ export function WorkspaceBottomBar({
                     type="button"
                     aria-label={`Delete ${tab.label}`}
                     onClick={() => onTabDelete(tab.id)}
-                    className="flex h-full w-7 items-center justify-center text-[12px] text-[#6B7280] transition-colors duration-150 hover:bg-[#F3F4F4] hover:text-black"
+                    className="flex h-full w-7 items-center justify-center text-[12px] text-[var(--dark-gray)] transition-colors duration-150 hover:bg-[var(--gray-highlight)] hover:text-black"
                   >
                     x
                   </button>

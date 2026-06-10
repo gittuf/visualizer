@@ -69,7 +69,7 @@ export function DetailPanelCompare({
         <button
           type="button"
           onClick={onSwapVersions}
-          className="flex h-8 w-8 items-center justify-center rounded-[4px] transition-colors duration-150 hover:bg-[#F3F4F4]"
+          className="flex h-8 w-8 items-center justify-center rounded-[4px] transition-colors duration-150 hover:bg-[var(--gray-highlight)]"
         >
           <Image src={swapVertIcon} alt="" className="h-5 w-5" />
         </button>
@@ -86,7 +86,7 @@ export function DetailPanelCompare({
         <button
           type="button"
           onClick={onCompare}
-          className="rounded-[8px] border border-[#8B949E] px-4 py-2.5 text-[13px] font-medium text-black"
+          className="rounded-[8px] border border-[var(--secondary-color)] px-4 py-2.5 text-[13px] font-medium text-black"
           style={{ backgroundColor: detailColors.bullet }}
         >
           Compare
@@ -99,7 +99,9 @@ export function DetailPanelCompare({
             {comparisonResult.changedMetadata.map((item, index) => (
               <div
                 key={item}
-                className={index < 2 ? "text-[#4CAF50]" : "text-[#7E7E7E]"}
+                className={
+                  index < 2 ? "text-[var(--approve-color)]" : "text-[var(--dark-gray)]"
+                }
               >
                 {index < 2 ? "✓" : "—"}{" "}
                 <SearchHighlightText text={item} query={searchQuery} />

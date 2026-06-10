@@ -22,7 +22,7 @@ export function WorkspaceSearchField({
         placeholder={placeholder}
         value={value}
         onChange={(event) => onChange?.(event.target.value)}
-        className="h-5 rounded-[5px] border-[#04080E] pr-8 text-[12px] focus-visible:ring-0 focus-visible:ring-offset-0 md:h-5 md:text-[12px]"
+        className="h-5 rounded-[5px] border-[var(--tertiary-color)] pr-8 text-[12px] focus-visible:ring-0 focus-visible:ring-offset-0 md:h-5 md:text-[12px]"
       />
       <Image
         src={icon}
