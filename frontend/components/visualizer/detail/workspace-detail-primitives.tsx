@@ -375,12 +375,12 @@ export function SummaryMetricGrid({
           <SearchHighlightText
             text={item.value}
             query={searchQuery}
-            className="text-[16px] font-semibold text-black"
+            className="block truncate whitespace-nowrap text-[16px] font-semibold text-black"
           />
           <SearchHighlightText
             text={item.label}
             query={searchQuery}
-            className="text-[12px] text-[#7E7E7E]"
+            className="block truncate whitespace-nowrap text-[12px] text-[#7E7E7E]"
           />
         </div>
       ))}

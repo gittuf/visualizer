@@ -442,7 +442,6 @@ export const demoVisualizerData: DemoVisualizerData = {
         { value: "5", label: "principals" },
         { value: "4", label: "File rules" },
         { value: "1", label: "signatures" },
-        { value: "June 12, 2026", label: "expires" },
       ],
     },
     settings: {
