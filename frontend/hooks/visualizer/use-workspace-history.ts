@@ -7,8 +7,8 @@ interface HistoryCommit {
   hash: string;
 }
 
-export function useWorkspaceHistory(
-  commits: HistoryCommit[],
+export function useWorkspaceHistory<TCommit extends HistoryCommit>(
+  commits: TCommit[],
   selectedCommitHash?: string,
 ) {
   const commitListRef = useRef<HTMLDivElement | null>(null);

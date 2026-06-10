@@ -4,12 +4,12 @@ import { AnimatePresence, motion } from "framer-motion"
 import { StoryModal } from "@/components/common/story-modal"
 import { StatusCard } from "@/components/common/status-card"
 import { useGittufSimulator } from "@/hooks/use-gittuf-simulator"
-import { SimulatorHeader } from "@/page-views/playground/simulator-header"
-import { SimulatorControls } from "@/page-views/playground/simulator-controls"
-import { SimulatorGraph } from "@/page-views/playground/simulator-graph"
-import { SimulatorAnalysis } from "@/page-views/playground/simulator-analysis"
-import { SimulatorGlossary } from "@/page-views/playground/simulator-glossary"
-import { SimulatorConfigModal } from "@/page-views/playground/simulator-config-modal"
+import { SimulatorHeader } from "@/screens/playground/simulator-header"
+import { SimulatorControls } from "@/screens/playground/simulator-controls"
+import { SimulatorGraph } from "@/screens/playground/simulator-graph"
+import { SimulatorAnalysis } from "@/screens/playground/simulator-analysis"
+import { SimulatorGlossary } from "@/screens/playground/simulator-glossary"
+import { SimulatorConfigModal } from "@/screens/playground/simulator-config-modal"
 
 export default function SimulatorPage() {
   const state = useGittufSimulator()

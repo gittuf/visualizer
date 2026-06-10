@@ -11,9 +11,9 @@ import {
   DetailPanelMetadata,
   DetailPanelPolicyQuery,
   DetailPanelSettings,
-} from "@/page-views/visualizer/panel-tabs/workspace-detail-panels";
-import type { HistorySortField } from "@/page-views/visualizer/workspace-history-canvas";
-import type { WorkspacePanelId } from "@/page-views/visualizer/visualizer-workspace-types";
+} from "@/screens/visualizer/panel-tabs/detail-panels";
+import type { HistorySortField } from "@/screens/visualizer/history.types";
+import type { WorkspacePanelId } from "@/screens/visualizer/visualizer.types";
 
 interface WorkspaceDetailContentProps {
   activePanel: WorkspacePanelId;

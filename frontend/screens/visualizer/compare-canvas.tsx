@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { PolicyGraphCanvasVariant } from "@/page-views/visualizer/policy-graph-canvas";
-import { PolicyGraphCanvas } from "@/page-views/visualizer/policy-graph-canvas";
+import { PolicyGraphCanvas } from "@/screens/visualizer/policy-graph-canvas";
+import type { PolicyGraphCanvasVariant } from "@/screens/visualizer/policy-graph.types";
 
 interface WorkspaceCompareCanvasProps {
   baseVersionLabel: string;

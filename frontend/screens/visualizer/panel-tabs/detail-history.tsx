@@ -14,18 +14,22 @@ import {
   detailColors,
   SelectField,
 } from "@/components/visualizer/detail/workspace-detail-primitives";
-import type { HistorySortField } from "@/page-views/visualizer/workspace-history-canvas";
+import type {
+  HistorySortField,
+} from "@/screens/visualizer/history.types";
+
+interface DetailHistoryCommit {
+  id: number;
+  hash: string;
+  message: string;
+  author: string;
+  authorLabel?: string;
+  date: string;
+}
 
 interface DetailPanelHistoryProps {
   workspaceData?: DemoVisualizerData | null;
-  commits: Array<{
-    id: number;
-    hash: string;
-    message: string;
-    author: string;
-    authorLabel?: string;
-    date: string;
-  }>;
+  commits: DetailHistoryCommit[];
   selectedCommitHash?: string | null;
   onSelectedCommitChange?: (commitHash: string) => void;
   searchQuery?: string;

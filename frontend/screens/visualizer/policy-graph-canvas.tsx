@@ -7,40 +7,36 @@ import branchIcon from "@/assets/branch.png";
 import fileIcon from "@/assets/file.png";
 import usersIcon from "@/assets/Users.png";
 import userIcon from "@/assets/user.png";
-
-export interface PolicyGraphLane {
-  key: string;
-  pathLabel: string;
-  roleLabel: string;
-  approvals: string;
-  branchStatus?: PolicyGraphChangeStatus;
-  status?: PolicyGraphChangeStatus;
-  pathStatus?: PolicyGraphChangeStatus;
-  roleStatus?: PolicyGraphChangeStatus;
-  approvalsStatus?: PolicyGraphChangeStatus;
-  principals?: PolicyGraphPrincipal[];
-}
-
-export type PolicyGraphChangeStatus =
-  | "added"
-  | "removed"
-  | "modified"
-  | "unchanged";
-
-export interface PolicyGraphPrincipal {
-  name: string;
-  status?: PolicyGraphChangeStatus;
-}
-
-export interface PolicyGraphCanvasVariant {
-  repositoryLabel?: string;
-  branchLabel?: string;
-  lanes?: PolicyGraphLane[];
-  principalNames?: string[];
-  boundaryFill?: string;
-  repositoryLabelColor?: string;
-  showCompareLegend?: boolean;
-}
+import {
+  boundary,
+  branchBox,
+  defaultLanes,
+  defaultPolicyGraphVariant,
+  defaultPrincipalNames,
+  fileBox,
+  layoutHeight,
+  layoutWidth,
+  principalBox,
+  roleBox,
+  rowY,
+  scrollPadding,
+} from "@/screens/visualizer/policy-graph.constants";
+import {
+  compareStatusColors,
+  getEdgeColor,
+  getIconClassName,
+  getIconFilter,
+  getLaneCenters,
+  getLaneNodeChangeTypes,
+  getNodeTextStyle,
+  getPrincipalChangeType,
+  getPrincipalOffsets,
+  getTextClassName,
+} from "@/screens/visualizer/policy-graph.utils";
+import type {
+  PolicyGraphCanvasVariant,
+  PolicyGraphEdge,
+} from "@/screens/visualizer/policy-graph.types";
 
 interface PolicyGraphCanvasProps {
   graphId: string;
@@ -58,168 +54,6 @@ interface PolicyGraphCanvasProps {
   allowOverflowDrag?: boolean;
 }
 
-const layoutWidth = 980;
-const layoutHeight = 980;
-const boundary = { x: 80, y: 60, width: 820, height: 840 };
-const rowY = {
-  branch: 120,
-  file: 300,
-  role: 500,
-  principals: 760,
-};
-const defaultLanes = [
-  {
-    key: "left",
-    pathLabel: "src/**",
-    roleLabel: "Authorized users",
-    approvals: "Requires: 2 approvals",
-  },
-  {
-    key: "right",
-    pathLabel: "docs/**",
-    roleLabel: "Authorized users",
-    approvals: "Requires: 2 approvals",
-  },
-] as const;
-const defaultPrincipalNames = ["Alice", "Carol", "Bob"];
-const branchBox = { width: 140, height: 92 };
-const fileBox = { width: 120, height: 118 };
-const roleBox = { width: 180, height: 132 };
-const principalBox = { width: 92, height: 108 };
-const scrollPadding = 96;
-const DIFF_COLORS = {
-  unchanged: {
-    text: "text-black",
-    icon: "text-black",
-    edge: "#111827",
-  },
-  added: {
-    text: "text-green-500",
-    icon: "text-green-500",
-    edge: "#22C55E",
-  },
-  removed: {
-    text: "text-red-500",
-    icon: "text-red-500",
-    edge: "#EF4444",
-  },
-  modified: {
-    text: "text-blue-500",
-    icon: "text-blue-500",
-    edge: "#3B82F6",
-  },
-} as const;
-
-interface PolicyGraphEdge {
-  d: string;
-  arrow: boolean;
-  changeType: PolicyGraphChangeStatus;
-}
-
-function getChangeType(
-  status?: PolicyGraphChangeStatus,
-): PolicyGraphChangeStatus {
-  return status ?? "unchanged";
-}
-
-function getEdgeColor(changeType: PolicyGraphChangeStatus) {
-  return DIFF_COLORS[changeType].edge;
-}
-
-function getTextClassName(changeType: PolicyGraphChangeStatus) {
-  return DIFF_COLORS[changeType].text;
-}
-
-function getIconFilter(changeType: PolicyGraphChangeStatus) {
-  if (changeType === "unchanged") {
-    return "grayscale(1)";
-  }
-
-  if (changeType === "modified") {
-    return "brightness(0) saturate(100%) invert(51%) sepia(92%) saturate(1736%) hue-rotate(204deg) brightness(98%) contrast(90%)";
-  }
-
-  if (changeType === "removed") {
-    return "brightness(0) saturate(100%) invert(56%) sepia(90%) saturate(3018%) hue-rotate(331deg) brightness(96%) contrast(94%)";
-  }
-
-  return "brightness(0) saturate(100%) invert(62%) sepia(62%) saturate(560%) hue-rotate(83deg) brightness(93%) contrast(91%)";
-}
-
-function getNodeTextStyle(
-  value: string,
-  changeType: PolicyGraphChangeStatus,
-  normalizedSearchQuery: string,
-) {
-  return normalizedSearchQuery &&
-    value.toLowerCase().includes(normalizedSearchQuery)
-    ? {
-        backgroundColor: "#DBEAFE",
-        borderRadius: "4px",
-      }
-    : undefined;
-}
-
-function getLaneNodeChangeTypes(lane: PolicyGraphLane) {
-  const branch = getChangeType(lane.branchStatus);
-  const laneDefault = lane.status;
-  const path = getChangeType(lane.pathStatus ?? laneDefault);
-  const role = getChangeType(lane.roleStatus);
-  const approvals = getChangeType(lane.approvalsStatus ?? laneDefault);
-  const roleIcon = getChangeType(
-    lane.roleStatus ?? lane.approvalsStatus ?? laneDefault,
-  );
-
-  return {
-    branch,
-    path,
-    role,
-    approvals,
-    roleIcon,
-  };
-}
-
-function getPrincipalChangeType(
-  principal: PolicyGraphPrincipal,
-  lane: PolicyGraphLane,
-) {
-  return getChangeType(principal.status ?? lane.status);
-}
-
-function getIconClassName(changeType: PolicyGraphChangeStatus) {
-  return DIFF_COLORS[changeType].icon;
-}
-
-const compareStatusColors: Record<PolicyGraphChangeStatus, string> = {
-  added: DIFF_COLORS.added.edge,
-  removed: DIFF_COLORS.removed.edge,
-  modified: DIFF_COLORS.modified.edge,
-  unchanged: DIFF_COLORS.unchanged.edge,
-};
-
-function getLaneCenters(laneCount: number) {
-  if (laneCount <= 1) {
-    return [boundary.x + boundary.width / 2];
-  }
-
-  const usableWidth = boundary.width - 420;
-  return Array.from({ length: laneCount }, (_, index) => {
-    const ratio = laneCount === 1 ? 0.5 : index / (laneCount - 1);
-    return boundary.x + 210 + usableWidth * ratio;
-  });
-}
-
-function getPrincipalOffsets(principalCount: number) {
-  if (principalCount <= 1) return [0];
-
-  const maxSpread = 300;
-  const spread = Math.min(maxSpread, Math.max(120, (principalCount - 1) * 90));
-  const start = -spread / 2;
-  const step = spread / (principalCount - 1);
-
-  return Array.from({ length: principalCount }, (_, index) => start + step * index);
-}
-
 export function PolicyGraphCanvas({
   graphId,
   zoom,
@@ -235,9 +69,11 @@ export function PolicyGraphCanvas({
   const [isDraggingBoundary, setIsDraggingBoundary] = useState(false);
   const lanes = variant?.lanes ?? [...defaultLanes];
   const principalNames = variant?.principalNames ?? defaultPrincipalNames;
-  const repositoryLabel = variant?.repositoryLabel ?? "gittuf_repo";
-  const repositoryLabelColor = variant?.repositoryLabelColor ?? "#7E7E7E";
-  const branchLabel = variant?.branchLabel ?? "Branch: main";
+  const repositoryLabel =
+    variant?.repositoryLabel ?? defaultPolicyGraphVariant.repositoryLabel;
+  const repositoryLabelColor =
+    variant?.repositoryLabelColor ?? defaultPolicyGraphVariant.repositoryLabelColor;
+  const branchLabel = variant?.branchLabel ?? defaultPolicyGraphVariant.branchLabel;
   const boundaryFill = variant?.boundaryFill ?? "none";
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
   const laneCenters = getLaneCenters(lanes.length);
@@ -482,7 +318,6 @@ export function PolicyGraphCanvas({
                 color: repositoryLabelColor,
                 ...getNodeTextStyle(
                   repositoryLabel,
-                  "unchanged",
                   normalizedSearchQuery,
                 ),
               }}
@@ -522,7 +357,6 @@ export function PolicyGraphCanvas({
                       className={`mt-2 text-[16px] leading-[1.3] ${getTextClassName(changeTypes.branch)}`}
                       style={getNodeTextStyle(
                         branchLabel,
-                        changeTypes.branch,
                         normalizedSearchQuery,
                       )}
                     >
@@ -552,7 +386,6 @@ export function PolicyGraphCanvas({
                       className={`mt-2 text-[16px] leading-[1.3] ${getTextClassName(changeTypes.path)}`}
                       style={getNodeTextStyle(
                         lane.pathLabel,
-                        changeTypes.path,
                         normalizedSearchQuery,
                       )}
                     >
@@ -582,7 +415,6 @@ export function PolicyGraphCanvas({
                       className={`mt-2 text-[16px] leading-[1.3] ${getTextClassName(changeTypes.roleIcon)}`}
                       style={getNodeTextStyle(
                         lane.roleLabel,
-                        changeTypes.roleIcon,
                         normalizedSearchQuery,
                       )}
                     >
@@ -592,7 +424,6 @@ export function PolicyGraphCanvas({
                       className={`mt-1 text-[14px] leading-[1.3] ${getTextClassName(changeTypes.approvals)}`}
                       style={getNodeTextStyle(
                         lane.approvals,
-                        changeTypes.approvals,
                         normalizedSearchQuery,
                       )}
                     >
@@ -631,7 +462,6 @@ export function PolicyGraphCanvas({
                           className={`mt-2 text-[16px] leading-[1.3] ${getTextClassName(principalChangeType)}`}
                           style={getNodeTextStyle(
                             principal.name,
-                            principalChangeType,
                             normalizedSearchQuery,
                           )}
                         >

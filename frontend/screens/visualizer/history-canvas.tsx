@@ -3,7 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
 import { demoVisualizerData } from "@/lib/demo-visualizer-data";
-import { PolicyGraphCanvas } from "@/page-views/visualizer/policy-graph-canvas";
+import type {
+  HistorySortField,
+  HistoryTimelineCommit,
+} from "@/screens/visualizer/history.types";
+import { PolicyGraphCanvas } from "@/screens/visualizer/policy-graph-canvas";
 
 interface WorkspaceHistoryCanvasProps {
   commits: HistoryTimelineCommit[];
@@ -17,16 +21,6 @@ interface WorkspaceHistoryTimelineStripProps {
   activeCommitId: string | null;
   onSelect: (commitId: string) => void;
 }
-
-export interface HistoryTimelineCommit {
-  id: string;
-  hash: string;
-  author: string;
-  authorLabel?: string;
-  date: string;
-}
-
-export type HistorySortField = "date" | "author";
 
 const historyCanvasWidth = 980;
 const historyCanvasHeight = 980;
@@ -50,6 +44,7 @@ export function getHistoryTimelineCommits(
   return historyData.commits.map((commit) => ({
     id: commit.hash,
     hash: commit.hash,
+    message: commit.message,
     author: commit.author,
     authorLabel: commit.authorLabel,
     date: commit.date,

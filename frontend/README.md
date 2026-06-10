@@ -71,15 +71,15 @@ frontend/
 │   ├── page.tsx                    # Home route: repository entry + visualizer workspace
 │   └── playground/
 │       └── page.tsx                # Interactive visualizer tools route
-├── page-views/
+├── screens/
 │   ├── repository/
 │   │   └── repository-selector.tsx # Repository selection screen
 │   ├── playground/                 # Route-sized playground sections and trust graph
 │   └── visualizer/
 │       ├── visualizer-workspace.tsx
 │       ├── policy-graph-canvas.tsx
-│       ├── workspace-history-canvas.tsx
-│       ├── workspace-detail-content.tsx
+│       ├── history-canvas.tsx
+│       ├── detail-content.tsx
 │       └── panel-tabs/             # Detail panel tabs shown inside the workspace
 ├── components/
 │   ├── app/                        # Shared app shell pieces
@@ -90,7 +90,7 @@ frontend/
 │   ├── explorer/                   # Repository explorer hooks
 │   └── visualizer/                 # Visualizer-specific hooks
 ├── lib/                            # Utilities, constants, demo data, and API helpers
-├── archive/                         # Older and currently unused page/component implementations from previous version
+├── archive/                        # Older and currently unused page/component implementations from a previous version
 ├── public/                         # Static assets served by Next.js
 ├── assets/                         # Imported image assets used by the UI
 ├── fixtures/                       # Simulator fixture data
