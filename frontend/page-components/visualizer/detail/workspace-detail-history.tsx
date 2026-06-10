@@ -16,12 +16,14 @@ interface DetailPanelHistoryProps {
   workspaceData?: DemoVisualizerData | null;
   selectedCommitHash?: string | null;
   onSelectedCommitChange?: (commitHash: string) => void;
+  searchQuery?: string;
 }
 
 export function DetailPanelHistory({
   workspaceData,
   selectedCommitHash,
   onSelectedCommitChange,
+  searchQuery = "",
 }: DetailPanelHistoryProps) {
   const historyData =
     workspaceData?.workspaceDetails.history ??
@@ -99,6 +101,7 @@ export function DetailPanelHistory({
               commitId={commit.id}
               message={commit.message}
               author={commit.authorLabel ?? `opened by ${commit.author}`}
+              searchQuery={searchQuery}
               isSelected={selectedCommitId === commit.id}
               isTouched={touchedCommitId === commit.id}
               onSelect={(commitId) => {

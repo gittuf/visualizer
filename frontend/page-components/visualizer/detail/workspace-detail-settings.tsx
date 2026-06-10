@@ -17,9 +17,13 @@ import {
 
 interface DetailPanelSettingsProps {
   workspaceData?: DemoVisualizerData | null;
+  searchQuery?: string;
 }
 
-export function DetailPanelSettings({ workspaceData }: DetailPanelSettingsProps) {
+export function DetailPanelSettings({
+  workspaceData,
+  searchQuery,
+}: DetailPanelSettingsProps) {
   const settingsData =
     workspaceData?.workspaceDetails.settings ??
     demoVisualizerData.workspaceDetails.settings;
@@ -61,7 +65,7 @@ export function DetailPanelSettings({ workspaceData }: DetailPanelSettingsProps)
 
   return (
     <div className="space-y-2 px-5 pb-8">
-      <PanelSection label="Graph details">
+      <PanelSection label="Graph details" searchQuery={searchQuery}>
         <div className="space-y-2 pl-4">
           <SegmentedControl
             options={defaultDetailLevels}
@@ -76,13 +80,14 @@ export function DetailPanelSettings({ workspaceData }: DetailPanelSettingsProps)
         </div>
       </PanelSection>
       <section className="space-y-4 py-4">
-        <SectionBulletLabel label="Visible node types" />
+        <SectionBulletLabel label="Visible node types" searchQuery={searchQuery} />
         <div className="space-y-2">
           {visibleNodeTypes.map(({ label, checked }) => (
             <CheckboxRow
               key={label}
               label={label}
               checked={checked}
+              searchQuery={searchQuery}
               onToggle={() => toggleCheckedItem(label)}
             />
           ))}
@@ -90,13 +95,14 @@ export function DetailPanelSettings({ workspaceData }: DetailPanelSettingsProps)
         <SectionDivider />
       </section>
       <section className="space-y-4 py-4">
-        <SectionBulletLabel label="Labels" />
+        <SectionBulletLabel label="Labels" searchQuery={searchQuery} />
         <div className="space-y-3">
           {labels.map(({ label, enabled }) => (
             <ToggleRow
               key={label}
               label={label}
               enabled={enabled}
+              searchQuery={searchQuery}
               onToggle={() => toggleEnabledItem(label, setLabels)}
             />
           ))}
@@ -104,13 +110,14 @@ export function DetailPanelSettings({ workspaceData }: DetailPanelSettingsProps)
         <SectionDivider />
       </section>
       <section className="space-y-4 py-4">
-        <SectionBulletLabel label="Data" />
+        <SectionBulletLabel label="Data" searchQuery={searchQuery} />
         <div className="space-y-3">
           {dataOptions.map(({ label, enabled }) => (
             <ToggleRow
               key={label}
               label={label}
               enabled={enabled}
+              searchQuery={searchQuery}
               onToggle={() => toggleEnabledItem(label, setDataOptions)}
             />
           ))}

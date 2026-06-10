@@ -36,6 +36,7 @@ interface PolicyGraphCanvasProps {
   onOffsetChange: (offset: { x: number; y: number }) => void;
   onDelete?: () => void;
   variant?: PolicyGraphCanvasVariant;
+  searchQuery?: string;
 }
 
 const layoutWidth = 980;
@@ -79,6 +80,7 @@ export function PolicyGraphCanvas({
   onOffsetChange,
   onDelete,
   variant,
+  searchQuery = "",
 }: PolicyGraphCanvasProps) {
   const [isDraggingBoundary, setIsDraggingBoundary] = useState(false);
   const lanes = variant?.lanes ?? [...defaultLanes];
@@ -87,6 +89,15 @@ export function PolicyGraphCanvas({
   const repositoryLabelColor = variant?.repositoryLabelColor ?? "#7E7E7E";
   const branchLabel = variant?.branchLabel ?? "Branch: main";
   const boundaryFill = variant?.boundaryFill ?? "none";
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const getHighlightStyle = (value: string) =>
+    normalizedSearchQuery && value.toLowerCase().includes(normalizedSearchQuery)
+      ? {
+          color: "#2563EB",
+          backgroundColor: "#DBEAFE",
+          borderRadius: "4px",
+        }
+      : undefined;
   const scaledWidth = layoutWidth * zoom;
   const scaledHeight = layoutHeight * zoom;
   const canvasWidth = Math.max(scaledWidth + scrollPadding * 2, viewportWidth);
@@ -303,6 +314,7 @@ export function PolicyGraphCanvas({
                 left: `${boundary.x}px`,
                 top: `${boundary.y - 32}px`,
                 color: repositoryLabelColor,
+                ...getHighlightStyle(repositoryLabel),
               }}
             >
               {repositoryLabel}
@@ -328,7 +340,10 @@ export function PolicyGraphCanvas({
                       className="mt-1 h-9 w-9 grayscale"
                       draggable={false}
                     />
-                    <div className="mt-2 text-[16px] leading-[1.3] text-black">
+                    <div
+                      className="mt-2 text-[16px] leading-[1.3] text-black"
+                      style={getHighlightStyle(branchLabel)}
+                    >
                       {branchLabel}
                     </div>
                   </div>
@@ -348,7 +363,10 @@ export function PolicyGraphCanvas({
                       className="mt-1 h-12 w-10 grayscale"
                       draggable={false}
                     />
-                    <div className="mt-2 text-[16px] leading-[1.3] text-black">
+                    <div
+                      className="mt-2 text-[16px] leading-[1.3] text-black"
+                      style={getHighlightStyle(lane.pathLabel)}
+                    >
                       {lane.pathLabel}
                     </div>
                   </div>
@@ -368,12 +386,18 @@ export function PolicyGraphCanvas({
                       className="mt-1 h-12 w-12 grayscale"
                       draggable={false}
                     />
-                    <div className="mt-2 text-[16px] leading-[1.3] text-black">
+                    <div
+                      className="mt-2 text-[16px] leading-[1.3] text-black"
+                      style={getHighlightStyle(lane.roleLabel)}
+                    >
                       {lane.roleLabel}
                     </div>
                     <div
                       className="mt-1 text-[14px] leading-[1.3]"
-                      style={{ color: "#7E7E7E" }}
+                      style={{
+                        color: "#7E7E7E",
+                        ...getHighlightStyle(lane.approvals),
+                      }}
                     >
                       {lane.approvals}
                     </div>
@@ -399,7 +423,10 @@ export function PolicyGraphCanvas({
                           className="mt-1 h-10 w-10 grayscale"
                           draggable={false}
                         />
-                        <div className="mt-2 text-[16px] leading-[1.3] text-black">
+                        <div
+                          className="mt-2 text-[16px] leading-[1.3] text-black"
+                          style={getHighlightStyle(name)}
+                        >
                           {name}
                         </div>
                       </div>

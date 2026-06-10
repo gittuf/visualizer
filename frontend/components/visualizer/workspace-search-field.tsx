@@ -6,16 +6,22 @@ import { Input } from "@/components/ui/input";
 interface WorkspaceSearchFieldProps {
   placeholder: string;
   icon: StaticImageData;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 export function WorkspaceSearchField({
   placeholder,
   icon,
+  value,
+  onChange,
 }: WorkspaceSearchFieldProps) {
   return (
     <div className="relative w-full max-w-[220px]">
       <Input
         placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange?.(event.target.value)}
         className="h-5 rounded-[5px] border-[#04080E] pr-8 text-[12px] focus-visible:ring-0 focus-visible:ring-offset-0 md:h-5 md:text-[12px]"
       />
       <Image

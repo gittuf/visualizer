@@ -16,12 +16,14 @@ interface DetailPanelGraphSourceProps {
   repository: RepositoryInfo;
   workspaceData?: DemoVisualizerData | null;
   onRegenerate: () => void;
+  searchQuery?: string;
 }
 
 export function DetailPanelGraphSource({
   repository,
   workspaceData,
   onRegenerate,
+  searchQuery,
 }: DetailPanelGraphSourceProps) {
   const graphSource =
     workspaceData?.workspaceDetails.graphSource ??
@@ -44,10 +46,12 @@ export function DetailPanelGraphSource({
       <StaticValueRow
         label="Repository:"
         value={graphSource.repository ?? repository.name}
+        searchQuery={searchQuery}
       />
       <StaticValueRow
         label="Policy ref:"
         value={graphSource.policyRef}
+        searchQuery={searchQuery}
       />
       <InlineSelectRow
         label="Policy version:"
@@ -55,6 +59,7 @@ export function DetailPanelGraphSource({
         selectedLabel={selectedPolicyVersion}
         chips={[selectedPolicyVersion]}
         onChange={setSelectedPolicyVersion}
+        searchQuery={searchQuery}
       />
       <InlineSelectRow
         label="Metadata:"
@@ -62,6 +67,7 @@ export function DetailPanelGraphSource({
         selectedLabel={selectedMetadataFile}
         chips={[selectedMetadataFile]}
         onChange={setSelectedMetadataFile}
+        searchQuery={searchQuery}
       />
       <InlineSelectRow
         label="Active mode"
@@ -69,6 +75,7 @@ export function DetailPanelGraphSource({
         selectedLabel={selectedActiveMode}
         chips={[selectedActiveMode]}
         onChange={setSelectedActiveMode}
+        searchQuery={searchQuery}
       />
       <div className="pl-2 pt-8">
         <button

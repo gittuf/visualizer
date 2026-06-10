@@ -21,6 +21,7 @@ interface WorkspaceDetailContentProps {
   onRegenerate: () => void;
   selectedHistoryCommitHash?: string | null;
   onHistoryCommitSelect?: (commitHash: string) => void;
+  searchQuery?: string;
 }
 
 export function WorkspaceDetailContent({
@@ -30,6 +31,7 @@ export function WorkspaceDetailContent({
   onRegenerate,
   selectedHistoryCommitHash,
   onHistoryCommitSelect,
+  searchQuery,
 }: WorkspaceDetailContentProps) {
   const policyQueryDefaults =
     workspaceData?.workspaceDetails.policyQuery ??
@@ -66,12 +68,14 @@ export function WorkspaceDetailContent({
           repository={repository}
           workspaceData={workspaceData}
           onRegenerate={onRegenerate}
+          searchQuery={searchQuery}
         />
       );
     case "policy-query":
       return (
         <DetailPanelPolicyQuery
           workspaceData={workspaceData}
+          searchQuery={searchQuery}
           selectedBranch={selectedBranch}
           selectedChangedPath={selectedChangedPath}
           showResults={showPolicyQueryResults}
@@ -96,12 +100,14 @@ export function WorkspaceDetailContent({
           workspaceData={workspaceData}
           selectedCommitHash={selectedHistoryCommitHash}
           onSelectedCommitChange={onHistoryCommitSelect}
+          searchQuery={searchQuery}
         />
       );
     case "compare":
       return (
         <DetailPanelCompare
           workspaceData={workspaceData}
+          searchQuery={searchQuery}
           selectedBaseVersion={selectedBaseVersion}
           selectedCompareVersion={selectedCompareVersion}
           hasCompared={hasCompared}
@@ -122,9 +128,9 @@ export function WorkspaceDetailContent({
         />
       );
     case "metadata":
-      return <DetailPanelMetadata workspaceData={workspaceData} />;
+      return <DetailPanelMetadata workspaceData={workspaceData} searchQuery={searchQuery} />;
     case "settings":
-      return <DetailPanelSettings workspaceData={workspaceData} />;
+      return <DetailPanelSettings workspaceData={workspaceData} searchQuery={searchQuery} />;
     default:
       return null;
   }

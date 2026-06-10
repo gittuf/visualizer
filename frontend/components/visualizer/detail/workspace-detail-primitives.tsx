@@ -26,29 +26,105 @@ export const detailColors = {
   summaryCard: "#DBE3E5",
 } as const;
 
+export function SearchHighlightText({
+  text,
+  query,
+  className = "",
+}: {
+  text: string;
+  query?: string;
+  className?: string;
+}) {
+  const normalizedQuery = query?.trim().toLowerCase() ?? "";
+
+  if (!normalizedQuery) {
+    return <span className={className}>{text}</span>;
+  }
+
+  const lowerText = text.toLowerCase();
+  const parts: Array<{ value: string; matched: boolean }> = [];
+  let currentIndex = 0;
+
+  while (currentIndex < text.length) {
+    const matchIndex = lowerText.indexOf(normalizedQuery, currentIndex);
+
+    if (matchIndex < 0) {
+      parts.push({ value: text.slice(currentIndex), matched: false });
+      break;
+    }
+
+    if (matchIndex > currentIndex) {
+      parts.push({
+        value: text.slice(currentIndex, matchIndex),
+        matched: false,
+      });
+    }
+
+    parts.push({
+      value: text.slice(matchIndex, matchIndex + normalizedQuery.length),
+      matched: true,
+    });
+
+    currentIndex = matchIndex + normalizedQuery.length;
+  }
+
+  return (
+    <span className={className}>
+      {parts.map((part, index) =>
+        part.matched ? (
+          <span
+            key={`${part.value}-${index}`}
+            className="rounded-[2px] bg-[#DBEAFE] text-[#2563EB]"
+          >
+            {part.value}
+          </span>
+        ) : (
+          <span key={`${part.value}-${index}`}>{part.value}</span>
+        ),
+      )}
+    </span>
+  );
+}
+
 export function SectionDivider() {
   return <div className="border-b border-[#9CA3AF]" />;
 }
 
-export function SectionBulletLabel({ label }: { label: string }) {
+export function SectionBulletLabel({
+  label,
+  searchQuery,
+}: {
+  label: string;
+  searchQuery?: string;
+}) {
   return (
     <div className="flex items-center gap-2">
       <span
         className="h-1.5 w-1.5 rounded-full"
         style={{ backgroundColor: detailColors.bullet }}
       />
-      <span className="text-[13px] font-medium text-black">{label}</span>
+      <SearchHighlightText
+        text={label}
+        query={searchQuery}
+        className="text-[13px] font-medium text-black"
+      />
     </div>
   );
 }
 
-export function ValueChip({ label }: { label: string }) {
+export function ValueChip({
+  label,
+  searchQuery,
+}: {
+  label: string;
+  searchQuery?: string;
+}) {
   return (
     <div
       className="inline-flex items-center border border-[#6B7280] px-2 py-1 text-[11px] font-medium text-black"
       style={{ backgroundColor: detailColors.chip }}
     >
-      {label}
+      <SearchHighlightText text={label} query={searchQuery} />
     </div>
   );
 }
@@ -57,14 +133,16 @@ export function PanelSection({
   label,
   children,
   className = "",
+  searchQuery,
 }: {
   label: string;
   children: React.ReactNode;
   className?: string;
+  searchQuery?: string;
 }) {
   return (
     <section className={`space-y-3 py-4 ${className}`}>
-      <SectionBulletLabel label={label} />
+      <SectionBulletLabel label={label} searchQuery={searchQuery} />
       {children}
       <SectionDivider />
     </section>
@@ -74,17 +152,21 @@ export function PanelSection({
 export function StaticValueRow({
   label,
   value,
+  searchQuery,
 }: {
   label: string;
   value: string;
+  searchQuery?: string;
 }) {
   return (
     <section className="space-y-3 py-4">
       <div className="flex items-center justify-between gap-4">
-        <SectionBulletLabel label={label} />
-        <span className="text-right text-[13px] leading-[1.2] text-[#7E7E7E]">
-          {value}
-        </span>
+        <SectionBulletLabel label={label} searchQuery={searchQuery} />
+        <SearchHighlightText
+          text={value}
+          query={searchQuery}
+          className="text-right text-[13px] leading-[1.2] text-[#7E7E7E]"
+        />
       </div>
       <SectionDivider />
     </section>
@@ -237,17 +319,19 @@ export function InlineSelectRow({
   chips = [],
   selectedLabel,
   onChange,
+  searchQuery,
 }: {
   label: string;
   options: SelectOption[];
   chips?: string[];
   selectedLabel?: string;
   onChange?: (label: string) => void;
+  searchQuery?: string;
 }) {
   return (
     <section className="space-y-3 py-4">
       <div className="flex items-center justify-between gap-4">
-        <SectionBulletLabel label={label} />
+        <SectionBulletLabel label={label} searchQuery={searchQuery} />
         <SelectField
           options={options}
           selectedLabel={selectedLabel}
@@ -259,7 +343,11 @@ export function InlineSelectRow({
         <div className="flex justify-end">
           <div className="flex w-[220px] flex-wrap gap-3">
             {chips.map((chip, index) => (
-              <ValueChip key={`${chip}-${index}`} label={chip} />
+              <ValueChip
+                key={`${chip}-${index}`}
+                label={chip}
+                searchQuery={searchQuery}
+              />
             ))}
           </div>
         </div>
@@ -269,7 +357,13 @@ export function InlineSelectRow({
   );
 }
 
-export function SummaryMetricGrid({ items }: { items: MetricCardData[] }) {
+export function SummaryMetricGrid({
+  items,
+  searchQuery,
+}: {
+  items: MetricCardData[];
+  searchQuery?: string;
+}) {
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
       {items.map((item) => (
@@ -278,21 +372,39 @@ export function SummaryMetricGrid({ items }: { items: MetricCardData[] }) {
           className="min-h-[78px] space-y-2 px-4 py-3"
           style={{ backgroundColor: detailColors.summaryCard }}
         >
-          <div className="text-[16px] font-semibold text-black">{item.value}</div>
-          <div className="text-[12px] text-[#7E7E7E]">{item.label}</div>
+          <SearchHighlightText
+            text={item.value}
+            query={searchQuery}
+            className="text-[16px] font-semibold text-black"
+          />
+          <SearchHighlightText
+            text={item.label}
+            query={searchQuery}
+            className="text-[12px] text-[#7E7E7E]"
+          />
         </div>
       ))}
     </div>
   );
 }
 
-export function QueryUserCard({ name }: { name: string }) {
+export function QueryUserCard({
+  name,
+  searchQuery,
+}: {
+  name: string;
+  searchQuery?: string;
+}) {
   return (
     <div className="flex w-[72px] flex-col items-center gap-1">
       <div className="flex h-[64px] w-[64px] items-center justify-center">
         <Image src={userIcon} alt="" className="h-10 w-10" />
       </div>
-      <span className="text-[12px] text-black">{name}</span>
+      <SearchHighlightText
+        text={name}
+        query={searchQuery}
+        className="text-[12px] text-black"
+      />
     </div>
   );
 }
@@ -301,6 +413,7 @@ export function CommitHistoryItem({
   commitId,
   message,
   author,
+  searchQuery = "",
   isSelected = false,
   isTouched = false,
   onSelect,
@@ -309,6 +422,7 @@ export function CommitHistoryItem({
   commitId: number;
   message: string;
   author: string;
+  searchQuery?: string;
   isSelected?: boolean;
   isTouched?: boolean;
   onSelect: (commitId: number) => void;
@@ -331,9 +445,11 @@ export function CommitHistoryItem({
       <Image src={commitIcon} alt="" className="mt-1 h-4 w-4 flex-none" />
       <div className="min-w-0 flex-1 overflow-hidden">
         <div className="w-full truncate whitespace-nowrap text-[12px] text-black">
-          {message}
+          <SearchHighlightText text={message} query={searchQuery} />
         </div>
-        <div className="text-[10px] text-[#8B949E]">{author}</div>
+        <div className="text-[10px] text-[#8B949E]">
+          <SearchHighlightText text={author} query={searchQuery} />
+        </div>
       </div>
     </button>
   );
@@ -370,10 +486,12 @@ export function ToggleRow({
   label,
   enabled,
   onToggle,
+  searchQuery,
 }: {
   label: string;
   enabled: boolean;
   onToggle?: () => void;
+  searchQuery?: string;
 }) {
   return (
     <button
@@ -381,7 +499,11 @@ export function ToggleRow({
       onClick={onToggle}
       className="flex w-full items-center justify-between gap-4 pl-4 text-left"
     >
-      <span className="text-[12px] text-black">{label}</span>
+      <SearchHighlightText
+        text={label}
+        query={searchQuery}
+        className="text-[12px] text-black"
+      />
       <div
         className={`relative h-5 w-8 rounded-full border border-[#6B7280] transition-colors duration-150 ${
           enabled ? "bg-white" : "bg-white opacity-60"
@@ -401,10 +523,12 @@ export function CheckboxRow({
   label,
   checked,
   onToggle,
+  searchQuery,
 }: {
   label: string;
   checked: boolean;
   onToggle?: () => void;
+  searchQuery?: string;
 }) {
   return (
     <button
@@ -417,9 +541,11 @@ export function CheckboxRow({
         alt=""
         className="h-4 w-4"
       />
-      <span className={`text-[12px] ${checked ? "text-black" : "text-[#7E7E7E]"}`}>
-        {label}
-      </span>
+      <SearchHighlightText
+        text={label}
+        query={searchQuery}
+        className={`text-[12px] ${checked ? "text-black" : "text-[#7E7E7E]"}`}
+      />
     </button>
   );
 }
@@ -428,18 +554,21 @@ export function StatusRow({
   icon,
   label,
   value,
+  searchQuery,
 }: {
   icon: StaticImageData;
   label: string;
   value?: string;
+  searchQuery?: string;
 }) {
   return (
     <div className="flex items-center gap-2 text-[12px]">
       <Image src={icon} alt="" className="h-4 w-4" />
-      <span className="text-[#7E7E7E]">
-        {label}
-        {value ? `: ${value}` : ""}
-      </span>
+      <SearchHighlightText
+        text={`${label}${value ? `: ${value}` : ""}`}
+        query={searchQuery}
+        className="text-[#7E7E7E]"
+      />
     </div>
   );
 }

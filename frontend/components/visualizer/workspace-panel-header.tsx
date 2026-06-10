@@ -11,6 +11,8 @@ interface WorkspacePanelHeaderProps {
   titleIcon?: StaticImageData;
   className?: string;
   centerSlot?: ReactNode;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 export function WorkspacePanelHeader({
@@ -20,6 +22,8 @@ export function WorkspacePanelHeader({
   titleIcon,
   className = "bg-white",
   centerSlot,
+  searchValue,
+  onSearchChange,
 }: WorkspacePanelHeaderProps) {
   return (
     <div
@@ -36,7 +40,12 @@ export function WorkspacePanelHeader({
           <div className="pointer-events-auto">{centerSlot}</div>
         </div>
       ) : null}
-      <WorkspaceSearchField placeholder={placeholder} icon={searchIcon} />
+      <WorkspaceSearchField
+        placeholder={placeholder}
+        icon={searchIcon}
+        value={searchValue}
+        onChange={onSearchChange}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
 import {
   detailColors,
   PanelSection,
+  SearchHighlightText,
   SectionBulletLabel,
   SelectField,
   SummaryMetricGrid,
@@ -18,6 +19,7 @@ import {
 
 interface DetailPanelCompareProps {
   workspaceData?: DemoVisualizerData | null;
+  searchQuery?: string;
   selectedBaseVersion: string;
   selectedCompareVersion: string;
   hasCompared: boolean;
@@ -29,6 +31,7 @@ interface DetailPanelCompareProps {
 
 export function DetailPanelCompare({
   workspaceData,
+  searchQuery,
   selectedBaseVersion,
   selectedCompareVersion,
   hasCompared,
@@ -54,7 +57,7 @@ export function DetailPanelCompare({
 
   return (
     <div className="space-y-2 px-5 pb-8">
-      <PanelSection label="Base Version" className="pb-2">
+      <PanelSection label="Base Version" className="pb-2" searchQuery={searchQuery}>
         <SelectField
           options={baseOptions.map((label) => ({ label, icon: emptyFileIcon }))}
           selectedLabel={selectedBaseVersion}
@@ -71,7 +74,7 @@ export function DetailPanelCompare({
           <Image src={swapVertIcon} alt="" className="h-5 w-5" />
         </button>
       </div>
-      <PanelSection label="Compare Version" className="pt-2">
+      <PanelSection label="Compare Version" className="pt-2" searchQuery={searchQuery}>
         <SelectField
           options={compareOptions.map((label) => ({ label, icon: emptyFileIcon }))}
           selectedLabel={selectedCompareVersion}
@@ -91,18 +94,19 @@ export function DetailPanelCompare({
       </div>
       {hasCompared ? (
         <section className="space-y-4 py-4">
-          <SectionBulletLabel label="Changed metadata" />
+          <SectionBulletLabel label="Changed metadata" searchQuery={searchQuery} />
           <div className="space-y-2 pl-4 text-[12px]">
             {comparisonResult.changedMetadata.map((item, index) => (
               <div
                 key={item}
                 className={index < 2 ? "text-[#4CAF50]" : "text-[#7E7E7E]"}
               >
-                {index < 2 ? "✓" : "—"} {item}
+                {index < 2 ? "✓" : "—"}{" "}
+                <SearchHighlightText text={item} query={searchQuery} />
               </div>
             ))}
           </div>
-          <SummaryMetricGrid items={comparisonResult.stats} />
+          <SummaryMetricGrid items={comparisonResult.stats} searchQuery={searchQuery} />
         </section>
       ) : null}
     </div>

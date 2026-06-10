@@ -9,6 +9,7 @@ interface WorkspaceHistoryCanvasProps {
   commits: HistoryTimelineCommit[];
   activeCommitId: string | null;
   zoom: number;
+  searchQuery?: string;
 }
 
 interface WorkspaceHistoryTimelineStripProps {
@@ -124,6 +125,7 @@ export function WorkspaceHistoryCanvas({
   commits,
   activeCommitId,
   zoom,
+  searchQuery,
 }: WorkspaceHistoryCanvasProps) {
   const [graphOffsets, setGraphOffsets] = useState<
     Record<string, { x: number; y: number }>
@@ -162,6 +164,7 @@ export function WorkspaceHistoryCanvas({
                 zoom={zoom}
                 viewportWidth={historyCanvasWidth}
                 viewportHeight={historyCanvasHeight}
+                searchQuery={searchQuery}
                 offset={graphOffsets[commit.id] ?? { x: 0, y: 0 }}
                 onOffsetChange={(nextOffset) => {
                   setGraphOffsets((currentOffsets) => ({

@@ -93,7 +93,9 @@ export default function VisualizerWorkspace({
     useState<WorkspacePanelId>("graph-source");
   const [isMenuCompact, setIsMenuCompact] = useState(initialMenuWidth <= 11);
   const [isDetailCollapsed, setIsDetailCollapsed] = useState(false);
+  const [detailSearchQuery, setDetailSearchQuery] = useState("");
   const [graphZoom, setGraphZoom] = useState(0.75);
+  const [graphSearchQuery, setGraphSearchQuery] = useState("");
   const [menuPanelWidth, setMenuPanelWidth] = useState(initialMenuWidth);
   const [detailPanelWidth, setDetailPanelWidth] = useState(initialDetailWidth);
   const [panelGroupWidth, setPanelGroupWidth] = useState(0);
@@ -424,6 +426,8 @@ export default function VisualizerWorkspace({
                 placeholder="Search"
                 searchIcon={searchIcon}
                 titleIcon={activePanelIcon}
+                searchValue={detailSearchQuery}
+                onSearchChange={setDetailSearchQuery}
               />
               <ScrollArea className="min-h-0 flex-1 bg-white">
                 <WorkspaceDetailContent
@@ -433,6 +437,7 @@ export default function VisualizerWorkspace({
                   onRegenerate={handleGenerateGraph}
                   selectedHistoryCommitHash={activeHistoryCommitId}
                   onHistoryCommitSelect={setActiveHistoryCommitId}
+                  searchQuery={detailSearchQuery}
                 />
               </ScrollArea>
             </section>
@@ -498,6 +503,8 @@ export default function VisualizerWorkspace({
                 placeholder={isHistoryPanel ? "Search" : "Search graph"}
                 searchIcon={searchIcon}
                 className="bg-[#C7DCF1]"
+                searchValue={graphSearchQuery}
+                onSearchChange={setGraphSearchQuery}
               />
               <div className="relative min-h-0 flex-1">
                 <div
@@ -528,6 +535,7 @@ export default function VisualizerWorkspace({
                     commits={historyCommits}
                     activeCommitId={activeHistoryCommitId}
                     zoom={graphZoom}
+                    searchQuery={graphSearchQuery}
                   />
                 ) : (
                   <div className="h-full bg-[linear-gradient(to_right,rgba(4,8,14,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(4,8,14,0.06)_1px,transparent_1px)] bg-[size:24px_24px]">
@@ -546,6 +554,7 @@ export default function VisualizerWorkspace({
                                 <PolicyGraphCanvas
                                   graphId={graph.id}
                                   zoom={graphZoom}
+                                  searchQuery={graphSearchQuery}
                                   viewportWidth={980}
                                   viewportHeight={Math.max(
                                     graphViewportSize.height - 48,

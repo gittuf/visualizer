@@ -18,6 +18,7 @@ import {
 
 interface DetailPanelPolicyQueryProps {
   workspaceData?: DemoVisualizerData | null;
+  searchQuery?: string;
   selectedBranch: string;
   selectedChangedPath: string;
   showResults: boolean;
@@ -39,6 +40,7 @@ interface DetailPanelPolicyQueryProps {
 
 export function DetailPanelPolicyQuery({
   workspaceData,
+  searchQuery,
   selectedBranch,
   selectedChangedPath,
   showResults,
@@ -64,7 +66,7 @@ export function DetailPanelPolicyQuery({
 
   return (
     <div className="space-y-2 px-5 pb-8">
-      <PanelSection label="Branch">
+      <PanelSection label="Branch" searchQuery={searchQuery}>
         <SelectField
           options={branchOptions.map((label) => ({ label, icon: branchIcon }))}
           selectedLabel={selectedBranch}
@@ -72,7 +74,7 @@ export function DetailPanelPolicyQuery({
           fullWidth
         />
       </PanelSection>
-      <PanelSection label="Changed path">
+      <PanelSection label="Changed path" searchQuery={searchQuery}>
         <SelectField
           options={changedPathOptions.map((label) => ({ label, icon: emptyFileIcon }))}
           selectedLabel={selectedChangedPath}
@@ -110,8 +112,9 @@ export function DetailPanelPolicyQuery({
       </div>
       {showResults ? (
         <>
-          <PanelSection label="Query Result" className="pt-6">
+          <PanelSection label="Query Result" className="pt-6" searchQuery={searchQuery}>
             <SummaryMetricGrid
+              searchQuery={searchQuery}
               items={[
                 {
                   value: resultState.matchedBranch,
@@ -129,10 +132,10 @@ export function DetailPanelPolicyQuery({
             />
           </PanelSection>
           <section className="space-y-4 py-4">
-            <SectionBulletLabel label="Authorized users" />
+            <SectionBulletLabel label="Authorized users" searchQuery={searchQuery} />
             <div className="flex flex-wrap gap-5">
               {resultState.authorizedUsers.map((user) => (
-                <QueryUserCard key={user} name={user} />
+                <QueryUserCard key={user} name={user} searchQuery={searchQuery} />
               ))}
             </div>
           </section>
