@@ -11,8 +11,8 @@ import {
   DetailPanelMetadata,
   DetailPanelPolicyQuery,
   DetailPanelSettings,
-} from "@/page-components/visualizer/detail/workspace-detail-panels";
-import type { WorkspacePanelId } from "@/page-components/visualizer/visualizer-workspace-types";
+} from "@/pages/visualizer/panel-tabs/workspace-detail-panels";
+import type { WorkspacePanelId } from "@/pages/visualizer/visualizer-workspace-types";
 
 interface WorkspaceDetailContentProps {
   activePanel: WorkspacePanelId;

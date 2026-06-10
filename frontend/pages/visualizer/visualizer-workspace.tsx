@@ -17,14 +17,14 @@ import settingsIcon from "@/assets/Settings.png";
 import zoomInIcon from "@/assets/zoom-in.png";
 import zoomOutIcon from "@/assets/zoom-out.png";
 import type { PanelImperativeHandle } from "react-resizable-panels";
-import { PolicyGraphCanvas } from "@/page-components/visualizer/policy-graph-canvas";
+import { PolicyGraphCanvas } from "@/pages/visualizer/policy-graph-canvas";
 import {
   getDefaultHistoryCommitId,
   getHistoryTimelineCommits,
   WorkspaceHistoryCanvas,
   WorkspaceHistoryTimelineStrip,
-} from "@/page-components/visualizer/workspace-history-canvas";
-import { WorkspaceDetailContent } from "@/page-components/visualizer/workspace-detail-content";
+} from "@/pages/visualizer/workspace-history-canvas";
+import { WorkspaceDetailContent } from "@/pages/visualizer/workspace-detail-content";
 import { WorkspaceActionButton } from "@/components/visualizer/workspace-action-button";
 import { WorkspaceBottomBar } from "@/components/visualizer/workspace-bottom-bar";
 import { WorkspaceDetailToggle } from "@/components/visualizer/workspace-detail-toggle";
@@ -38,7 +38,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RepositoryInfo } from "@/lib/repository-handler";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
-import type { WorkspacePanelId } from "@/page-components/visualizer/visualizer-workspace-types";
+import type { WorkspacePanelId } from "@/pages/visualizer/visualizer-workspace-types";
 
 interface VisualizerWorkspaceProps {
   repository: RepositoryInfo;

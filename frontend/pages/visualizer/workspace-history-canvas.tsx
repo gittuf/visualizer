@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
 import { demoVisualizerData } from "@/lib/demo-visualizer-data";
-import { PolicyGraphCanvas } from "@/page-components/visualizer/policy-graph-canvas";
+import { PolicyGraphCanvas } from "@/pages/visualizer/policy-graph-canvas";
 
 interface WorkspaceHistoryCanvasProps {
   commits: HistoryTimelineCommit[];

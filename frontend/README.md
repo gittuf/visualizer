@@ -66,35 +66,45 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```
 frontend/
 ├── app/
-│   ├── globals.css      # Tailwind & global styles
-│   ├── layout.tsx       # Root layout & metadata
-│   └── page.tsx         # Main page with commit form & tabs
+│   ├── globals.css                 # Tailwind & global styles
+│   ├── layout.tsx                  # Root layout & metadata
+│   ├── page.tsx                    # Home route: repository entry + visualizer workspace
+│   └── playground/
+│       └── page.tsx                # Interactive visualizer tools route
+├── pages/
+│   ├── repository/
+│   │   └── repository-selector.tsx # Repository selection screen
+│   ├── playground/                 # Route-sized playground sections and trust graph
+│   └── visualizer/
+│       ├── visualizer-workspace.tsx
+│       ├── policy-graph-canvas.tsx
+│       ├── workspace-history-canvas.tsx
+│       ├── workspace-detail-content.tsx
+│       └── panel-tabs/             # Detail panel tabs shown inside the workspace
 ├── components/
-│   ├── collapsible-card.tsx
-│   ├── commit-list.tsx
-│   ├── commit-compare.tsx
-│   ├── commit-analysis.tsx
-│   ├── json-tree-visualization.tsx
-│   ├── json-diff-visualization.tsx
-│   └── ui/              # Reusable UI primitives (Button, Input, Card, etc.)
-├── lib/
-│   ├── mock-api.ts      # Mock fetching commits & metadata
-│   ├── json-diff.ts     # JSON comparison utilities
-│   ├── utils.ts         # Helper functions
-│   └── types.ts         # Type definitions
-├── public/              # Static assets
-├── components.json      # shadcn config
-├── next.config.ts
+│   ├── app/                        # Shared app shell pieces
+│   ├── common/                     # Reusable non-route-specific feature components
+│   ├── ui/                         # shadcn/Radix-based UI primitives
+│   └── visualizer/                 # Shared visualizer controls and primitives
+├── hooks/
+│   ├── explorer/                   # Repository explorer hooks
+│   └── visualizer/                 # Visualizer-specific hooks
+├── lib/                            # Utilities, constants, demo data, and API helpers
+├── archive/                         # Older and currently unused page/component implementations from previous version
+├── public/                         # Static assets served by Next.js
+├── assets/                         # Imported image assets used by the UI
+├── fixtures/                       # Simulator fixture data
+├── components.json                 # shadcn config
+├── next.config.mjs
 ├── package.json
 └── tsconfig.json
 ```
 
 ## Usage
 
-1. Enter a GitHub repository URL containing gittuf metadata (e.g.,
-   `https://github.com/gittuf/gittuf`).
-2. Click **Fetch Repository** to load commits.
-3. Select a commit to view its metadata or choose two commits to compare.
-4. Switch between **Commits**, **Visualization**, **Compare**, and **Analysis**
-   tabs.
-5. Toggle between `root.json` and `targets.json` using the file buttons.
+1. Open the home route and enter a Git repository URL, choose a local
+   repository, or launch the demo workspace.
+2. Explore the visualizer workspace, including the graph canvas, history strip,
+   and detail panel tabs.
+3. Open `/playground` to use the interactive visualizer playground and trust
+   graph walkthrough.

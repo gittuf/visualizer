@@ -5,7 +5,7 @@ import { Sparkles, Maximize2, Minimize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrustGraph } from "@/page-components/visualization/trust-graph"
+import { TrustGraph } from "@/pages/playground/trust-graph"
 import type { SimulatorState } from "@/hooks/use-gittuf-simulator"
 
 interface SimulatorGraphProps {

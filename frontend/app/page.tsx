@@ -1,7 +1,7 @@
 "use client"
 
-import RepositorySelector from "@/page-components/repository/repository-selector"
-import VisualizerWorkspace from "@/page-components/visualizer/visualizer-workspace"
+import RepositorySelector from "@/pages/repository/repository-selector"
+import VisualizerWorkspace from "@/pages/visualizer/visualizer-workspace"
 
 import Header from "@/components/app/header"
 import { useGittufExplorer } from "@/hooks/use-gittuf-explorer"

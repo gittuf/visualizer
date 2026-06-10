@@ -8,7 +8,7 @@ import type { Commit } from "@/lib/types"
 import type { ViewMode } from "@/lib/view-mode-utils"
 import dynamic from "next/dynamic"
 
-const JsonTreeVisualization = dynamic(() => import("@/page-components/json/json-tree-visualization"), {
+const JsonTreeVisualization = dynamic(() => import("@/legacy/page-components/json/json-tree-visualization"), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-[600px] w-full">

@@ -19,7 +19,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css"
 import dagre from "dagre"
 import { motion } from "framer-motion"
-import { CollapsibleCard } from "@/components/common/collapsible-card"
+import { CollapsibleCard } from "@/legacy/components/common/collapsible-card"
 import { compareJsonObjects, type DiffEntry, type DiffResult } from "@/lib/json-diff"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"

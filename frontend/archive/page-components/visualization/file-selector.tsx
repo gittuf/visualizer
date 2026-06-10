@@ -4,7 +4,7 @@ import { FileJson } from "lucide-react"
 import { FILENAMES } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import EnhancedViewModeToggle from "@/components/common/enhanced-view-mode-toggle"
+import EnhancedViewModeToggle from "@/legacy/components/common/enhanced-view-mode-toggle"
 import type { ViewMode } from "@/lib/view-mode-utils"
 
 interface FileSelectorProps {
