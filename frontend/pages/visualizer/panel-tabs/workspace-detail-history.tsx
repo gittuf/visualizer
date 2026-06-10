@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import ascendingIcon from "@/assets/ascending.png";
 import discendingIcon from "@/assets/discending.png";
@@ -14,52 +14,48 @@ import {
   detailColors,
   SelectField,
 } from "@/components/visualizer/detail/workspace-detail-primitives";
+import type { HistorySortField } from "@/pages/visualizer/workspace-history-canvas";
 
 interface DetailPanelHistoryProps {
   workspaceData?: DemoVisualizerData | null;
+  commits: Array<{
+    id: number;
+    hash: string;
+    message: string;
+    author: string;
+    authorLabel?: string;
+    date: string;
+  }>;
   selectedCommitHash?: string | null;
   onSelectedCommitChange?: (commitHash: string) => void;
   searchQuery?: string;
+  selectedSort: HistorySortField;
+  isAscending: boolean;
+  onSortChange: (sortField: HistorySortField) => void;
+  onSortDirectionToggle: () => void;
 }
-
-type SortField = "date" | "author";
 
 export function DetailPanelHistory({
   workspaceData,
+  commits,
   selectedCommitHash,
   onSelectedCommitChange,
   searchQuery = "",
+  selectedSort,
+  isAscending,
+  onSortChange,
+  onSortDirectionToggle,
 }: DetailPanelHistoryProps) {
   const historyData =
     workspaceData?.workspaceDetails.history ??
     demoVisualizerData.workspaceDetails.history;
-  const baseCommits = historyData.commits.map((commit, index) => ({ id: index, ...commit }));
   const sortOptions = Array.from(
     new Set(
       historyData.sortOptions.map((option) =>
         option === "author" ? "author" : "date",
       ),
     ),
-  ) as SortField[];
-  const initialSortSelection = historyData.selectedSort ?? historyData.sortOptions[0];
-  const [selectedSort, setSelectedSort] = useState<SortField>(
-    initialSortSelection === "author" ? "author" : "date",
-  );
-  const [isAscending, setIsAscending] = useState(initialSortSelection === "oldest");
-  const commits = useMemo(() => {
-    const sortedCommits = [...baseCommits];
-
-    if (selectedSort === "author") {
-      sortedCommits.sort((a, b) => a.author.localeCompare(b.author));
-      return isAscending ? sortedCommits : sortedCommits.reverse();
-    }
-
-    sortedCommits.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-
-    return isAscending ? sortedCommits : sortedCommits.reverse();
-  }, [baseCommits, isAscending, selectedSort]);
+  ) as HistorySortField[];
   const {
     commitListRef,
     commitsPerPage,
@@ -76,13 +72,16 @@ export function DetailPanelHistory({
   useEffect(() => {
     if (!selectedCommitHash) return;
 
-    const nextSelectedCommitId = commits.findIndex(
+    const nextSelectedCommit = commits.find(
       (commit) => commit.hash === selectedCommitHash,
     );
-    if (nextSelectedCommitId < 0 || nextSelectedCommitId === selectedCommitId) return;
+    if (!nextSelectedCommit || nextSelectedCommit.id === selectedCommitId) return;
 
-    setSelectedCommitId(nextSelectedCommitId);
-    setCurrentPage(Math.floor(nextSelectedCommitId / commitsPerPage) + 1);
+    const nextSelectedCommitIndex = commits.findIndex(
+      (commit) => commit.id === nextSelectedCommit.id,
+    );
+    setSelectedCommitId(nextSelectedCommit.id);
+    setCurrentPage(Math.floor(nextSelectedCommitIndex / commitsPerPage) + 1);
   }, [
     commits,
     commitsPerPage,
@@ -102,12 +101,12 @@ export function DetailPanelHistory({
           }))}
           selectedLabel={selectedSort}
           displayLabel={`Sort by: ${selectedSort}`}
-          onChange={(value) => setSelectedSort(value as SortField)}
+          onChange={(value) => onSortChange(value as HistorySortField)}
           className="w-[132px]"
         />
         <button
           type="button"
-          onClick={() => setIsAscending((current) => !current)}
+          onClick={onSortDirectionToggle}
           aria-label={`Sort ${isAscending ? "ascending" : "descending"}. Click to switch to ${
             isAscending ? "descending" : "ascending"
           } order.`}

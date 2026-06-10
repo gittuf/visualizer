@@ -19,8 +19,11 @@ import zoomOutIcon from "@/assets/zoom-out.png";
 import type { PanelImperativeHandle } from "react-resizable-panels";
 import { PolicyGraphCanvas } from "@/pages/visualizer/policy-graph-canvas";
 import {
+  getDefaultHistorySortState,
   getDefaultHistoryCommitId,
   getHistoryTimelineCommits,
+  sortHistoryTimelineCommits,
+  type HistorySortField,
   WorkspaceHistoryCanvas,
   WorkspaceHistoryTimelineStrip,
 } from "@/pages/visualizer/workspace-history-canvas";
@@ -123,9 +126,53 @@ export default function VisualizerWorkspace({
   const detailPanelRef = useRef<PanelImperativeHandle | null>(null);
   const nextGraphTabNumberRef = useRef(2);
   const nextGraphInstanceNumberRef = useRef(2);
-  const historyCommits = useMemo(
+  const baseHistoryCommits = useMemo(
     () => getHistoryTimelineCommits(workspaceData),
     [workspaceData],
+  );
+  const defaultHistorySortState = useMemo(
+    () => getDefaultHistorySortState(workspaceData),
+    [workspaceData],
+  );
+  const [historySortField, setHistorySortField] = useState<HistorySortField>(
+    defaultHistorySortState.sortField,
+  );
+  const [isHistorySortAscending, setIsHistorySortAscending] = useState(
+    defaultHistorySortState.isAscending,
+  );
+  const historyCommits = useMemo(
+    () =>
+      sortHistoryTimelineCommits(
+        baseHistoryCommits,
+        historySortField,
+        isHistorySortAscending,
+      ),
+    [baseHistoryCommits, historySortField, isHistorySortAscending],
+  );
+  const detailHistoryCommits = useMemo(
+    () =>
+      historyCommits.map((commit) => {
+        const historyData =
+          workspaceData?.workspaceDetails.history ??
+          demoVisualizerData.workspaceDetails.history;
+        const sourceCommit = historyData.commits.find(
+          (historyCommit) => historyCommit.hash === commit.hash,
+        );
+
+        return {
+          id: sourceCommit
+            ? historyData.commits.findIndex(
+                (historyCommit) => historyCommit.hash === commit.hash,
+              )
+            : -1,
+          hash: commit.hash,
+          message: sourceCommit?.message ?? "",
+          author: commit.author,
+          authorLabel: commit.authorLabel,
+          date: commit.date,
+        };
+      }),
+    [historyCommits, workspaceData],
   );
   const defaultHistoryCommitId = useMemo(
     () => getDefaultHistoryCommitId(workspaceData) ?? historyCommits[0]?.id ?? null,
@@ -151,6 +198,11 @@ export default function VisualizerWorkspace({
   useEffect(() => {
     setActiveHistoryCommitId(defaultHistoryCommitId);
   }, [defaultHistoryCommitId]);
+
+  useEffect(() => {
+    setHistorySortField(defaultHistorySortState.sortField);
+    setIsHistorySortAscending(defaultHistorySortState.isAscending);
+  }, [defaultHistorySortState]);
 
   useEffect(() => {
     if (activePanel !== "history") return;
@@ -435,9 +487,16 @@ export default function VisualizerWorkspace({
                   repository={repository}
                   workspaceData={workspaceData}
                   onRegenerate={handleGenerateGraph}
+                  historyCommits={detailHistoryCommits}
                   selectedHistoryCommitHash={activeHistoryCommitId}
                   onHistoryCommitSelect={setActiveHistoryCommitId}
                   searchQuery={detailSearchQuery}
+                  selectedHistorySort={historySortField}
+                  isHistorySortAscending={isHistorySortAscending}
+                  onHistorySortChange={setHistorySortField}
+                  onHistorySortDirectionToggle={() =>
+                    setIsHistorySortAscending((current) => !current)
+                  }
                 />
               </ScrollArea>
             </section>

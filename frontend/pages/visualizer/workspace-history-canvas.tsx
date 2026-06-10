@@ -26,6 +26,8 @@ export interface HistoryTimelineCommit {
   date: string;
 }
 
+export type HistorySortField = "date" | "author";
+
 const historyCanvasWidth = 980;
 const historyCanvasHeight = 980;
 const selectedCommitColor = "#DBE3E5";
@@ -52,6 +54,42 @@ export function getHistoryTimelineCommits(
     authorLabel: commit.authorLabel,
     date: commit.date,
   }));
+}
+
+export function getDefaultHistorySortState(
+  workspaceData?: DemoVisualizerData | null,
+) {
+  const historyData =
+    workspaceData?.workspaceDetails.history ??
+    demoVisualizerData.workspaceDetails.history;
+  const selectedSort = historyData.selectedSort ?? historyData.sortOptions[0] ?? "date";
+
+  return {
+    sortField: selectedSort === "author" ? "author" : "date",
+    isAscending: selectedSort === "oldest",
+  } satisfies {
+    sortField: HistorySortField;
+    isAscending: boolean;
+  };
+}
+
+export function sortHistoryTimelineCommits(
+  commits: HistoryTimelineCommit[],
+  sortField: HistorySortField,
+  isAscending: boolean,
+) {
+  const sortedCommits = [...commits];
+
+  if (sortField === "author") {
+    sortedCommits.sort((a, b) => a.author.localeCompare(b.author));
+    return isAscending ? sortedCommits : sortedCommits.reverse();
+  }
+
+  sortedCommits.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+
+  return isAscending ? sortedCommits : sortedCommits.reverse();
 }
 
 export function getDefaultHistoryCommitId(

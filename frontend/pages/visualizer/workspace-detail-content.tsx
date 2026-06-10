@@ -12,6 +12,7 @@ import {
   DetailPanelPolicyQuery,
   DetailPanelSettings,
 } from "@/pages/visualizer/panel-tabs/workspace-detail-panels";
+import type { HistorySortField } from "@/pages/visualizer/workspace-history-canvas";
 import type { WorkspacePanelId } from "@/pages/visualizer/visualizer-workspace-types";
 
 interface WorkspaceDetailContentProps {
@@ -19,9 +20,21 @@ interface WorkspaceDetailContentProps {
   repository: RepositoryInfo;
   workspaceData?: DemoVisualizerData | null;
   onRegenerate: () => void;
+  historyCommits: Array<{
+    id: number;
+    hash: string;
+    message: string;
+    author: string;
+    authorLabel?: string;
+    date: string;
+  }>;
   selectedHistoryCommitHash?: string | null;
   onHistoryCommitSelect?: (commitHash: string) => void;
   searchQuery?: string;
+  selectedHistorySort: HistorySortField;
+  isHistorySortAscending: boolean;
+  onHistorySortChange: (sortField: HistorySortField) => void;
+  onHistorySortDirectionToggle: () => void;
 }
 
 export function WorkspaceDetailContent({
@@ -29,9 +42,14 @@ export function WorkspaceDetailContent({
   repository,
   workspaceData,
   onRegenerate,
+  historyCommits,
   selectedHistoryCommitHash,
   onHistoryCommitSelect,
   searchQuery,
+  selectedHistorySort,
+  isHistorySortAscending,
+  onHistorySortChange,
+  onHistorySortDirectionToggle,
 }: WorkspaceDetailContentProps) {
   const policyQueryDefaults =
     workspaceData?.workspaceDetails.policyQuery ??
@@ -98,9 +116,14 @@ export function WorkspaceDetailContent({
       return (
         <DetailPanelHistory
           workspaceData={workspaceData}
+          commits={historyCommits}
           selectedCommitHash={selectedHistoryCommitHash}
           onSelectedCommitChange={onHistoryCommitSelect}
           searchQuery={searchQuery}
+          selectedSort={selectedHistorySort}
+          isAscending={isHistorySortAscending}
+          onSortChange={onHistorySortChange}
+          onSortDirectionToggle={onHistorySortDirectionToggle}
         />
       );
     case "compare":
