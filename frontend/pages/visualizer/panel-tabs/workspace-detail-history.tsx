@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import ascendingIcon from "@/assets/ascending.png";
+import discendingIcon from "@/assets/discending.png";
 import {
   demoVisualizerData,
   type DemoVisualizerData,
@@ -19,6 +22,8 @@ interface DetailPanelHistoryProps {
   searchQuery?: string;
 }
 
+type SortField = "date" | "author";
+
 export function DetailPanelHistory({
   workspaceData,
   selectedCommitHash,
@@ -29,24 +34,32 @@ export function DetailPanelHistory({
     workspaceData?.workspaceDetails.history ??
     demoVisualizerData.workspaceDetails.history;
   const baseCommits = historyData.commits.map((commit, index) => ({ id: index, ...commit }));
-  const sortOptions = historyData.sortOptions;
-  const [selectedSort, setSelectedSort] = useState(
-    historyData.selectedSort ?? sortOptions[0],
+  const sortOptions = Array.from(
+    new Set(
+      historyData.sortOptions.map((option) =>
+        option === "author" ? "author" : "date",
+      ),
+    ),
+  ) as SortField[];
+  const initialSortSelection = historyData.selectedSort ?? historyData.sortOptions[0];
+  const [selectedSort, setSelectedSort] = useState<SortField>(
+    initialSortSelection === "author" ? "author" : "date",
   );
+  const [isAscending, setIsAscending] = useState(initialSortSelection === "oldest");
   const commits = useMemo(() => {
     const sortedCommits = [...baseCommits];
 
     if (selectedSort === "author") {
       sortedCommits.sort((a, b) => a.author.localeCompare(b.author));
-      return sortedCommits;
+      return isAscending ? sortedCommits : sortedCommits.reverse();
     }
 
     sortedCommits.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
-    return selectedSort === "oldest" ? sortedCommits : sortedCommits.reverse();
-  }, [baseCommits, selectedSort]);
+    return isAscending ? sortedCommits : sortedCommits.reverse();
+  }, [baseCommits, isAscending, selectedSort]);
   const {
     commitListRef,
     commitsPerPage,
@@ -81,7 +94,7 @@ export function DetailPanelHistory({
 
   return (
     <div className="flex h-full flex-col px-1 pb-4">
-      <div className="flex items-center justify-end px-4 pb-3 pt-2">
+      <div className="flex items-center justify-end gap-2 px-4 pb-3 pt-2">
         <SelectField
           options={sortOptions.map((option) => ({
             label: `Sort by: ${option}`,
@@ -89,9 +102,24 @@ export function DetailPanelHistory({
           }))}
           selectedLabel={selectedSort}
           displayLabel={`Sort by: ${selectedSort}`}
-          onChange={setSelectedSort}
+          onChange={(value) => setSelectedSort(value as SortField)}
           className="w-[132px]"
         />
+        <button
+          type="button"
+          onClick={() => setIsAscending((current) => !current)}
+          aria-label={`Sort ${isAscending ? "ascending" : "descending"}. Click to switch to ${
+            isAscending ? "descending" : "ascending"
+          } order.`}
+          title={isAscending ? "Ascending order" : "Descending order"}
+          className="flex h-9 w-6 items-center justify-center"
+        >
+          <Image
+            src={isAscending ? ascendingIcon : discendingIcon}
+            alt=""
+            className="h-4 w-4"
+          />
+        </button>
       </div>
       <div className="flex min-h-0 flex-1 flex-col">
         <div ref={commitListRef} className="min-h-0 flex-1 overflow-hidden">
