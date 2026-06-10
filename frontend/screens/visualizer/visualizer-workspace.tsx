@@ -67,7 +67,9 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
     isHistoryPanel,
     isHistorySortAscending,
     isHistoryStripCollapsed,
+    isMenuCollapsed,
     isMenuCompact,
+    menuPanelRef,
     onLayoutChanged,
     panelGroupRef,
     selectedBaseVersion,
@@ -81,7 +83,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
     setIsDetailCollapsed,
     setIsHistorySortAscending,
     setIsHistoryStripCollapsed,
-    setIsMenuCompact,
+    setIsMenuCollapsed,
     setMenuPanelWidth,
     setSelectedBaseVersion,
     setSelectedCompareVersion,
@@ -113,15 +115,23 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
         >
           <ResizablePanel
             id="workspace-menu-panel"
+            className="min-w-0"
+            panelRef={menuPanelRef}
+            collapsible
+            collapsedSize="0%"
             defaultSize="10%"
             minSize="7%"
             maxSize="24%"
             onResize={(panelSize) => {
               setMenuPanelWidth(panelSize.asPercentage);
-              setIsMenuCompact(panelSize.asPercentage <= 8);
+              setIsMenuCollapsed(panelSize.asPercentage <= 1);
             }}
           >
-            <aside className="h-full overflow-hidden bg-white py-3">
+            <aside
+              className={`h-full overflow-hidden bg-white py-3 ${
+                isMenuCollapsed ? "pointer-events-none opacity-0" : ""
+              }`}
+            >
               <nav className="space-y-1 px-3">
                 {visualizerMenuItems.map((item) => (
                   <WorkspaceMenuItem
@@ -141,6 +151,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
 
           <ResizablePanel
             id="workspace-detail-panel"
+            className="min-w-0"
             panelRef={detailPanelRef}
             collapsible
             collapsedSize="0%"
@@ -213,7 +224,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
           </ResizableHandle>
 
           <ResizablePanel id="workspace-graph-panel" defaultSize="52%" minSize="35%">
-            <section className="flex h-full min-h-0 flex-col overflow-hidden bg-white">
+            <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-white">
               {isHistoryPanel && !isHistoryStripCollapsed ? (
                 <HistoryTimelineStrip
                   commits={historyCommits}

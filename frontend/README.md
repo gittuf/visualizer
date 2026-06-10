@@ -5,18 +5,22 @@ in Next.js.
 
 ## Features
 
-- **Commit Visualization**: Browse repository commits and view associated
-  security metadata JSON.
-- **JSON Tree View**: Interactive tree visualization of JSON structures using
-  ReactFlow.
-- **JSON Diff Visualization**: Visual diff between two commits’ metadata with
-  statistics.
-- **JSON Diff Statistics**: Summarize added, removed, changed, and unchanged
-  elements.
-- **Analysis Dashboard**: Chart the evolution, structure distribution, and
-  change frequency across multiple commits.
-- **Dynamic File Selection**: Switch between different metadata files (e.g.,
-  `root.json`, `targets.json`).
+- **Repository Entry Flow**: Connect a remote repository, point at a local
+  repository, or launch the demo workspace from the home screen.
+- **Policy Graph Workspace**: Explore one or more draggable policy graphs inside
+  the main visualizer canvas, with tabbed canvases along the bottom bar.
+- **Graph Source Controls**: Inspect repository, policy ref, policy version,
+  metadata source, and active mode from the detail panel.
+- **Policy Query Panel**: Query a branch and changed path to see the matched
+  rule, required approvals, and authorized users.
+- **History Timeline**: Open a history view with sortable commits, a commit
+  strip, and graph canvases for browsing policy state across revisions.
+- **Comparison Canvas**: Generate side-by-side base and compare graphs with
+  added, removed, modified, and unchanged diff highlighting.
+- **Metadata and Settings Panels**: Review metadata status and summary views,
+  then adjust visible node/detail settings for the workspace.
+- **Interactive Playground**: Use the `/playground` route for the trust graph
+  walkthrough, simulator controls, analysis, and glossary experience.
 
 ## Tech Stack
 

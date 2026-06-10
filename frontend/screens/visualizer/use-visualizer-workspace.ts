@@ -22,6 +22,21 @@ import type {
   WorkspacePanelId,
 } from "@/screens/visualizer/visualizer.types";
 
+const compactMenuWidthPx = 132;
+const autoCollapseMenuWidthPx = 1180;
+const autoCollapseDetailWidthPx = 980;
+
+function shouldUseCompactMenu(
+  menuWidthPercent: number,
+  totalWidthPx: number,
+) {
+  if (totalWidthPx > 0) {
+    return totalWidthPx * (menuWidthPercent / 100) <= compactMenuWidthPx;
+  }
+
+  return menuWidthPercent <= 8;
+}
+
 export function useVisualizerWorkspace({
   workspaceData,
   onReload,
@@ -33,7 +48,8 @@ export function useVisualizerWorkspace({
   const initialDetailWidth = defaultLayout?.["workspace-detail-panel"] ?? 25;
 
   const [activePanel, setActivePanel] = useState<WorkspacePanelId>("graph-source");
-  const [isMenuCompact, setIsMenuCompact] = useState(initialMenuWidth <= 11);
+  const [isMenuCompact, setIsMenuCompact] = useState(initialMenuWidth <= 8);
+  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
   const [isDetailCollapsed, setIsDetailCollapsed] = useState(false);
   const [detailSearchQuery, setDetailSearchQuery] = useState("");
   const [graphZoom, setGraphZoom] = useState(0.75);
@@ -67,7 +83,10 @@ export function useVisualizerWorkspace({
 
   const panelGroupRef = useRef<HTMLDivElement | null>(null);
   const graphViewportRef = useRef<HTMLDivElement | null>(null);
+  const menuPanelRef = useRef<PanelImperativeHandle | null>(null);
   const detailPanelRef = useRef<PanelImperativeHandle | null>(null);
+  const didAutoCollapseMenuRef = useRef(false);
+  const didAutoCollapseDetailRef = useRef(false);
   const nextGraphTabNumberRef = useRef(2);
   const nextGraphInstanceNumberRef = useRef(2);
 
@@ -254,6 +273,38 @@ export function useVisualizerWorkspace({
   }, []);
 
   useEffect(() => {
+    setIsMenuCompact(shouldUseCompactMenu(menuPanelWidth, panelGroupWidth));
+  }, [menuPanelWidth, panelGroupWidth]);
+
+  useEffect(() => {
+    if (!menuPanelRef.current || !detailPanelRef.current || panelGroupWidth <= 0) return;
+
+    if (panelGroupWidth <= autoCollapseMenuWidthPx && !isMenuCollapsed) {
+      menuPanelRef.current.collapse();
+      didAutoCollapseMenuRef.current = true;
+    } else if (
+      panelGroupWidth > autoCollapseMenuWidthPx &&
+      isMenuCollapsed &&
+      didAutoCollapseMenuRef.current
+    ) {
+      menuPanelRef.current.expand();
+      didAutoCollapseMenuRef.current = false;
+    }
+
+    if (panelGroupWidth <= autoCollapseDetailWidthPx && !isDetailCollapsed) {
+      detailPanelRef.current.collapse();
+      didAutoCollapseDetailRef.current = true;
+    } else if (
+      panelGroupWidth > autoCollapseDetailWidthPx &&
+      isDetailCollapsed &&
+      didAutoCollapseDetailRef.current
+    ) {
+      detailPanelRef.current.expand();
+      didAutoCollapseDetailRef.current = false;
+    }
+  }, [isDetailCollapsed, isMenuCollapsed, panelGroupWidth]);
+
+  useEffect(() => {
     const viewport = graphViewportRef.current;
     if (!viewport) return;
 
@@ -296,6 +347,8 @@ export function useVisualizerWorkspace({
 
   const handleDetailPanelToggle = () => {
     if (!detailPanelRef.current) return;
+
+    didAutoCollapseDetailRef.current = false;
 
     if (isDetailCollapsed) {
       detailPanelRef.current.expand();
@@ -488,8 +541,10 @@ export function useVisualizerWorkspace({
     isHistoryPanel,
     isHistorySortAscending,
     isHistoryStripCollapsed,
+    isMenuCollapsed,
     isMenuCompact,
     menuPanelWidth,
+    menuPanelRef,
     onLayoutChanged,
     panelGroupRef,
     selectedBaseVersion,
@@ -503,6 +558,7 @@ export function useVisualizerWorkspace({
     setIsDetailCollapsed,
     setIsHistorySortAscending,
     setIsHistoryStripCollapsed,
+    setIsMenuCollapsed,
     setIsMenuCompact,
     setMenuPanelWidth,
     setSelectedBaseVersion,

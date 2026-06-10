@@ -17,7 +17,7 @@ export function WorkspaceSearchField({
   onChange,
 }: WorkspaceSearchFieldProps) {
   return (
-    <div className="relative w-full max-w-[220px]">
+    <div className="relative min-w-0 w-full max-w-[220px] shrink">
       <Input
         placeholder={placeholder}
         value={value}
