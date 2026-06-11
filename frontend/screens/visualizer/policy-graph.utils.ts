@@ -53,6 +53,9 @@ export function getNodeTextStyle(
 }
 
 export function getLaneNodeChangeTypes(lane: PolicyGraphLane) {
+  // Diff colors are applied at the most specific rendered element we can infer.
+  // A changed approval count should color the approval value and role icon
+  // without implicitly coloring unchanged principals beneath that lane.
   const branch = getChangeType(lane.branchStatus);
   const laneDefault = lane.status;
   const path = getChangeType(lane.pathStatus ?? laneDefault);
@@ -90,6 +93,8 @@ export function getLaneCenters(laneCount: number) {
     return [boundary.x + boundary.width / 2];
   }
 
+  // Keep multi-lane graphs visually centered while leaving enough side padding
+  // for principal spreads and freeform dragging within the dotted boundary.
   const usableWidth = boundary.width - 420;
   return Array.from({ length: laneCount }, (_, index) => {
     const ratio = laneCount === 1 ? 0.5 : index / (laneCount - 1);
@@ -100,6 +105,8 @@ export function getLaneCenters(laneCount: number) {
 export function getPrincipalOffsets(principalCount: number) {
   if (principalCount <= 1) return [0];
 
+  // Cap the spread so larger principal groups stay inside the graph boundary
+  // without small groups compressed.
   const maxSpread = 300;
   const spread = Math.min(maxSpread, Math.max(120, (principalCount - 1) * 90));
   const start = -spread / 2;

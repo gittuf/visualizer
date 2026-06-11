@@ -48,6 +48,8 @@ export function useVisualizerTabs({
   const isComparePanel = activeGraphTabId === compareTabId;
 
   const handleHistoryPanelSelect = () => {
+    // History owns a reserved tab ID so menu selection, bottom-bar selection,
+    // and history-only canvas behavior all point at the same workspace surface.
     setGraphTabs((currentTabs) => {
       if (currentTabs.some((tab) => tab.id === historyTabId)) {
         return currentTabs;
@@ -94,6 +96,8 @@ export function useVisualizerTabs({
   );
 
   const handleGenerateCompareGraph = () => {
+    // Compare behaves like history: it gets a stable reserved tab instead of
+    // replacing the active graph tab, which preserves user canvas context.
     setGraphTabs((currentTabs) => {
       const existingCompareTab = currentTabs.find((tab) => tab.id === compareTabId);
       if (existingCompareTab) {
@@ -203,6 +207,8 @@ export function useVisualizerTabs({
 
     setActiveGraphTabId(tabId);
 
+    // Returning to a normal graph tab resets the side panel to the default graph
+    // controls if the user was previously in a reserved history/compare panel.
     if (activePanel === "history" || activePanel === "compare") {
       setActivePanel("graph-source");
     }

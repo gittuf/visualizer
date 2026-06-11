@@ -66,6 +66,8 @@ export function useVisualizerLayout() {
       return;
     }
 
+    // Auto-collapse is width-driven, but only auto-expand panels that this hook
+    // previously collapsed. Manual user collapses should stay under user control.
     if (panelGroupWidth <= autoCollapseMenuWidthPx && !isMenuCollapsed) {
       menuPanelRef.current.collapse();
       didAutoCollapseMenuRef.current = true;
@@ -94,6 +96,8 @@ export function useVisualizerLayout() {
   const handleDetailPanelToggle = () => {
     if (!detailPanelRef.current) return;
 
+    // A manual toggle takes precedence over the auto-collapse bookkeeping until
+    // the next width-driven layout decision.
     didAutoCollapseDetailRef.current = false;
 
     if (isDetailCollapsed) {

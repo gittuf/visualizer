@@ -112,6 +112,8 @@ export function useVisualizerHistoryCompare(
   }, [activeComparison, compareData.graphsByVersion, selectedCompareVersion]);
 
   useEffect(() => {
+    // History selection follows the currently sorted commit list so the detail
+    // panel, timeline strip, and history canvases stay synchronized.
     setActiveHistoryCommitId(defaultHistoryCommitId);
   }, [defaultHistoryCommitId]);
 
@@ -121,6 +123,8 @@ export function useVisualizerHistoryCompare(
   }, [defaultHistorySortState]);
 
   useEffect(() => {
+    // Compare state is seeded from the current workspace payload whenever the
+    // repository/demo source changes, and it resets stale cross-repository pairs.
     setSelectedBaseVersion(
       compareData.selectedBaseVersion ?? compareData.baseVersionOptions[0],
     );
