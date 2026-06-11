@@ -97,7 +97,7 @@ export function SelectField({
         {isOpen ? (
           <div className="absolute left-0 top-[calc(100%+6px)] z-20 w-full origin-top overflow-hidden rounded-sm border border-(--secondary-color) bg-white shadow-[0_8px_24px_rgba(15,23,42,0.12)] animate-in fade-in-0 zoom-in-95 duration-150">
             <div className="relative">
-              <div className="max-h-44 overflow-y-auto overscroll-contain scroll-smooth">
+              <div className="max-h-[123px] overflow-y-auto overscroll-contain scroll-smooth">
                 {options.map((option) => {
                   const optionValue = getOptionValue(option);
                   const isSelected = optionValue === getOptionValue(selectedOption);
@@ -137,7 +137,7 @@ export function SelectField({
                   );
                 })}
               </div>
-              {options.length > 4 ? (
+              {options.length > 3 ? (
                 <>
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-3 bg-gradient-to-b from-white to-transparent" />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-white to-transparent" />
