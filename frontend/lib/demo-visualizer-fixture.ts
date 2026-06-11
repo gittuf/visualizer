@@ -171,6 +171,48 @@ export const demoVisualizerData: DemoVisualizerData = {
       selectedCommitHash: "c3d4e5f6",
       commits: [
         {
+          hash: "0a1b2c3d",
+          message: "[Linux fedora] Policy graph fails to refresh after reconnect.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-06-08T16:30:00.000Z",
+        },
+        {
+          hash: "1b2c3d4e",
+          message: "[Ubuntu] History canvas should preserve selected commit focus.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-06-07T13:10:00.000Z",
+        },
+        {
+          hash: "2c3d4e5f",
+          message: "[macOS] Compare graph should keep diff legend visible on resize.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-06-06T11:25:00.000Z",
+        },
+        {
+          hash: "3d4e5f6a",
+          message: "[Windows] Branch query panel should reset stale results when path changes.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-06-05T17:55:00.000Z",
+        },
+        {
+          hash: "4e5f6a7b",
+          message: "[Linux] Commit ordering should stay synced between strip and panel.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-06-04T09:35:00.000Z",
+        },
+        {
+          hash: "5f6a7b8c",
+          message: "[Fedora] Regenerating a graph should not drop manual canvas positions.",
+          author: "tonylee12345",
+          authorLabel: "opened by tonylee12345",
+          date: "2026-06-03T14:20:00.000Z",
+        },
+        {
           hash: "f6a7b8c9",
           message: "[Linux fedora] Installation / dependency error with Webui already installed.",
           author: "tonylee12345",
