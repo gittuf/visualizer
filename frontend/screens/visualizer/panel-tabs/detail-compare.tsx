@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import emptyFileIcon from "@/assets/empty_file.png";
 import swapVertIcon from "@/assets/swap_vert.png";
 import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
@@ -14,12 +14,14 @@ import {
   SelectField,
   SummaryMetricGrid,
 } from "@/components/visualizer/detail/workspace-detail-primitives";
+import type { VisualizerComparisonResult } from "@/screens/visualizer/compare.utils";
 
 interface DetailPanelCompareProps {
   workspaceData?: DemoVisualizerData | null;
   searchQuery?: string;
   selectedBaseVersion: string;
   selectedCompareVersion: string;
+  comparisonResult: VisualizerComparisonResult;
   hasCompared: boolean;
   onBaseVersionChange: (value: string) => void;
   onCompareVersionChange: (value: string) => void;
@@ -32,6 +34,7 @@ export function DetailPanelCompare({
   searchQuery,
   selectedBaseVersion,
   selectedCompareVersion,
+  comparisonResult,
   hasCompared,
   onBaseVersionChange,
   onCompareVersionChange,
@@ -44,15 +47,6 @@ export function DetailPanelCompare({
     demoVisualizerData.workspaceDetails.compare;
   const baseOptions = compareData.baseVersionOptions;
   const compareOptions = compareData.compareVersionOptions;
-  const comparisonResult = useMemo(() => {
-    const key = `${selectedBaseVersion}|${selectedCompareVersion}`;
-    return (
-      compareData.comparisonsByPair?.[key] ?? {
-        changedMetadata: compareData.changedMetadata,
-        stats: compareData.stats,
-      }
-    );
-  }, [compareData, selectedBaseVersion, selectedCompareVersion]);
 
   return (
     <div className="space-y-2 px-5 pb-8">
@@ -68,9 +62,13 @@ export function DetailPanelCompare({
         <button
           type="button"
           onClick={onSwapVersions}
-          className="flex h-8 w-8 items-center justify-center rounded-sm transition-colors duration-150 hover:bg-(--gray-highlight)"
+          className="group flex h-8 w-8 items-center justify-center rounded-sm transition-colors duration-150"
         >
-          <Image src={swapVertIcon} alt="" className="h-5 w-5" />
+          <Image
+            src={swapVertIcon}
+            alt=""
+            className="h-5 w-5 transition-all duration-150 group-hover:brightness-0 group-hover:saturate-100 group-hover:invert-[24%] group-hover:sepia-[96%] group-hover:saturate-[2678%] group-hover:hue-rotate-[204deg] group-hover:brightness-[97%] group-hover:contrast-[101%]"
+          />
         </button>
       </div>
       <PanelSection label="Compare Version" className="pt-2" searchQuery={searchQuery}>
@@ -98,17 +96,15 @@ export function DetailPanelCompare({
         <section className="space-y-4 py-4">
           <SectionBulletLabel label="Changed metadata" searchQuery={searchQuery} />
           <div className="space-y-2 pl-4 text-[12px]">
-            {comparisonResult.changedMetadata.map((item, index) => (
-              <div
-                key={item}
-                className={
-                  index < 2 ? "text-(--approve-color)" : "text-(--dark-gray)"
-                }
-              >
-                {index < 2 ? "✓" : "—"}{" "}
-                <SearchHighlightText text={item} query={searchQuery} />
-              </div>
-            ))}
+            {comparisonResult.changedMetadata.length > 0 ? (
+              comparisonResult.changedMetadata.map((item) => (
+                <div key={item} className="text-(--approve-color)">
+                  ✓ <SearchHighlightText text={item} query={searchQuery} />
+                </div>
+              ))
+            ) : (
+              <div className="text-(--dark-gray)">— No metadata changes</div>
+            )}
           </div>
           <SummaryMetricGrid items={comparisonResult.stats} searchQuery={searchQuery} />
         </section>

@@ -8,6 +8,7 @@ import {
   getHistoryTimelineCommits,
   sortHistoryTimelineCommits,
 } from "@/screens/visualizer/history-canvas";
+import { buildComparisonResult } from "@/screens/visualizer/compare.utils";
 import type { HistorySortField } from "@/screens/visualizer/history.types";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 
@@ -75,11 +76,6 @@ export function useVisualizerHistoryCompare(
     [historyCommits, workspaceData],
   );
 
-  const comparePairKey = `${selectedBaseVersion}|${selectedCompareVersion}`;
-  const activeComparison = useMemo(
-    () => compareData.comparisonsByPair?.[comparePairKey],
-    [compareData, comparePairKey],
-  );
   const baseCompareGraph = useMemo(() => {
     const baseGraph = compareData.graphsByVersion[selectedBaseVersion];
     return {
@@ -89,27 +85,23 @@ export function useVisualizerHistoryCompare(
       lanes: baseGraph?.lanes,
     };
   }, [compareData.graphsByVersion, selectedBaseVersion]);
+  const comparisonResult = useMemo(
+    () =>
+      buildComparisonResult(
+        compareData.graphsByVersion[selectedBaseVersion],
+        compareData.graphsByVersion[selectedCompareVersion],
+        selectedCompareVersion,
+      ),
+    [compareData.graphsByVersion, selectedBaseVersion, selectedCompareVersion],
+  );
   const compareGraph = useMemo(() => {
-    if (activeComparison?.compareGraph) {
-      return {
-        repositoryLabel:
-          activeComparison.compareGraph.repositoryLabel ??
-          selectedCompareVersion.split(" • ")[0],
-        branchLabel: activeComparison.compareGraph.branchLabel ?? "Branch: main",
-        lanes: activeComparison.compareGraph.lanes,
-        showCompareLegend: activeComparison.compareGraph.showLegend ?? true,
-      };
-    }
-
-    const fallbackGraph = compareData.graphsByVersion[selectedCompareVersion];
     return {
-      repositoryLabel:
-        fallbackGraph?.repositoryLabel ?? selectedCompareVersion.split(" • ")[0],
-      branchLabel: fallbackGraph?.branchLabel ?? "Branch: main",
-      lanes: fallbackGraph?.lanes,
-      showCompareLegend: true,
+      repositoryLabel: comparisonResult.compareGraph.repositoryLabel,
+      branchLabel: comparisonResult.compareGraph.branchLabel,
+      lanes: comparisonResult.compareGraph.lanes,
+      showCompareLegend: comparisonResult.compareGraph.showLegend ?? true,
     };
-  }, [activeComparison, compareData.graphsByVersion, selectedCompareVersion]);
+  }, [comparisonResult]);
 
   useEffect(() => {
     // History selection follows the currently sorted commit list so the detail
@@ -137,6 +129,7 @@ export function useVisualizerHistoryCompare(
   return {
     activeHistoryCommitId,
     baseCompareGraph,
+    comparisonResult,
     compareGraph,
     detailHistoryCommits,
     hasCompared,

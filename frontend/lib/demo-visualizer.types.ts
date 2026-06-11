@@ -126,17 +126,6 @@ export interface DemoCompareData {
     label: string
   }>
   graphsByVersion: Record<string, DemoCompareGraph>
-  comparisonsByPair?: Record<
-    string,
-    {
-      changedMetadata: string[]
-      stats: Array<{
-        value: string
-        label: string
-      }>
-      compareGraph: DemoCompareGraph
-    }
-  >
 }
 
 export interface DemoMetadataPanelData {

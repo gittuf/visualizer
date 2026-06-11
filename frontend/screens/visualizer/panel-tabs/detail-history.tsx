@@ -147,44 +147,44 @@ export function DetailPanelHistory({
             />
           ))}
         </div>
-        {totalPages > 1 ? (
-          <div className="mt-auto flex items-center justify-center gap-10 px-4 pt-6">
-            <button
-              type="button"
-              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-              className="rounded-sm border border-(--secondary-color) px-3 py-1 text-[12px] text-black"
-            >
-              &lt; Previous
-            </button>
-            <div className="flex items-center gap-3 text-[12px]">
-              {Array.from({ length: totalPages }, (_, index) => {
-                const pageNumber = index + 1;
-                const isActive = currentPage === pageNumber;
+        <div className="mt-auto flex items-center justify-center gap-10 px-4 pt-6">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            disabled={currentPage <= 1}
+            className="rounded-sm border border-(--secondary-color) px-3 py-1 text-[12px] text-black disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            &lt; Previous
+          </button>
+          <div className="flex items-center gap-3 text-[12px]">
+            {Array.from({ length: totalPages }, (_, index) => {
+              const pageNumber = index + 1;
+              const isActive = currentPage === pageNumber;
 
-                return (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    onClick={() => setCurrentPage(pageNumber)}
-                    className={`rounded-sm px-2 py-1 ${
-                      isActive ? "text-black" : "text-(--dark-gray)"
-                    }`}
-                    style={isActive ? { backgroundColor: detailColors.bullet } : undefined}
-                  >
-                    {pageNumber}
-                  </button>
-                );
-              })}
-            </div>
-            <button
-              type="button"
-              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-              className="rounded-sm border border-(--secondary-color) px-3 py-1 text-[12px] text-black"
-            >
-              Next &gt;
-            </button>
+              return (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => setCurrentPage(pageNumber)}
+                  className={`rounded-sm px-2 py-1 ${
+                    isActive ? "text-black" : "text-(--dark-gray)"
+                  }`}
+                  style={isActive ? { backgroundColor: detailColors.bullet } : undefined}
+                >
+                  {pageNumber}
+                </button>
+              );
+            })}
           </div>
-        ) : null}
+          <button
+            type="button"
+            onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+            disabled={currentPage >= totalPages}
+            className="rounded-sm border border-(--secondary-color) px-3 py-1 text-[12px] text-black disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next &gt;
+          </button>
+        </div>
       </div>
     </div>
   );

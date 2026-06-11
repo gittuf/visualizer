@@ -1,5 +1,210 @@
 import { REPOSITORY } from "@/lib/constants"
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types"
+// this is the mock data structure used in the demo visualizer. 
+const demoHistoryCommits = [
+  {
+    hash: "0a1b2c3d",
+    message: "[Linux fedora] Policy graph fails to refresh after reconnect.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-08T16:30:00.000Z",
+  },
+  {
+    hash: "1b2c3d4e",
+    message: "[Ubuntu] History canvas should preserve selected commit focus.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-07T13:10:00.000Z",
+  },
+  {
+    hash: "2c3d4e5f",
+    message: "[macOS] Compare graph should keep diff legend visible on resize.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-06T11:25:00.000Z",
+  },
+  {
+    hash: "3d4e5f6a",
+    message: "[Windows] Branch query panel should reset stale results when path changes.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-05T17:55:00.000Z",
+  },
+  {
+    hash: "4e5f6a7b",
+    message: "[Linux] Commit ordering should stay synced between strip and panel.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-04T09:35:00.000Z",
+  },
+  {
+    hash: "5f6a7b8c",
+    message: "[Fedora] Regenerating a graph should not drop manual canvas positions.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-03T14:20:00.000Z",
+  },
+  {
+    hash: "f6a7b8c9",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-03T10:45:00.000Z",
+  },
+  {
+    hash: "e5f6a7b8",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-02T09:20:00.000Z",
+  },
+  {
+    hash: "c3d4e5f6",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-01T12:10:00.000Z",
+  },
+  {
+    hash: "b2c3d4e5",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-05-31T18:40:00.000Z",
+  },
+  {
+    hash: "a1b2c3d4",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-05-30T14:00:00.000Z",
+  },
+  {
+    hash: "98ab76cd",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-05-29T11:15:00.000Z",
+  },
+]
+
+function formatCompareVersionLabel(commit: (typeof demoHistoryCommits)[number]) {
+  const dateLabel = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(commit.date))
+  const shortMessage = commit.message.replace(/^\[[^\]]+\]\s*/, "")
+
+  return `${commit.hash.slice(0, 6)} • ${dateLabel} • ${shortMessage}`
+}
+
+const demoCompareVersionOptions = demoHistoryCommits.map(formatCompareVersionLabel)
+const compareLabelByHash = Object.fromEntries(
+  demoHistoryCommits.map((commit) => [commit.hash, formatCompareVersionLabel(commit)])
+)
+
+function getCompareGraphForCommit(hash: string) {
+  if (hash === "0a1b2c3d" || hash === "1b2c3d4e" || hash === "2c3d4e5f") {
+    return {
+      repositoryLabel: hash.slice(0, 6),
+      branchLabel: "Branch: main",
+      lanes: [
+        {
+          key: "src",
+          pathLabel: "src/**",
+          roleLabel: "Authorized users",
+          approvals: "Requires: 3 approvals",
+          principals: [
+            { name: "Alice" },
+            { name: "Carol" },
+            { name: "Bob" },
+            { name: "Steve" },
+          ],
+        },
+      ],
+    }
+  }
+
+  if (hash === "3d4e5f6a" || hash === "4e5f6a7b" || hash === "5f6a7b8c") {
+    return {
+      repositoryLabel: hash.slice(0, 6),
+      branchLabel: "Branch: main",
+      lanes: [
+        {
+          key: "src",
+          pathLabel: "src/**",
+          roleLabel: "Authorized users",
+          approvals: "Requires: 3 approvals",
+          principals: [
+            { name: "Alice" },
+            { name: "Carol" },
+            { name: "Bob" },
+          ],
+        },
+        {
+          key: "docs",
+          pathLabel: "docs/**",
+          roleLabel: "Authorized users",
+          approvals: "Requires: 2 approvals",
+          principals: [
+            { name: "Alice" },
+            { name: "Carol" },
+            { name: "Bob" },
+          ],
+        },
+        {
+          key: "ops",
+          pathLabel: "ops/**",
+          roleLabel: "Authorized users",
+          approvals: "Requires: 2 approvals",
+          principals: [
+            { name: "Alice" },
+            { name: "Carol" },
+            { name: "Bob" },
+          ],
+        },
+      ],
+    }
+  }
+
+  if (hash === "f6a7b8c9" || hash === "e5f6a7b8" || hash === "c3d4e5f6") {
+    return {
+      repositoryLabel: hash.slice(0, 6),
+      branchLabel: "Branch: main",
+      lanes: [
+        {
+          key: "src",
+          pathLabel: "src/**",
+          roleLabel: "Authorized users",
+          approvals: "Requires: 2 approvals",
+          principals: [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }],
+        },
+      ],
+    }
+  }
+
+  return {
+    repositoryLabel: hash.slice(0, 6),
+    branchLabel: "Branch: main",
+    lanes: [
+      {
+        key: "src",
+        pathLabel: "src/**",
+        roleLabel: "Authorized users",
+        approvals: "Requires: 1 approval",
+        principals: [{ name: "Alice" }, { name: "Bob" }, { name: "Carol" }],
+      },
+    ],
+  }
+}
+
+const demoGraphsByVersion = Object.fromEntries(
+  demoHistoryCommits.map((commit) => [
+    formatCompareVersionLabel(commit),
+    getCompareGraphForCommit(commit.hash),
+  ])
+)
 
 export const demoVisualizerData: DemoVisualizerData = {
   repository: {
@@ -17,7 +222,7 @@ export const demoVisualizerData: DemoVisualizerData = {
     },
     {
       hash: "b2c3d4e5",
-      message: "Require two maintainers for src and docs",
+      message: "Require two authorized users for src and docs",
       author: "Bob Smith",
       date: "2026-05-28T09:10:00.000Z",
     },
@@ -69,7 +274,7 @@ export const demoVisualizerData: DemoVisualizerData = {
       { id: "targets-src", label: "src/**", type: "policy-file", x: 240, y: 170 },
       { id: "targets-docs", label: "docs/**", type: "policy-file", x: 420, y: 170 },
       { id: "role-maintainers", label: "Authorized users", type: "role", x: 240, y: 280, metadata: { threshold: 2 } },
-      { id: "role-reviewers", label: "Docs reviewers", type: "role", x: 420, y: 280, metadata: { threshold: 1 } },
+      { id: "role-reviewers", label: "Authorized users", type: "role", x: 420, y: 280, metadata: { threshold: 1 } },
       { id: "alice", label: "Alice", type: "principal", x: 180, y: 400 },
       { id: "carol", label: "Carol", type: "principal", x: 260, y: 400 },
       { id: "bob", label: "Bob", type: "principal", x: 340, y: 400 },
@@ -169,62 +374,13 @@ export const demoVisualizerData: DemoVisualizerData = {
       sortOptions: ["date", "oldest", "author"],
       selectedSort: "date",
       selectedCommitHash: "c3d4e5f6",
-      commits: [
-        {
-          hash: "f6a7b8c9",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-03T10:45:00.000Z",
-        },
-        {
-          hash: "e5f6a7b8",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-02T09:20:00.000Z",
-        },
-        {
-          hash: "c3d4e5f6",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-01T12:10:00.000Z",
-        },
-        {
-          hash: "b2c3d4e5",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-05-31T18:40:00.000Z",
-        },
-        {
-          hash: "a1b2c3d4",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-05-30T14:00:00.000Z",
-        },
-        {
-          hash: "98ab76cd",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-05-29T11:15:00.000Z",
-        },
-      ],
+      commits: demoHistoryCommits,
     },
     compare: {
-      baseVersionOptions: [
-        "a1b1cd • May 1 • Add policy",
-        "91fe2a • Apr 28 • Update policy",
-      ],
-      compareVersionOptions: [
-        "a2b3cd • May 5 • Update policy",
-        "b4c5de • May 8 • Tighten thresholds",
-      ],
-      selectedBaseVersion: "a1b1cd • May 1 • Add policy",
-      selectedCompareVersion: "a2b3cd • May 5 • Update policy",
+      baseVersionOptions: demoCompareVersionOptions,
+      compareVersionOptions: demoCompareVersionOptions,
+      selectedBaseVersion: compareLabelByHash["c3d4e5f6"],
+      selectedCompareVersion: compareLabelByHash["0a1b2c3d"],
       changedMetadata: ["Trust setup", "File rules", "Root metadata"],
       stats: [
         { value: "1", label: "role changed" },
@@ -232,153 +388,8 @@ export const demoVisualizerData: DemoVisualizerData = {
         { value: "1 ↑", label: "threshold" },
         { value: "1", label: "principal removed" },
       ],
-      graphsByVersion: {
-        "a1b1cd • May 1 • Add policy": {
-          repositoryLabel: "a1b1cd",
-          branchLabel: "Branch: main",
-          lanes: [
-            {
-              key: "src",
-              pathLabel: "src/**",
-              roleLabel: "Authorized users",
-              approvals: "Requires: 2 approvals",
-              principals: [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }],
-            },
-          ],
-        },
-        "91fe2a • Apr 28 • Update policy": {
-          repositoryLabel: "91fe2a",
-          branchLabel: "Branch: main",
-          lanes: [
-            {
-              key: "src",
-              pathLabel: "src/**",
-              roleLabel: "Authorized users",
-              approvals: "Requires: 1 approval",
-              principals: [{ name: "Alice" }, { name: "Bob" }, { name: "Carol" }],
-            },
-          ],
-        },
-        "a2b3cd • May 5 • Update policy": {
-          repositoryLabel: "a2b3cd",
-          branchLabel: "Branch: main",
-          lanes: [
-            {
-              key: "src",
-              pathLabel: "src/**",
-              roleLabel: "Authorized users",
-              approvals: "Requires: 3 approvals",
-              principals: [
-                { name: "Alice" },
-                { name: "Carol" },
-                { name: "Bob" },
-                { name: "Steve" },
-              ],
-            },
-          ],
-        },
-        "b4c5de • May 8 • Tighten thresholds": {
-          repositoryLabel: "b4c5de",
-          branchLabel: "Branch: main",
-          lanes: [
-            {
-              key: "src",
-              pathLabel: "src/**",
-              roleLabel: "Authorized users",
-              approvals: "Requires: 3 approvals",
-              principals: [
-                { name: "Alice" },
-                { name: "Carol" },
-                { name: "Bob" },
-                { name: "Steve" },
-              ],
-            },
-          ],
-        },
-      },
-      comparisonsByPair: {
-        "a1b1cd • May 1 • Add policy|a2b3cd • May 5 • Update policy": {
-          changedMetadata: ["Trust setup", "File rules", "Root metadata"],
-          stats: [
-            { value: "1", label: "role changed" },
-            { value: "0", label: "rules added" },
-            { value: "1 ↑", label: "threshold" },
-            { value: "1", label: "principal removed" },
-          ],
-          compareGraph: {
-            repositoryLabel: "a2b3cd",
-            branchLabel: "Branch: main",
-            showLegend: true,
-            lanes: [
-              {
-                key: "src",
-                pathLabel: "src/**",
-                roleLabel: "Authorized users",
-                approvals: "Requires: 3 approvals",
-                approvalsStatus: "modified",
-                principals: [
-                  { name: "Alice", status: "unchanged" },
-                  { name: "Carol", status: "unchanged" },
-                  { name: "Bob", status: "removed" },
-                  { name: "Steve", status: "added" },
-                ],
-              },
-            ],
-          },
-        },
-        "91fe2a • Apr 28 • Update policy|b4c5de • May 8 • Tighten thresholds": {
-          changedMetadata: ["File rules", "Root metadata"],
-          stats: [
-            { value: "1", label: "roles changed" },
-            { value: "2", label: "rules added" },
-            { value: "2 ↑", label: "threshold" },
-            { value: "0", label: "principal removed" },
-          ],
-          compareGraph: {
-            repositoryLabel: "b4c5de",
-            branchLabel: "Branch: main",
-            showLegend: true,
-            lanes: [
-              {
-                key: "src",
-                pathLabel: "src/**",
-                roleLabel: "Authorized users",
-                approvals: "Requires: 3 approvals",
-                approvalsStatus: "modified",
-                principals: [
-                  { name: "Alice", status: "unchanged" },
-                  { name: "Bob", status: "unchanged" },
-                  { name: "Carol", status: "unchanged" },
-                ],
-              },
-              {
-                key: "docs",
-                pathLabel: "docs/**",
-                roleLabel: "Docs reviewers",
-                approvals: "Requires: 2 approvals",
-                approvalsStatus: "modified",
-                principals: [
-                  { name: "Alice", status: "unchanged" },
-                  { name: "Carol", status: "unchanged" },
-                  { name: "Bob", status: "unchanged" },
-                ],
-              },
-              {
-                key: "ops",
-                pathLabel: "ops/**",
-                roleLabel: "Ops maintainers",
-                approvals: "Requires: 2 approvals",
-                status: "added",
-                principals: [
-                  { name: "Alice", status: "added" },
-                  { name: "Carol", status: "added" },
-                  { name: "Bob", status: "added" },
-                ],
-              },
-            ],
-          },
-        },
-      },
+      graphsByVersion: demoGraphsByVersion,
+      
     },
     metadata: {
       policyFiles: ["Trust setup: root.json", "File rules: target.json"],
@@ -428,9 +439,9 @@ export const demoVisualizerData: DemoVisualizerData = {
     ],
     views: [
       { id: "status", label: "Status", items: ["root.json active", "targets.json active", "docs delegation draft"] },
-      { id: "roles", label: "Roles", items: ["root", "targets", "maintainers", "docs-reviewers"] },
+      { id: "roles", label: "Roles", items: ["root", "targets", "authorized-users"] },
       { id: "principals", label: "Principals", items: ["Alice", "Bob", "Carol"] },
-      { id: "file-rules", label: "File Rules", items: ["src/** requires maintainers", "docs/** requires maintainers"] },
+      { id: "file-rules", label: "File Rules", items: ["src/** requires authorized users", "docs/** requires authorized users"] },
     ],
   },
   metadataByCommit: {
@@ -451,7 +462,7 @@ export const demoVisualizerData: DemoVisualizerData = {
         type: "targets",
         expires: "2026-07-15T00:00:00Z",
         targets: {
-          "src/**": { rule: "maintainers" },
+          "src/**": { rule: "authorized-users" },
         },
       },
     },
@@ -473,8 +484,8 @@ export const demoVisualizerData: DemoVisualizerData = {
         type: "targets",
         expires: "2026-07-18T00:00:00Z",
         targets: {
-          "src/**": { rule: "maintainers" },
-          "docs/**": { rule: "maintainers" },
+          "src/**": { rule: "authorized-users" },
+          "docs/**": { rule: "authorized-users" },
         },
       },
     },
@@ -496,8 +507,8 @@ export const demoVisualizerData: DemoVisualizerData = {
         type: "targets",
         expires: "2026-07-20T00:00:00Z",
         targets: {
-          "src/**": { rule: "maintainers" },
-          "docs/**": { rule: "maintainers" },
+          "src/**": { rule: "authorized-users" },
+          "docs/**": { rule: "authorized-users" },
         },
       },
     },
@@ -513,16 +524,16 @@ export const demoVisualizerData: DemoVisualizerData = {
         roles: [
           { name: "root", threshold: 2, principalids: ["alice", "bob"] },
           { name: "targets", threshold: 2, principalids: ["alice", "bob", "carol"] },
-          { name: "docs-reviewers", threshold: 1, principalids: ["alice", "carol"] },
+          { name: "authorized-users", threshold: 1, principalids: ["alice", "carol"] },
         ],
       },
       "targets.json": {
         type: "targets",
         expires: "2026-07-30T00:00:00Z",
         targets: {
-          "src/**": { rule: "maintainers" },
-          "docs/**": { rule: "maintainers" },
-          "metadata/**": { rule: "docs-reviewers" },
+          "src/**": { rule: "authorized-users" },
+          "docs/**": { rule: "authorized-users" },
+          "metadata/**": { rule: "authorized-users" },
         },
       },
     },

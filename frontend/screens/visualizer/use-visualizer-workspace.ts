@@ -40,6 +40,7 @@ export function useVisualizerWorkspace({
   const {
     activeHistoryCommitId,
     baseCompareGraph,
+    comparisonResult,
     compareGraph,
     detailHistoryCommits,
     hasCompared,
@@ -104,6 +105,7 @@ export function useVisualizerWorkspace({
     activePanel,
     activePanelIcon,
     baseCompareGraph,
+    comparisonResult,
     compareGraph,
     defaultLayout,
     detailHistoryCommits,

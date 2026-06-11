@@ -12,6 +12,7 @@ import {
   DetailPanelPolicyQuery,
   DetailPanelSettings,
 } from "@/screens/visualizer/panel-tabs/detail-panels";
+import type { VisualizerComparisonResult } from "@/screens/visualizer/compare.utils";
 import type { HistorySortField } from "@/screens/visualizer/history.types";
 import type { WorkspacePanelId } from "@/screens/visualizer/visualizer.types";
 
@@ -38,6 +39,7 @@ interface WorkspaceDetailContentProps {
   onHistorySortDirectionToggle: () => void;
   selectedBaseVersion: string;
   selectedCompareVersion: string;
+  comparisonResult: VisualizerComparisonResult;
   hasCompared: boolean;
   onBaseVersionChange: (value: string) => void;
   onCompareVersionChange: (value: string) => void;
@@ -61,6 +63,7 @@ export function WorkspaceDetailContent({
   onHistorySortDirectionToggle,
   selectedBaseVersion,
   selectedCompareVersion,
+  comparisonResult,
   hasCompared,
   onBaseVersionChange,
   onCompareVersionChange,
@@ -140,6 +143,7 @@ export function WorkspaceDetailContent({
           searchQuery={searchQuery}
           selectedBaseVersion={selectedBaseVersion}
           selectedCompareVersion={selectedCompareVersion}
+          comparisonResult={comparisonResult}
           hasCompared={hasCompared}
           onBaseVersionChange={onBaseVersionChange}
           onCompareVersionChange={onCompareVersionChange}

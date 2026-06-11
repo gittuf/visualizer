@@ -2,7 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "Gittuf Visualizer",
+  title: "gittuf Visualizer",
   description:
     "Visualize and analyze gittuf's security metadata structure across repository commits",
   generator: "v0.dev",
