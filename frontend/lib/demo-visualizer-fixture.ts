@@ -1,6 +1,211 @@
 import { REPOSITORY } from "@/lib/constants"
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types"
 
+const demoHistoryCommits = [
+  {
+    hash: "0a1b2c3d",
+    message: "[Linux fedora] Policy graph fails to refresh after reconnect.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-08T16:30:00.000Z",
+  },
+  {
+    hash: "1b2c3d4e",
+    message: "[Ubuntu] History canvas should preserve selected commit focus.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-07T13:10:00.000Z",
+  },
+  {
+    hash: "2c3d4e5f",
+    message: "[macOS] Compare graph should keep diff legend visible on resize.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-06T11:25:00.000Z",
+  },
+  {
+    hash: "3d4e5f6a",
+    message: "[Windows] Branch query panel should reset stale results when path changes.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-05T17:55:00.000Z",
+  },
+  {
+    hash: "4e5f6a7b",
+    message: "[Linux] Commit ordering should stay synced between strip and panel.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-04T09:35:00.000Z",
+  },
+  {
+    hash: "5f6a7b8c",
+    message: "[Fedora] Regenerating a graph should not drop manual canvas positions.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-03T14:20:00.000Z",
+  },
+  {
+    hash: "f6a7b8c9",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-03T10:45:00.000Z",
+  },
+  {
+    hash: "e5f6a7b8",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-02T09:20:00.000Z",
+  },
+  {
+    hash: "c3d4e5f6",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-06-01T12:10:00.000Z",
+  },
+  {
+    hash: "b2c3d4e5",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-05-31T18:40:00.000Z",
+  },
+  {
+    hash: "a1b2c3d4",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-05-30T14:00:00.000Z",
+  },
+  {
+    hash: "98ab76cd",
+    message: "[Linux fedora] Installation / dependency error with Webui already installed.",
+    author: "tonylee12345",
+    authorLabel: "opened by tonylee12345",
+    date: "2026-05-29T11:15:00.000Z",
+  },
+]
+
+function formatCompareVersionLabel(commit: (typeof demoHistoryCommits)[number]) {
+  const dateLabel = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(commit.date))
+  const shortMessage = commit.message.replace(/^\[[^\]]+\]\s*/, "")
+
+  return `${commit.hash.slice(0, 6)} • ${dateLabel} • ${shortMessage}`
+}
+
+const demoCompareVersionOptions = demoHistoryCommits.map(formatCompareVersionLabel)
+const compareLabelByHash = Object.fromEntries(
+  demoHistoryCommits.map((commit) => [commit.hash, formatCompareVersionLabel(commit)])
+)
+
+function getCompareGraphForCommit(hash: string) {
+  if (hash === "0a1b2c3d" || hash === "1b2c3d4e" || hash === "2c3d4e5f") {
+    return {
+      repositoryLabel: hash.slice(0, 6),
+      branchLabel: "Branch: main",
+      lanes: [
+        {
+          key: "src",
+          pathLabel: "src/**",
+          roleLabel: "Authorized users",
+          approvals: "Requires: 3 approvals",
+          principals: [
+            { name: "Alice" },
+            { name: "Carol" },
+            { name: "Bob" },
+            { name: "Steve" },
+          ],
+        },
+      ],
+    }
+  }
+
+  if (hash === "3d4e5f6a" || hash === "4e5f6a7b" || hash === "5f6a7b8c") {
+    return {
+      repositoryLabel: hash.slice(0, 6),
+      branchLabel: "Branch: main",
+      lanes: [
+        {
+          key: "src",
+          pathLabel: "src/**",
+          roleLabel: "Authorized users",
+          approvals: "Requires: 3 approvals",
+          principals: [
+            { name: "Alice" },
+            { name: "Carol" },
+            { name: "Bob" },
+          ],
+        },
+        {
+          key: "docs",
+          pathLabel: "docs/**",
+          roleLabel: "Docs reviewers",
+          approvals: "Requires: 2 approvals",
+          principals: [
+            { name: "Alice" },
+            { name: "Carol" },
+            { name: "Bob" },
+          ],
+        },
+        {
+          key: "ops",
+          pathLabel: "ops/**",
+          roleLabel: "Ops maintainers",
+          approvals: "Requires: 2 approvals",
+          principals: [
+            { name: "Alice" },
+            { name: "Carol" },
+            { name: "Bob" },
+          ],
+        },
+      ],
+    }
+  }
+
+  if (hash === "f6a7b8c9" || hash === "e5f6a7b8" || hash === "c3d4e5f6") {
+    return {
+      repositoryLabel: hash.slice(0, 6),
+      branchLabel: "Branch: main",
+      lanes: [
+        {
+          key: "src",
+          pathLabel: "src/**",
+          roleLabel: "Authorized users",
+          approvals: "Requires: 2 approvals",
+          principals: [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }],
+        },
+      ],
+    }
+  }
+
+  return {
+    repositoryLabel: hash.slice(0, 6),
+    branchLabel: "Branch: main",
+    lanes: [
+      {
+        key: "src",
+        pathLabel: "src/**",
+        roleLabel: "Authorized users",
+        approvals: "Requires: 1 approval",
+        principals: [{ name: "Alice" }, { name: "Bob" }, { name: "Carol" }],
+      },
+    ],
+  }
+}
+
+const demoGraphsByVersion = Object.fromEntries(
+  demoHistoryCommits.map((commit) => [
+    formatCompareVersionLabel(commit),
+    getCompareGraphForCommit(commit.hash),
+  ])
+)
+
 export const demoVisualizerData: DemoVisualizerData = {
   repository: {
     type: "remote",
@@ -169,104 +374,13 @@ export const demoVisualizerData: DemoVisualizerData = {
       sortOptions: ["date", "oldest", "author"],
       selectedSort: "date",
       selectedCommitHash: "c3d4e5f6",
-      commits: [
-        {
-          hash: "0a1b2c3d",
-          message: "[Linux fedora] Policy graph fails to refresh after reconnect.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-08T16:30:00.000Z",
-        },
-        {
-          hash: "1b2c3d4e",
-          message: "[Ubuntu] History canvas should preserve selected commit focus.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-07T13:10:00.000Z",
-        },
-        {
-          hash: "2c3d4e5f",
-          message: "[macOS] Compare graph should keep diff legend visible on resize.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-06T11:25:00.000Z",
-        },
-        {
-          hash: "3d4e5f6a",
-          message: "[Windows] Branch query panel should reset stale results when path changes.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-05T17:55:00.000Z",
-        },
-        {
-          hash: "4e5f6a7b",
-          message: "[Linux] Commit ordering should stay synced between strip and panel.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-04T09:35:00.000Z",
-        },
-        {
-          hash: "5f6a7b8c",
-          message: "[Fedora] Regenerating a graph should not drop manual canvas positions.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-03T14:20:00.000Z",
-        },
-        {
-          hash: "f6a7b8c9",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-03T10:45:00.000Z",
-        },
-        {
-          hash: "e5f6a7b8",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-02T09:20:00.000Z",
-        },
-        {
-          hash: "c3d4e5f6",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-06-01T12:10:00.000Z",
-        },
-        {
-          hash: "b2c3d4e5",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-05-31T18:40:00.000Z",
-        },
-        {
-          hash: "a1b2c3d4",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-05-30T14:00:00.000Z",
-        },
-        {
-          hash: "98ab76cd",
-          message: "[Linux fedora] Installation / dependency error with Webui already installed.",
-          author: "tonylee12345",
-          authorLabel: "opened by tonylee12345",
-          date: "2026-05-29T11:15:00.000Z",
-        },
-      ],
+      commits: demoHistoryCommits,
     },
     compare: {
-      baseVersionOptions: [
-        "a1b1cd • May 1 • Add policy",
-        "91fe2a • Apr 28 • Update policy",
-      ],
-      compareVersionOptions: [
-        "a2b3cd • May 5 • Update policy",
-        "b4c5de • May 8 • Tighten thresholds",
-      ],
-      selectedBaseVersion: "a1b1cd • May 1 • Add policy",
-      selectedCompareVersion: "a2b3cd • May 5 • Update policy",
+      baseVersionOptions: demoCompareVersionOptions,
+      compareVersionOptions: demoCompareVersionOptions,
+      selectedBaseVersion: compareLabelByHash["c3d4e5f6"],
+      selectedCompareVersion: compareLabelByHash["0a1b2c3d"],
       changedMetadata: ["Trust setup", "File rules", "Root metadata"],
       stats: [
         { value: "1", label: "role changed" },
@@ -274,72 +388,9 @@ export const demoVisualizerData: DemoVisualizerData = {
         { value: "1 ↑", label: "threshold" },
         { value: "1", label: "principal removed" },
       ],
-      graphsByVersion: {
-        "a1b1cd • May 1 • Add policy": {
-          repositoryLabel: "a1b1cd",
-          branchLabel: "Branch: main",
-          lanes: [
-            {
-              key: "src",
-              pathLabel: "src/**",
-              roleLabel: "Authorized users",
-              approvals: "Requires: 2 approvals",
-              principals: [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }],
-            },
-          ],
-        },
-        "91fe2a • Apr 28 • Update policy": {
-          repositoryLabel: "91fe2a",
-          branchLabel: "Branch: main",
-          lanes: [
-            {
-              key: "src",
-              pathLabel: "src/**",
-              roleLabel: "Authorized users",
-              approvals: "Requires: 1 approval",
-              principals: [{ name: "Alice" }, { name: "Bob" }, { name: "Carol" }],
-            },
-          ],
-        },
-        "a2b3cd • May 5 • Update policy": {
-          repositoryLabel: "a2b3cd",
-          branchLabel: "Branch: main",
-          lanes: [
-            {
-              key: "src",
-              pathLabel: "src/**",
-              roleLabel: "Authorized users",
-              approvals: "Requires: 3 approvals",
-              principals: [
-                { name: "Alice" },
-                { name: "Carol" },
-                { name: "Bob" },
-                { name: "Steve" },
-              ],
-            },
-          ],
-        },
-        "b4c5de • May 8 • Tighten thresholds": {
-          repositoryLabel: "b4c5de",
-          branchLabel: "Branch: main",
-          lanes: [
-            {
-              key: "src",
-              pathLabel: "src/**",
-              roleLabel: "Authorized users",
-              approvals: "Requires: 3 approvals",
-              principals: [
-                { name: "Alice" },
-                { name: "Carol" },
-                { name: "Bob" },
-                { name: "Steve" },
-              ],
-            },
-          ],
-        },
-      },
+      graphsByVersion: demoGraphsByVersion,
       comparisonsByPair: {
-        "a1b1cd • May 1 • Add policy|a2b3cd • May 5 • Update policy": {
+        [`${compareLabelByHash["c3d4e5f6"]}|${compareLabelByHash["0a1b2c3d"]}`]: {
           changedMetadata: ["Trust setup", "File rules", "Root metadata"],
           stats: [
             { value: "1", label: "role changed" },
@@ -348,7 +399,7 @@ export const demoVisualizerData: DemoVisualizerData = {
             { value: "1", label: "principal removed" },
           ],
           compareGraph: {
-            repositoryLabel: "a2b3cd",
+            repositoryLabel: "0a1b2c",
             branchLabel: "Branch: main",
             showLegend: true,
             lanes: [
@@ -368,7 +419,7 @@ export const demoVisualizerData: DemoVisualizerData = {
             ],
           },
         },
-        "91fe2a • Apr 28 • Update policy|b4c5de • May 8 • Tighten thresholds": {
+        [`${compareLabelByHash["a1b2c3d4"]}|${compareLabelByHash["3d4e5f6a"]}`]: {
           changedMetadata: ["File rules", "Root metadata"],
           stats: [
             { value: "1", label: "roles changed" },
@@ -377,7 +428,7 @@ export const demoVisualizerData: DemoVisualizerData = {
             { value: "0", label: "principal removed" },
           ],
           compareGraph: {
-            repositoryLabel: "b4c5de",
+            repositoryLabel: "3d4e5f",
             branchLabel: "Branch: main",
             showLegend: true,
             lanes: [
