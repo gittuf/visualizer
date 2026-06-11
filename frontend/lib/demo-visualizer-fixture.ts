@@ -1,6 +1,6 @@
 import { REPOSITORY } from "@/lib/constants"
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types"
-
+// this is the mock data structure used in the demo visualizer. 
 const demoHistoryCommits = [
   {
     hash: "0a1b2c3d",
