@@ -1,9 +1,7 @@
 "use client";
 
-import {
-  demoVisualizerData,
-  type DemoVisualizerData,
-} from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import completedIcon from "@/assets/completed.png";
 import metadataIcon from "@/assets/metadata.png";
 import {

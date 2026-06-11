@@ -4,10 +4,8 @@ import Image from "next/image";
 import { useMemo } from "react";
 import emptyFileIcon from "@/assets/empty_file.png";
 import swapVertIcon from "@/assets/swap_vert.png";
-import {
-  demoVisualizerData,
-  type DemoVisualizerData,
-} from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import {
   detailColors,
   PanelSection,

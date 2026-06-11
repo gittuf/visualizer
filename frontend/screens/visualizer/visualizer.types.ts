@@ -1,6 +1,6 @@
 import type { StaticImageData } from "next/image";
 import type { RepositoryInfo } from "@/lib/repository-handler";
-import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 
 export type WorkspacePanelId =
   | "graph-source"

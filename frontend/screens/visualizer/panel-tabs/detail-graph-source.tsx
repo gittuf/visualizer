@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  demoVisualizerData,
-  type DemoVisualizerData,
-} from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import type { RepositoryInfo } from "@/lib/repository-handler";
 import {
   detailColors,

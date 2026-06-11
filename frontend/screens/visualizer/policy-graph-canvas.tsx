@@ -2,11 +2,6 @@
 
 import type React from "react";
 import { useState } from "react";
-import Image from "next/image";
-import branchIcon from "@/assets/branch.png";
-import fileIcon from "@/assets/file.png";
-import usersIcon from "@/assets/Users.png";
-import userIcon from "@/assets/user.png";
 import {
   boundary,
   branchBox,
@@ -16,27 +11,23 @@ import {
   fileBox,
   layoutHeight,
   layoutWidth,
-  principalBox,
   roleBox,
   rowY,
   scrollPadding,
 } from "@/screens/visualizer/policy-graph.constants";
 import {
-  compareStatusColors,
-  getEdgeColor,
-  getIconClassName,
-  getIconFilter,
   getLaneCenters,
   getLaneNodeChangeTypes,
   getNodeTextStyle,
   getPrincipalChangeType,
   getPrincipalOffsets,
-  getTextClassName,
 } from "@/screens/visualizer/policy-graph.utils";
 import type {
   PolicyGraphCanvasVariant,
   PolicyGraphEdge,
 } from "@/screens/visualizer/policy-graph.types";
+import { PolicyGraphLaneColumn } from "@/screens/visualizer/policy-graph-lane-column";
+import { PolicyGraphSvg } from "@/screens/visualizer/policy-graph-svg";
 
 interface PolicyGraphCanvasProps {
   graphId: string;
@@ -223,69 +214,12 @@ export function PolicyGraphCanvas({
               transform: `scale(${zoom})`,
             }}
           >
-            <svg
-              className="pointer-events-none absolute inset-0 h-full w-full"
-              viewBox={`0 0 ${layoutWidth} ${layoutHeight}`}
-              preserveAspectRatio="xMidYMin meet"
-            >
-              <defs>
-                {[
-                  { id: "default", color: "var(--tertiary-color)" },
-                  ...Object.entries(compareStatusColors).map(([id, color]) => ({
-                    id,
-                    color,
-                  })),
-                ].map((marker) => (
-                  <marker
-                    key={marker.id}
-                    id={`policy-arrow-${graphId}-${marker.id}`}
-                    markerWidth="10"
-                    markerHeight="10"
-                    refX="8"
-                    refY="5"
-                    orient="auto"
-                  >
-                    <path
-                      d="M1,1 L8,5 L1,9"
-                      fill="none"
-                      stroke={marker.color}
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                  </marker>
-                ))}
-              </defs>
-
-              <rect
-                x={boundary.x}
-                y={boundary.y}
-                width={boundary.width}
-                height={boundary.height}
-                fill={boundaryFill}
-                stroke={
-                  isDraggingBoundary
-                    ? "var(--modified-color)"
-                    : "var(--dark-gray)"
-                }
-                strokeWidth="1.5"
-                strokeDasharray="6 6"
-              />
-
-              {[...verticalPaths, ...principalPaths].map((path, index) => (
-                <path
-                  key={index}
-                  d={path.d}
-                  stroke={getEdgeColor(path.changeType)}
-                  strokeWidth="1.5"
-                  fill="none"
-                  markerEnd={
-                    path.arrow
-                      ? `url(#policy-arrow-${graphId}-${path.changeType})`
-                      : undefined
-                  }
-                />
-              ))}
-            </svg>
+            <PolicyGraphSvg
+              boundaryFill={boundaryFill}
+              graphId={graphId}
+              isDraggingBoundary={isDraggingBoundary}
+              paths={[...verticalPaths, ...principalPaths]}
+            />
 
             <div
               className="absolute"
@@ -331,151 +265,16 @@ export function PolicyGraphCanvas({
 
             {lanes.map((lane, laneIndex) => {
               const centerX = laneCenters[laneIndex];
-              const changeTypes = getLaneNodeChangeTypes(lane);
-              const lanePrincipals =
-                lane.principals ??
-                principalNames.map((name) => ({
-                  name,
-                }));
-              const principalOffsets = getPrincipalOffsets(lanePrincipals.length);
 
               return (
-                <div key={lane.key}>
-                  <div
-                    className="absolute flex flex-col items-center text-center"
-                    style={{
-                      left: `${centerX - branchBox.width / 2}px`,
-                      top: `${rowY.branch}px`,
-                      width: `${branchBox.width}px`,
-                      minHeight: `${branchBox.height}px`,
-                    }}
-                  >
-                    <Image
-                      src={branchIcon}
-                      alt=""
-                      className={`mt-1 h-9 w-9 ${getIconClassName(changeTypes.branch)}`}
-                      style={{ filter: getIconFilter(changeTypes.branch) }}
-                      draggable={false}
-                    />
-                    <div
-                      className={`mt-2 text-[16px] leading-[1.3] ${getTextClassName(changeTypes.branch)}`}
-                      style={getNodeTextStyle(
-                        branchLabel,
-                        normalizedSearchQuery,
-                      )}
-                    >
-                      {branchLabel}
-                    </div>
-                  </div>
-
-                  <div
-                    className="absolute flex flex-col items-center text-center"
-                    style={{
-                      left: `${centerX - fileBox.width / 2}px`,
-                      top: `${rowY.file}px`,
-                      width: `${fileBox.width}px`,
-                      minHeight: `${fileBox.height}px`,
-                    }}
-                  >
-                    <Image
-                      src={fileIcon}
-                      alt=""
-                      className={`mt-1 h-12 w-10 ${getIconClassName(changeTypes.path)}`}
-                      style={{
-                        filter: getIconFilter(changeTypes.path),
-                      }}
-                      draggable={false}
-                    />
-                    <div
-                      className={`mt-2 text-[16px] leading-[1.3] ${getTextClassName(changeTypes.path)}`}
-                      style={getNodeTextStyle(
-                        lane.pathLabel,
-                        normalizedSearchQuery,
-                      )}
-                    >
-                      {lane.pathLabel}
-                    </div>
-                  </div>
-
-                  <div
-                    className="absolute flex flex-col items-center text-center"
-                    style={{
-                      left: `${centerX - roleBox.width / 2}px`,
-                      top: `${rowY.role}px`,
-                      width: `${roleBox.width}px`,
-                      minHeight: `${roleBox.height}px`,
-                    }}
-                  >
-                    <Image
-                      src={usersIcon}
-                      alt=""
-                      className={`mt-1 h-12 w-12 ${getIconClassName(changeTypes.roleIcon)}`}
-                      style={{
-                        filter: getIconFilter(changeTypes.roleIcon),
-                      }}
-                      draggable={false}
-                    />
-                    <div
-                      className={`mt-2 text-[16px] leading-[1.3] ${getTextClassName(changeTypes.roleIcon)}`}
-                      style={getNodeTextStyle(
-                        lane.roleLabel,
-                        normalizedSearchQuery,
-                      )}
-                    >
-                      {lane.roleLabel}
-                    </div>
-                    <div
-                      className={`mt-1 text-[14px] leading-[1.3] ${getTextClassName(changeTypes.approvals)}`}
-                      style={getNodeTextStyle(
-                        lane.approvals,
-                        normalizedSearchQuery,
-                      )}
-                    >
-                      {lane.approvals}
-                    </div>
-                  </div>
-
-                  {lanePrincipals.map((principal, principalIndex) => {
-                    const center = centerX + principalOffsets[principalIndex];
-                    const principalChangeType = getPrincipalChangeType(
-                      principal,
-                      lane,
-                    );
-
-                    return (
-                      <div
-                        key={`${lane.key}-${principal.name}`}
-                        className="absolute flex flex-col items-center text-center"
-                        style={{
-                          left: `${center - principalBox.width / 2}px`,
-                          top: `${rowY.principals}px`,
-                          width: `${principalBox.width}px`,
-                          minHeight: `${principalBox.height}px`,
-                        }}
-                      >
-                        <Image
-                          src={userIcon}
-                          alt=""
-                          className={`mt-1 h-10 w-auto ${getIconClassName(principalChangeType)}`}
-                          style={{
-                            filter: getIconFilter(principalChangeType),
-                            width: "auto",
-                          }}
-                          draggable={false}
-                        />
-                        <div
-                          className={`mt-2 text-[16px] leading-[1.3] ${getTextClassName(principalChangeType)}`}
-                          style={getNodeTextStyle(
-                            principal.name,
-                            normalizedSearchQuery,
-                          )}
-                        >
-                          {principal.name}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <PolicyGraphLaneColumn
+                  key={lane.key}
+                  branchLabel={branchLabel}
+                  centerX={centerX}
+                  lane={lane}
+                  normalizedSearchQuery={normalizedSearchQuery}
+                  principalNames={principalNames}
+                />
               );
             })}
           </div>

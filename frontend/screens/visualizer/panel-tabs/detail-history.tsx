@@ -4,10 +4,8 @@ import { useEffect } from "react";
 import Image from "next/image";
 import ascendingIcon from "@/assets/ascending.png";
 import discendingIcon from "@/assets/discending.png";
-import {
-  demoVisualizerData,
-  type DemoVisualizerData,
-} from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import { useWorkspaceHistory } from "@/hooks/visualizer/use-workspace-history";
 import {
   CommitHistoryItem,

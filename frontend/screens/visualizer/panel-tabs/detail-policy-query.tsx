@@ -3,10 +3,8 @@
 import { useMemo } from "react";
 import branchIcon from "@/assets/branch.png";
 import emptyFileIcon from "@/assets/empty_file.png";
-import {
-  demoVisualizerData,
-  type DemoVisualizerData,
-} from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import {
   detailColors,
   PanelSection,

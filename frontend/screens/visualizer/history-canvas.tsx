@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
-import { demoVisualizerData } from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import type {
   HistorySortField,
   HistoryTimelineCommit,
