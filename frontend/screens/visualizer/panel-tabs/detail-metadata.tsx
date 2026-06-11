@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import completedIcon from "@/assets/completed.png";
 import metadataIcon from "@/assets/metadata.png";
+import { detailColors } from "@/components/visualizer/detail/workspace-detail-primitives";
 import {
   PanelSection,
   SearchHighlightText,
@@ -18,6 +20,32 @@ interface DetailPanelMetadataProps {
   searchQuery?: string;
 }
 
+function MetadataCodeCard({
+  label,
+  value,
+  searchQuery,
+}: {
+  label: string;
+  value: string;
+  searchQuery?: string;
+}) {
+  return (
+    <div
+      className="space-y-3 px-4 py-3"
+      style={{ backgroundColor: detailColors.summaryCard }}
+    >
+      <SearchHighlightText
+        text={label}
+        query={searchQuery}
+        className="block text-[12px] text-(--dark-gray)"
+      />
+      <pre className="overflow-x-auto whitespace-pre-wrap break-words text-[11px] leading-5 text-black">
+        <SearchHighlightText text={value} query={searchQuery} />
+      </pre>
+    </div>
+  );
+}
+
 export function DetailPanelMetadata({
   workspaceData,
   searchQuery,
@@ -25,6 +53,51 @@ export function DetailPanelMetadata({
   const metadataData =
     workspaceData?.workspaceDetails.metadata ??
     demoVisualizerData.workspaceDetails.metadata;
+  const metadataByCommit =
+    workspaceData?.metadataByCommit ?? demoVisualizerData.metadataByCommit;
+  const [selectedView, setSelectedView] = useState(
+    metadataData.selectedView ?? metadataData.views[0] ?? "Summary",
+  );
+  const activeView = metadataData.views.includes(selectedView)
+    ? selectedView
+    : metadataData.selectedView ?? metadataData.views[0] ?? "Summary";
+  const sourceCommitKey = useMemo(
+    () =>
+      Object.keys(metadataByCommit).find((commitHash) =>
+        commitHash.startsWith(metadataData.status.sourceCommit),
+      ) ?? Object.keys(metadataByCommit)[0],
+    [metadataByCommit, metadataData.status.sourceCommit],
+  );
+  const sourceMetadata = sourceCommitKey ? metadataByCommit[sourceCommitKey] : undefined;
+  const decodedJsonCards = useMemo(
+    () =>
+      sourceMetadata
+        ? Object.entries(sourceMetadata).map(([fileName, value]) => ({
+            label: fileName,
+            value: JSON.stringify(value, null, 2),
+          }))
+        : [],
+    [sourceMetadata],
+  );
+  const envelopeCards = useMemo(
+    () =>
+      sourceMetadata
+        ? Object.entries(sourceMetadata).map(([fileName, value]) => ({
+            label: `${fileName} envelope`,
+            value: JSON.stringify(
+              {
+                sourceCommit: sourceCommitKey,
+                fileName,
+                payload: value,
+                signatures: metadataData.status.signaturesFound,
+              },
+              null,
+              2,
+            ),
+          }))
+        : [],
+    [metadataData.status.signaturesFound, sourceCommitKey, sourceMetadata],
+  );
 
   return (
     <div className="space-y-2 px-5 pb-8">
@@ -76,8 +149,9 @@ export function DetailPanelMetadata({
               <button
                 key={tab}
                 type="button"
+                onClick={() => setSelectedView(tab)}
                 className={`border-r border-(--secondary-color) px-3 py-1 text-[11px] last:border-r-0 ${
-                  metadataData.selectedView === tab
+                  activeView === tab
                     ? "bg-(--dark-gray) text-white"
                     : "bg-white text-(--dark-gray)"
                 }`}
@@ -86,7 +160,33 @@ export function DetailPanelMetadata({
               </button>
             ))}
           </div>
-          <SummaryMetricGrid items={metadataData.summary} searchQuery={searchQuery} />
+          {activeView === "Summary" ? (
+            <SummaryMetricGrid items={metadataData.summary} searchQuery={searchQuery} />
+          ) : null}
+          {activeView === "Decoded JSON" ? (
+            <div className="grid gap-2">
+              {decodedJsonCards.map((card) => (
+                <MetadataCodeCard
+                  key={card.label}
+                  label={card.label}
+                  value={card.value}
+                  searchQuery={searchQuery}
+                />
+              ))}
+            </div>
+          ) : null}
+          {activeView === "Envelope" ? (
+            <div className="grid gap-2">
+              {envelopeCards.map((card) => (
+                <MetadataCodeCard
+                  key={card.label}
+                  label={card.label}
+                  value={card.value}
+                  searchQuery={searchQuery}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
     </div>
