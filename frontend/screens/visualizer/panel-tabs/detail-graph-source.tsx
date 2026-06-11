@@ -5,7 +5,7 @@ import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import type { RepositoryInfo } from "@/lib/repository-handler";
 import {
-  detailColors,
+  DetailActionButton,
   InlineSelectRow,
   StaticValueRow,
 } from "@/components/visualizer/detail/workspace-detail-primitives";
@@ -14,6 +14,7 @@ interface DetailPanelGraphSourceProps {
   repository: RepositoryInfo;
   workspaceData?: DemoVisualizerData | null;
   onRegenerate: () => void;
+  isLoading?: boolean;
   searchQuery?: string;
 }
 
@@ -21,6 +22,7 @@ export function DetailPanelGraphSource({
   repository,
   workspaceData,
   onRegenerate,
+  isLoading = false,
   searchQuery,
 }: DetailPanelGraphSourceProps) {
   const graphSource =
@@ -76,14 +78,11 @@ export function DetailPanelGraphSource({
         searchQuery={searchQuery}
       />
       <div className="pl-2 pt-8">
-        <button
-          type="button"
+        <DetailActionButton
+          label="Regenerate"
           onClick={onRegenerate}
-          className="rounded-lg border border-(--secondary-color) px-4 py-2.5 text-[13px] font-medium text-black"
-          style={{ backgroundColor: detailColors.bullet }}
-        >
-          Regenerate
-        </button>
+          loading={isLoading}
+        />
       </div>
     </div>
   );

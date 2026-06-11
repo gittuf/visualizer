@@ -1,13 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import emptyFileIcon from "@/assets/empty_file.png";
 import swapVertIcon from "@/assets/swap_vert.png";
 import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import {
-  detailColors,
+  DetailActionButton,
   PanelSection,
   SearchHighlightText,
   SectionBulletLabel,
@@ -38,6 +38,7 @@ export function DetailPanelCompare({
   onSwapVersions,
   onCompare,
 }: DetailPanelCompareProps) {
+  const [isComparing, setIsComparing] = useState(false);
   const compareData =
     workspaceData?.workspaceDetails.compare ??
     demoVisualizerData.workspaceDetails.compare;
@@ -81,14 +82,17 @@ export function DetailPanelCompare({
         />
       </PanelSection>
       <div className="pl-2 pt-2">
-        <button
-          type="button"
-          onClick={onCompare}
-          className="rounded-lg border border-(--secondary-color) px-4 py-2.5 text-[13px] font-medium text-black"
-          style={{ backgroundColor: detailColors.bullet }}
-        >
-          Compare
-        </button>
+        <DetailActionButton
+          label="Compare"
+          loading={isComparing}
+          onClick={() => {
+            setIsComparing(true);
+            window.requestAnimationFrame(() => {
+              onCompare();
+              window.setTimeout(() => setIsComparing(false), 250);
+            });
+          }}
+        />
       </div>
       {hasCompared ? (
         <section className="space-y-4 py-4">

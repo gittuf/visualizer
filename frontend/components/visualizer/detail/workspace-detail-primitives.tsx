@@ -28,3 +28,4 @@ export {
   StatusRow,
   ToggleRow,
 } from "@/components/visualizer/detail/detail-setting-controls";
+export { DetailActionButton } from "@/components/visualizer/detail/detail-action-button";

@@ -102,6 +102,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
             label="Reload"
             onClick={props.onReload}
             disabled={props.isLoading}
+            loading={props.isLoading}
           />
           <WorkspaceActionButton
             label="Disconnect"
@@ -183,6 +184,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                   repository={props.repository}
                   workspaceData={props.workspaceData}
                   onRegenerate={handleGenerateGraph}
+                  isLoading={props.isLoading}
                   historyCommits={detailHistoryCommits}
                   selectedHistoryCommitHash={activeHistoryCommitId}
                   onHistoryCommitSelect={setActiveHistoryCommitId}
