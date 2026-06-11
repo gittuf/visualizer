@@ -19,8 +19,6 @@ in Next.js.
   added, removed, modified, and unchanged diff highlighting.
 - **Metadata and Settings Panels**: Review metadata status and summary views,
   then adjust visible node/detail settings for the workspace.
-- **Interactive Playground**: Use the `/playground` route for the trust graph
-  walkthrough, simulator controls, analysis, and glossary experience.
 
 ## Tech Stack
 
@@ -73,12 +71,9 @@ frontend/
 │   ├── globals.css                 # Tailwind & global styles
 │   ├── layout.tsx                  # Root layout & metadata
 │   ├── page.tsx                    # Home route: repository entry + visualizer workspace
-│   └── playground/
-│       └── page.tsx                # Interactive visualizer tools route
 ├── screens/
 │   ├── repository/
 │   │   └── repository-selector.tsx # Repository selection screen
-│   ├── playground/                 # Route-sized playground sections and trust graph
 │   └── visualizer/
 │       ├── visualizer-workspace.tsx
 │       ├── policy-graph-canvas.tsx
@@ -94,10 +89,9 @@ frontend/
 │   ├── explorer/                   # Repository explorer hooks
 │   └── visualizer/                 # Visualizer-specific hooks
 ├── lib/                            # Utilities, constants, demo data, and API helpers
-├── archive/                        # Older and currently unused page/component implementations from a previous version
+├── archive/                        # Older and currently unused implementations, including the archived playground/simulator flow
 ├── public/                         # Static assets served by Next.js
 ├── assets/                         # Imported image assets used by the UI
-├── fixtures/                       # Simulator fixture data
 ├── components.json                 # shadcn config
 ├── next.config.mjs
 ├── package.json
@@ -110,5 +104,3 @@ frontend/
    repository, or launch the demo workspace.
 2. Explore the visualizer workspace, including the graph canvas, history strip,
    and detail panel tabs.
-3. Open `/playground` to use the interactive visualizer playground and trust
-   graph walkthrough.
