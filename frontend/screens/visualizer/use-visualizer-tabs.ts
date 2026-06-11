@@ -41,11 +41,12 @@ export function useVisualizerTabs({
 
   const nextGraphTabNumberRef = useRef(2);
   const nextGraphInstanceNumberRef = useRef(2);
+  const nextCompareTabNumberRef = useRef(1);
 
   const activeGraphTab =
     graphTabs.find((tab) => tab.id === activeGraphTabId) ?? graphTabs[0];
   const isHistoryPanel = activeGraphTabId === historyTabId;
-  const isComparePanel = activeGraphTabId === compareTabId;
+  const isComparePanel = activeGraphTabId.startsWith(compareTabId);
 
   const handleHistoryPanelSelect = () => {
     // History owns a reserved tab ID so menu selection, bottom-bar selection,
@@ -96,30 +97,21 @@ export function useVisualizerTabs({
   );
 
   const handleGenerateCompareGraph = () => {
-    // Compare behaves like history: it gets a stable reserved tab instead of
-    // replacing the active graph tab, which preserves user canvas context.
-    setGraphTabs((currentTabs) => {
-      const existingCompareTab = currentTabs.find((tab) => tab.id === compareTabId);
-      if (existingCompareTab) {
-        return currentTabs.map((tab) =>
-          tab.id === compareTabId ? { ...tab, label: compareTabLabel } : tab,
-        );
-      }
+    const nextCompareTabId = `${compareTabId}-${nextCompareTabNumberRef.current++}`;
 
-      return [
-        ...currentTabs,
-        {
-          id: compareTabId,
-          label: compareTabLabel,
-          closable: true,
-          editable: false,
-          graphs: [],
-        },
-      ];
-    });
+    setGraphTabs((currentTabs) => [
+      ...currentTabs,
+      {
+        id: nextCompareTabId,
+        label: compareTabLabel,
+        closable: true,
+        editable: false,
+        graphs: [],
+      },
+    ]);
     setHasCompared(true);
     setActivePanel("compare");
-    setActiveGraphTabId(compareTabId);
+    setActiveGraphTabId(nextCompareTabId);
   };
 
   const handleAddGraphTab = () => {
@@ -199,9 +191,9 @@ export function useVisualizerTabs({
       return;
     }
 
-    if (tabId === compareTabId) {
+    if (tabId.startsWith(compareTabId)) {
       setActivePanel("compare");
-      setActiveGraphTabId(compareTabId);
+      setActiveGraphTabId(tabId);
       return;
     }
 

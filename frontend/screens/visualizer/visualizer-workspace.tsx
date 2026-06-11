@@ -38,6 +38,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
     activePanel,
     activePanelIcon,
     baseCompareGraph,
+    comparisonResult,
     compareGraph,
     defaultLayout,
     detailHistoryCommits,
@@ -197,6 +198,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                   }
                   selectedBaseVersion={selectedBaseVersion}
                   selectedCompareVersion={selectedCompareVersion}
+                  comparisonResult={comparisonResult}
                   hasCompared={hasCompared}
                   onBaseVersionChange={(value) => {
                     setSelectedBaseVersion(value);
