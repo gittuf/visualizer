@@ -74,7 +74,7 @@ export function SearchHighlightText({
         part.matched ? (
           <span
             key={`${part.value}-${index}`}
-            className="rounded-[2px] text-[var(--modified-color)]"
+            className="rounded-xs text-(--modified-color)"
             style={{ backgroundColor: "var(--selected-color)" }}
           >
             {part.value}
@@ -88,7 +88,7 @@ export function SearchHighlightText({
 }
 
 export function SectionDivider() {
-  return <div className="border-b border-[var(--secondary-color)]" />;
+  return <div className="border-b border-(--secondary-color)" />;
 }
 
 export function SectionBulletLabel({
@@ -122,7 +122,7 @@ export function ValueChip({
 }) {
   return (
     <div
-      className="inline-flex items-center border border-[var(--dark-gray)] px-2 py-1 text-[11px] font-medium text-black"
+      className="inline-flex items-center border border-(--dark-gray) px-2 py-1 text-[11px] font-medium text-black"
       style={{ backgroundColor: detailColors.chip }}
     >
       <SearchHighlightText text={label} query={searchQuery} />
@@ -166,7 +166,7 @@ export function StaticValueRow({
         <SearchHighlightText
           text={value}
           query={searchQuery}
-          className="text-right text-[13px] leading-[1.2] text-[var(--dark-gray)]"
+          className="text-right text-[13px] leading-[1.2] text-(--dark-gray)"
         />
       </div>
       <SectionDivider />
@@ -219,7 +219,7 @@ export function SelectField({
   return (
     <div
       ref={containerRef}
-      className={`${fullWidth ? "max-w-none" : "ml-auto max-w-[220px]"} ${className}`}
+      className={`${fullWidth ? "max-w-none" : "ml-auto max-w-55"} ${className}`}
     >
       <div className="relative">
         <button
@@ -233,8 +233,8 @@ export function SelectField({
               return nextOpen;
             });
           }}
-          className={`flex h-9 w-full items-center justify-between rounded-[4px] border bg-white px-3 text-left text-[12px] text-[var(--dark-gray)] transition-[border-color,box-shadow] duration-150 ${
-            isOpen ? "border-[var(--modified-color)]" : "border-[var(--secondary-color)]"
+          className={`flex h-9 w-full items-center justify-between rounded-sm border bg-white px-3 text-left text-[12px] text-(--dark-gray) transition-[border-color,box-shadow] duration-150 ${
+            isOpen ? "border-(--modified-color)" : "border-(--secondary-color)"
           }`}
           style={
             isOpen
@@ -259,7 +259,7 @@ export function SelectField({
           />
         </button>
         {isOpen ? (
-          <div className="absolute left-0 top-[calc(100%+6px)] z-20 w-full origin-top overflow-hidden rounded-[4px] border border-[var(--secondary-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.12)] animate-in fade-in-0 zoom-in-95 duration-150">
+          <div className="absolute left-0 top-[calc(100%+6px)] z-20 w-full origin-top overflow-hidden rounded-sm border border-(--secondary-color) bg-white shadow-[0_8px_24px_rgba(15,23,42,0.12)] animate-in fade-in-0 zoom-in-95 duration-150">
             <div className="relative">
               <div className="max-h-44 overflow-y-auto overscroll-contain scroll-smooth">
                 {options.map((option) => {
@@ -282,11 +282,11 @@ export function SelectField({
                       onPointerUp={() => setTouchedOptionValue(null)}
                       onFocus={() => setTouchedOptionValue(optionValue)}
                       onBlur={() => setTouchedOptionValue(null)}
-                      className={`relative flex min-h-10 w-full items-center gap-2 border-b border-[var(--gray-highlight)] px-3 py-2.5 text-left text-[12px] transition-[background-color,border-color,color,box-shadow] duration-150 last:border-b-0 ${
+                      className={`relative flex min-h-10 w-full items-center gap-2 border-b border-(--gray-highlight) px-3 py-2.5 text-left text-[12px] transition-[background-color,border-color,color,box-shadow] duration-150 last:border-b-0 ${
                         isSelected
-                          ? "bg-[var(--gray-highlight)] text-black"
-                          : "bg-white text-[var(--dark-gray)] hover:bg-white hover:text-black"
-                      } ${isTouched ? "z-10 border border-[var(--modified-color)]" : ""}`}
+                          ? "bg-(--gray-highlight) text-black"
+                          : "bg-white text-(--dark-gray) hover:bg-white hover:text-black"
+                      } ${isTouched ? "z-10 border border-(--modified-color)" : ""}`}
                       style={
                         isTouched
                           ? { boxShadow: "inset 0 0 0 1px var(--modified-color)" }
@@ -344,13 +344,13 @@ export function InlineSelectRow({
         <SelectField
           options={options}
           selectedLabel={selectedLabel}
-          className="w-[220px]"
+          className="w-55"
           onChange={onChange}
         />
       </div>
       {chips.length > 0 ? (
         <div className="flex justify-end">
-          <div className="flex w-[220px] flex-wrap gap-3">
+          <div className="flex w-55 flex-wrap gap-3">
             {chips.map((chip, index) => (
               <ValueChip
                 key={`${chip}-${index}`}
@@ -389,7 +389,7 @@ export function SummaryMetricGrid({
           <SearchHighlightText
             text={item.label}
             query={searchQuery}
-            className="block truncate whitespace-nowrap text-[12px] text-[var(--dark-gray)]"
+            className="block truncate whitespace-nowrap text-[12px] text-(--dark-gray)"
           />
         </div>
       ))}
@@ -405,9 +405,14 @@ export function QueryUserCard({
   searchQuery?: string;
 }) {
   return (
-    <div className="flex w-[72px] flex-col items-center gap-1">
-      <div className="flex h-[64px] w-[64px] items-center justify-center">
-        <Image src={userIcon} alt="" className="h-10 w-10" />
+    <div className="flex w-18 flex-col items-center gap-1">
+      <div className="flex size-16 items-center justify-center">
+        <Image
+          src={userIcon}
+          alt=""
+          className="h-10 w-auto"
+          style={{ width: "auto" }}
+        />
       </div>
       <SearchHighlightText
         text={name}
@@ -447,16 +452,16 @@ export function CommitHistoryItem({
       onPointerUp={() => onTouch(null)}
       onFocus={() => onTouch(commitId)}
       onBlur={() => onTouch(null)}
-      className={`flex w-full items-start gap-2 border-b border-[var(--secondary-color)] px-1 py-3 text-left ${
-        isSelected ? "bg-[var(--gray-highlight)]" : "bg-white"
-      } ${isTouched ? "border border-[var(--modified-color)]" : ""}`}
+      className={`flex w-full items-start gap-2 border-b border-(--secondary-color) px-1 py-3 text-left ${
+        isSelected ? "bg-(--gray-highlight)" : "bg-white"
+      } ${isTouched ? "border border-(--modified-color)" : ""}`}
     >
       <Image src={commitIcon} alt="" className="mt-1 h-4 w-4 flex-none" />
       <div className="min-w-0 flex-1 overflow-hidden">
         <div className="w-full truncate whitespace-nowrap text-[12px] text-black">
           <SearchHighlightText text={message} query={searchQuery} />
         </div>
-        <div className="text-[10px] text-[var(--dark-gray)]">
+        <div className="text-[10px] text-(--dark-gray)">
           <SearchHighlightText text={author} query={searchQuery} />
         </div>
       </div>
@@ -474,14 +479,14 @@ export function SegmentedControl({
   onChange?: (option: string) => void;
 }) {
   return (
-    <div className="flex w-full overflow-hidden rounded-[2px] border border-[var(--secondary-color)]">
+    <div className="flex w-full overflow-hidden rounded-xs border border-(--secondary-color)">
       {options.map((option) => (
         <button
           key={option}
           type="button"
           onClick={() => onChange?.(option)}
           className={`flex-1 px-4 py-2 text-[12px] font-medium transition-colors duration-150 ${
-            option === selected ? "bg-[var(--dark-gray)] text-white" : "bg-white text-black"
+            option === selected ? "bg-(--dark-gray) text-white" : "bg-white text-black"
           }`}
         >
           {option}
@@ -514,12 +519,12 @@ export function ToggleRow({
         className="text-[12px] text-black"
       />
       <div
-        className={`relative h-5 w-8 rounded-full border border-[var(--dark-gray)] transition-colors duration-150 ${
-          enabled ? "bg-[var(--primary-color)]" : "bg-white opacity-60"
+        className={`relative h-5 w-8 rounded-full border border-(--dark-gray) transition-colors duration-150 ${
+          enabled ? "bg-(--primary-color)" : "bg-white opacity-60"
         }`}
       >
         <div
-          className={`absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-[var(--dark-gray)] bg-white transition-[left,right] duration-150 ${
+          className={`absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-(--dark-gray) bg-white transition-[left,right] duration-150 ${
             enabled ? "right-1" : "left-1"
           }`}
         />
@@ -553,7 +558,7 @@ export function CheckboxRow({
       <SearchHighlightText
         text={label}
         query={searchQuery}
-        className={`text-[12px] ${checked ? "text-black" : "text-[var(--dark-gray)]"}`}
+        className={`text-[12px] ${checked ? "text-black" : "text-(--dark-gray)"}`}
       />
     </button>
   );
@@ -576,7 +581,7 @@ export function StatusRow({
       <SearchHighlightText
         text={`${label}${value ? `: ${value}` : ""}`}
         query={searchQuery}
-        className="text-[var(--dark-gray)]"
+        className="text-(--dark-gray)"
       />
     </div>
   );

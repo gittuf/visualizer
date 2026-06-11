@@ -93,15 +93,20 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
 
   return (
     <section className="flex h-full min-h-0 w-full flex-col overflow-hidden">
-      <div className="flex min-h-[44px] items-center justify-between border-b border-[var(--secondary-color)] bg-[var(--light-gray)] px-4 md:px-6">
-        <h2 className="text-[18px] font-medium text-black">{props.repository.name}</h2>
+      <div className="flex min-h-11 items-center justify-between border-b border-(--secondary-color) bg-(--light-gray) px-4 md:px-6">
+        <h2 className="text-[18px] font-medium text-black">
+          {props.repository.name}
+        </h2>
         <div className="flex items-center gap-3">
           <WorkspaceActionButton
             label="Reload"
             onClick={props.onReload}
             disabled={props.isLoading}
           />
-          <WorkspaceActionButton label="Disconnect" onClick={props.onDisconnect} />
+          <WorkspaceActionButton
+            label="Disconnect"
+            onClick={props.onDisconnect}
+          />
         </div>
       </div>
 
@@ -147,7 +152,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
             </aside>
           </ResizablePanel>
 
-          <ResizableHandle className="bg-[var(--secondary-color)] after:w-2 hover:bg-[var(--primary-color)] focus-visible:bg-[var(--primary-color)]" />
+          <ResizableHandle className="bg-(--secondary-color) after:w-2 hover:bg-(--primary-color) focus-visible:bg-(--primary-color)" />
 
           <ResizablePanel
             id="workspace-detail-panel"
@@ -210,7 +215,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
             </section>
           </ResizablePanel>
 
-          <ResizableHandle className="bg-[var(--secondary-color)] after:w-2 hover:bg-[var(--primary-color)] focus-visible:bg-[var(--primary-color)]">
+          <ResizableHandle className="bg-(--secondary-color) after:w-2 hover:bg-(--primary-color) focus-visible:bg-(--primary-color)">
             <WorkspaceDetailToggle
               isCollapsed={isDetailCollapsed}
               leftIcon={leftArrowIcon}
@@ -223,7 +228,11 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
             />
           </ResizableHandle>
 
-          <ResizablePanel id="workspace-graph-panel" defaultSize="52%" minSize="35%">
+          <ResizablePanel
+            id="workspace-graph-panel"
+            defaultSize="52%"
+            minSize="35%"
+          >
             <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-white">
               {isHistoryPanel && !isHistoryStripCollapsed ? (
                 <HistoryTimelineStrip
@@ -233,11 +242,13 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                 />
               ) : null}
               {isHistoryPanel ? (
-                <div className="relative flex h-[26px] items-center justify-center border-b border-[var(--secondary-color)] bg-white">
+                <div className="relative flex h-[26px] items-center justify-center border-b border-(--secondary-color) bg-white">
                   <button
                     type="button"
-                    onClick={() => setIsHistoryStripCollapsed((collapsed) => !collapsed)}
-                    className="flex h-[26px] w-[54px] items-center justify-center border border-[var(--secondary-color)] bg-[var(--selected-color)] hover:bg-[var(--primary-color)]"
+                    onClick={() =>
+                      setIsHistoryStripCollapsed((collapsed) => !collapsed)
+                    }
+                    className="flex h-[26px] w-[54px] items-center justify-center border border-(--secondary-color) bg-(--selected-color) hover:bg-(--primary-color)"
                     aria-label={
                       isHistoryStripCollapsed
                         ? "Expand commit history strip"
@@ -260,7 +271,11 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                 </div>
               ) : null}
               <WorkspacePanelHeader
-                title={isHistoryPanel ? "Policy Graph" : activeGraphTab?.label ?? "Policy Graph"}
+                title={
+                  isHistoryPanel
+                    ? "Policy Graph"
+                    : (activeGraphTab?.label ?? "Policy Graph")
+                }
                 placeholder={
                   isHistoryPanel
                     ? "Search"
@@ -269,24 +284,31 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                       : "Search graph"
                 }
                 searchIcon={searchIcon}
-                className="bg-[var(--logo-blue)]"
+                className="bg-(--primary-color)"
                 searchValue={graphSearchQuery}
                 onSearchChange={setGraphSearchQuery}
               />
               <div className="relative min-h-0 flex-1">
-                <div className="absolute right-4 z-10 flex items-center gap-2" style={{ top: "16px" }}>
+                <div
+                  className="absolute right-4 z-10 flex items-center gap-2"
+                  style={{ top: "16px" }}
+                >
                   <WorkspaceActionButton
                     label="Zoom In"
                     icon={zoomInIcon}
                     onClick={() =>
-                      setGraphZoom((current) => Math.min(1.8, Number((current + 0.1).toFixed(2))))
+                      setGraphZoom((current) =>
+                        Math.min(1.8, Number((current + 0.1).toFixed(2))),
+                      )
                     }
                   />
                   <WorkspaceActionButton
                     label="Zoom Out"
                     icon={zoomOutIcon}
                     onClick={() =>
-                      setGraphZoom((current) => Math.max(0.6, Number((current - 0.1).toFixed(2))))
+                      setGraphZoom((current) =>
+                        Math.max(0.6, Number((current - 0.1).toFixed(2))),
+                      )
                     }
                   />
                 </div>
@@ -313,23 +335,37 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                   )
                 ) : (
                   <div className="h-full bg-[linear-gradient(to_right,rgba(4,8,14,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(4,8,14,0.06)_1px,transparent_1px)] bg-[size:24px_24px]">
-                    <ScrollArea className="h-full w-full" viewportRef={graphViewportRef}>
+                    <ScrollArea
+                      className="h-full w-full"
+                      viewportRef={graphViewportRef}
+                    >
                       <div className="flex min-h-full min-w-full items-start touch-none">
                         <div className="flex min-h-full min-w-full w-max items-start gap-6 p-6">
                           {activeGraphTab?.graphs.length ? (
                             activeGraphTab.graphs.map((graph) => (
-                              <div key={graph.id} className="h-[980px] w-[980px] shrink-0">
+                              <div
+                                key={graph.id}
+                                className="h-[980px] w-[980px] shrink-0"
+                              >
                                 <PolicyGraphCanvas
                                   graphId={graph.id}
                                   zoom={graphZoom}
                                   searchQuery={graphSearchQuery}
                                   viewportWidth={980}
-                                  viewportHeight={Math.max(graphViewportSize.height - 48, 720)}
+                                  viewportHeight={Math.max(
+                                    graphViewportSize.height - 48,
+                                    720,
+                                  )}
                                   offset={graph.offset}
                                   onOffsetChange={(nextOffset) =>
-                                    handleGraphOffsetChange(graph.id, nextOffset)
+                                    handleGraphOffsetChange(
+                                      graph.id,
+                                      nextOffset,
+                                    )
                                   }
-                                  onDelete={() => handleDeleteGraphInstance(graph.id)}
+                                  onDelete={() =>
+                                    handleDeleteGraphInstance(graph.id)
+                                  }
                                 />
                               </div>
                             ))

@@ -69,7 +69,7 @@ export function DetailPanelCompare({
         <button
           type="button"
           onClick={onSwapVersions}
-          className="flex h-8 w-8 items-center justify-center rounded-[4px] transition-colors duration-150 hover:bg-[var(--gray-highlight)]"
+          className="flex h-8 w-8 items-center justify-center rounded-sm transition-colors duration-150 hover:bg-(--gray-highlight)"
         >
           <Image src={swapVertIcon} alt="" className="h-5 w-5" />
         </button>
@@ -86,7 +86,7 @@ export function DetailPanelCompare({
         <button
           type="button"
           onClick={onCompare}
-          className="rounded-[8px] border border-[var(--secondary-color)] px-4 py-2.5 text-[13px] font-medium text-black"
+          className="rounded-lg border border-(--secondary-color) px-4 py-2.5 text-[13px] font-medium text-black"
           style={{ backgroundColor: detailColors.bullet }}
         >
           Compare
@@ -100,7 +100,7 @@ export function DetailPanelCompare({
               <div
                 key={item}
                 className={
-                  index < 2 ? "text-[var(--approve-color)]" : "text-[var(--dark-gray)]"
+                  index < 2 ? "text-(--approve-color)" : "text-(--dark-gray)"
                 }
               >
                 {index < 2 ? "✓" : "—"}{" "}

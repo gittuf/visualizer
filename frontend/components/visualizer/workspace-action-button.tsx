@@ -25,7 +25,7 @@ export function WorkspaceActionButton({
       size={size}
       onClick={onClick}
       disabled={disabled}
-      className="rounded-[5px] border-[var(--tertiary-color)] bg-white px-3 text-[14px] font-normal text-black hover:bg-[var(--gray-highlight)]"
+      className="rounded-[5px] border-(--tertiary-color) bg-white px-3 text-[14px] font-normal text-black hover:bg-(--gray-highlight)"
     >
       {icon ? <Image src={icon} alt="" className="h-4 w-4" /> : null}
       <span>{label}</span>

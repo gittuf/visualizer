@@ -67,7 +67,7 @@ export function WorkspaceCompareCanvas({
         </div>
       </div>
       <div className="pointer-events-none absolute inset-0 z-30">
-        <div className="absolute bottom-6 left-6 border border-[var(--dark-gray)] bg-transparent px-4 py-3">
+        <div className="absolute bottom-6 left-6 border border-(--dark-gray) bg-transparent px-4 py-3">
           <div className="space-y-2.5 text-[14px] leading-[1.35] text-black">
             {[
               ["Added", "var(--approve-color)"],
@@ -77,7 +77,7 @@ export function WorkspaceCompareCanvas({
             ].map(([label, color]) => (
               <div key={label} className="flex items-center gap-3">
                 <span
-                  className="h-[14px] w-[14px] rounded-full"
+                  className="size-3.5 rounded-full"
                   style={{ backgroundColor: color }}
                 />
                 <span>{label}</span>

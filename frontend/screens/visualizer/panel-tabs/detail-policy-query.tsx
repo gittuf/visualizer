@@ -104,7 +104,7 @@ export function DetailPanelPolicyQuery({
                 policyQuery.authorizedUsers,
             });
           }}
-          className="rounded-[8px] border border-[var(--secondary-color)] px-4 py-2.5 text-[13px] font-medium text-black"
+          className="rounded-lg border border-(--secondary-color) px-4 py-2.5 text-[13px] font-medium text-black"
           style={{ backgroundColor: detailColors.bullet }}
         >
           Query policy

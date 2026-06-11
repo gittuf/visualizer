@@ -304,7 +304,7 @@ export function PolicyGraphCanvas({
                 type="button"
                 aria-label="Delete graph"
                 onClick={onDelete}
-                className="absolute z-20 flex h-7 w-7 items-center justify-center bg-transparent text-[18px] font-bold leading-none text-[var(--reject-color)] transition-colors duration-150 hover:opacity-80"
+                className="absolute z-20 flex h-7 w-7 items-center justify-center bg-transparent text-[18px] font-bold leading-none text-(--reject-color) transition-colors duration-150 hover:opacity-80"
                 style={{
                   left: `${boundary.x + boundary.width - 24}px`,
                   top: `${boundary.y + 2}px`,
@@ -456,9 +456,10 @@ export function PolicyGraphCanvas({
                         <Image
                           src={userIcon}
                           alt=""
-                          className={`mt-1 h-10 w-10 ${getIconClassName(principalChangeType)}`}
+                          className={`mt-1 h-10 w-auto ${getIconClassName(principalChangeType)}`}
                           style={{
                             filter: getIconFilter(principalChangeType),
+                            width: "auto",
                           }}
                           draggable={false}
                         />

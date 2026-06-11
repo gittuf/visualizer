@@ -31,11 +31,11 @@ export function DetailPanelMetadata({
   return (
     <div className="space-y-2 px-5 pb-8">
       <PanelSection label="Policy file" searchQuery={searchQuery}>
-        <div className="space-y-2 text-[12px] text-[var(--dark-gray)]">
+        <div className="space-y-2 text-[12px] text-(--dark-gray)">
           <SearchHighlightText
             text="Define trusted keys, roles, and root-level authority"
             query={searchQuery}
-            className="text-[12px] text-[var(--dark-gray)]"
+            className="text-[12px] text-(--dark-gray)"
           />
           <div className="flex flex-wrap gap-1">
             {metadataData.policyFiles.map((item, index) => (
@@ -73,15 +73,15 @@ export function DetailPanelMetadata({
       <section className="space-y-4 py-4">
         <SectionBulletLabel label="View" searchQuery={searchQuery} />
         <div className="space-y-3 pl-2">
-          <div className="flex w-fit overflow-hidden rounded-[3px] border border-[var(--secondary-color)]">
+          <div className="flex w-fit overflow-hidden rounded-[3px] border border-(--secondary-color)">
             {metadataData.views.map((tab) => (
               <button
                 key={tab}
                 type="button"
-                className={`border-r border-[var(--secondary-color)] px-3 py-1 text-[11px] last:border-r-0 ${
+                className={`border-r border-(--secondary-color) px-3 py-1 text-[11px] last:border-r-0 ${
                   metadataData.selectedView === tab
-                    ? "bg-[var(--dark-gray)] text-white"
-                    : "bg-white text-[var(--dark-gray)]"
+                    ? "bg-(--dark-gray) text-white"
+                    : "bg-white text-(--dark-gray)"
                 }`}
               >
                 {tab}

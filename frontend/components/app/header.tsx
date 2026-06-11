@@ -16,9 +16,9 @@ export default function Header({
   steps,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[var(--secondary-color)] bg-white">
-      <div className="flex min-h-[52px] w-full items-center justify-between px-5 md:px-6">
-        <Image src={logo} alt="gittuf" className="h-auto w-[92px]" priority />
+    <header className="sticky top-0 z-50 w-full border-b border-(--secondary-color) bg-white">
+      <div className="flex min-h-13 w-full items-center justify-between px-5 md:px-6">
+        <Image src={logo} alt="gittuf" className="h-auto w-23" priority />
       </div>
 
       {hasCommits && (
