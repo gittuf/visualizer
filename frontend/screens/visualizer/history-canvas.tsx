@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
-import { demoVisualizerData } from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import type {
   HistorySortField,
   HistoryTimelineCommit,
@@ -115,7 +115,7 @@ export function WorkspaceHistoryTimelineStrip({
   }, [activeCommitId]);
 
   return (
-    <div className="border-b border-[var(--secondary-color)] bg-white">
+    <div className="border-b border-(--secondary-color) bg-white">
       <div className="flex overflow-x-auto">
         {commits.map((commit) => {
           const isActive = commit.id === activeCommitId;
@@ -128,22 +128,22 @@ export function WorkspaceHistoryTimelineStrip({
               }}
               type="button"
               onClick={() => onSelect(commit.id)}
-              className="flex h-[66px] min-w-[110px] shrink-0 flex-col justify-between border-r border-[var(--secondary-color)] px-2 py-1 text-left transition-colors duration-150"
+              className="flex h-[66px] min-w-[110px] shrink-0 flex-col justify-between border-r border-(--secondary-color) px-2 py-1 text-left transition-colors duration-150"
               style={{
                 backgroundColor: isActive ? selectedCommitColor : "white",
               }}
             >
-              <div className="text-[11px] leading-none text-[var(--dark-gray)]">
+              <div className="text-[11px] leading-none text-(--dark-gray)">
                 {formatHistoryDate(commit.date)}
               </div>
               <div className="flex items-center gap-1.5 text-[11px] font-semibold text-black">
                 <span className="relative inline-flex h-[8px] w-5 items-center">
-                  <span className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 bg-[var(--tertiary-color)]" />
-                  <span className="absolute left-[5px] top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full border border-[var(--tertiary-color)] bg-white" />
+                  <span className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2 bg-(--tertiary-color)" />
+                  <span className="absolute left-[5px] top-1/2 h-[8px] w-[8px] -translate-y-1/2 rounded-full border border-(--tertiary-color) bg-white" />
                 </span>
                 {commit.hash.slice(0, 7)}
               </div>
-              <div className="truncate text-[10px] text-[var(--dark-gray)]">
+              <div className="truncate text-[10px] text-(--dark-gray)">
                 {commit.authorLabel ?? commit.author}
               </div>
             </button>

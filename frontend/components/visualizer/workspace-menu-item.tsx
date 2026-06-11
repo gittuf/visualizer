@@ -23,7 +23,7 @@ export function WorkspaceMenuItem({
       onClick={onClick}
       className={`flex min-w-0 w-full items-center rounded-[5px] px-3 py-4 text-left text-[15px] text-black transition-colors ${
         isCompact ? "justify-center" : "gap-3"
-      } ${isActive ? "bg-[var(--selected-color)]" : "hover:bg-[var(--gray-highlight)]"}`}
+      } ${isActive ? "bg-(--selected-color)" : "hover:bg-(--gray-highlight)"}`}
       title={isCompact ? label : undefined}
     >
       <Image src={icon} alt="" className="h-[18px] w-[18px]" />

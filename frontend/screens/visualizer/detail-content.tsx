@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { DemoVisualizerData } from "@/lib/demo-visualizer-data";
-import { demoVisualizerData } from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import type { RepositoryInfo } from "@/lib/repository-handler";
 import {
   DetailPanelCompare,
@@ -20,6 +20,7 @@ interface WorkspaceDetailContentProps {
   repository: RepositoryInfo;
   workspaceData?: DemoVisualizerData | null;
   onRegenerate: () => void;
+  isLoading?: boolean;
   historyCommits: Array<{
     id: number;
     hash: string;
@@ -49,6 +50,7 @@ export function WorkspaceDetailContent({
   repository,
   workspaceData,
   onRegenerate,
+  isLoading = false,
   historyCommits,
   selectedHistoryCommitHash,
   onHistoryCommitSelect,
@@ -90,6 +92,7 @@ export function WorkspaceDetailContent({
           repository={repository}
           workspaceData={workspaceData}
           onRegenerate={onRegenerate}
+          isLoading={isLoading}
           searchQuery={searchQuery}
         />
       );

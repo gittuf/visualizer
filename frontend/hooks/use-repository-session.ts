@@ -1,16 +1,11 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
-import { REPOSITORY } from "@/lib/constants"
-import { demoVisualizerData, type DemoVisualizerData } from "@/lib/demo-visualizer-data"
-import { mockFetchCommits } from "@/lib/mock-api"
-import type { Commit } from "@/lib/types"
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture"
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types"
 import { RepositoryHandler, type RepositoryInfo } from "@/lib/repository-handler"
 
-export function useRepository() {
-  const [repoUrl, setRepoUrl] = useState("")
-  const [commits, setCommits] = useState<Commit[]>([])
+export function useRepositorySession() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [currentRepository, setCurrentRepository] = useState<RepositoryInfo | null>(null)
@@ -21,7 +16,6 @@ export function useRepository() {
   const handleTryDemo = async (onSuccess?: () => void) => {
     const demoRepository: RepositoryInfo = demoVisualizerData.repository
 
-    setRepoUrl(REPOSITORY.GITTUF_URL)
     setCurrentRepository(demoRepository)
     setCurrentRepositoryData(demoVisualizerData)
     setIsLoading(true)
@@ -29,7 +23,6 @@ export function useRepository() {
 
     try {
       await repositoryHandler.setRepository(demoRepository)
-      setCommits(demoVisualizerData.commits)
       setShowRepositorySelector(false)
       if (onSuccess) onSuccess()
     } catch (err) {
@@ -47,8 +40,7 @@ export function useRepository() {
 
     try {
       await repositoryHandler.setRepository(repoInfo)
-      const commitsData = await repositoryHandler.fetchCommits()
-      setCommits(commitsData)
+      await repositoryHandler.fetchCommits()
       setShowRepositorySelector(false)
       if (onSuccess) onSuccess()
     } catch (err) {
@@ -65,8 +57,7 @@ export function useRepository() {
     setError("")
 
     try {
-      const commitsData = await repositoryHandler.fetchCommits()
-      setCommits(commitsData)
+      await repositoryHandler.fetchCommits()
     } catch (err) {
       setError(`Failed to refresh repository data: ${err instanceof Error ? err.message : "Unknown error"}`)
     } finally {
@@ -74,31 +65,7 @@ export function useRepository() {
     }
   }
 
-  const handleRepoSubmit = async (e: React.FormEvent, onSuccess?: () => void) => {
-    e.preventDefault()
-
-    if (!repoUrl.trim()) {
-      setError("Please enter a GitHub repository URL")
-      return
-    }
-
-    setIsLoading(true)
-    setError("")
-
-    try {
-      const commitsData = await mockFetchCommits(repoUrl)
-      setCommits(commitsData)
-      if (onSuccess) onSuccess()
-    } catch {
-      setError("Failed to fetch repository data. Please check the URL and try again.")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const handleDisconnect = () => {
-    setRepoUrl("")
-    setCommits([])
     setIsLoading(false)
     setError("")
     setCurrentRepository(null)
@@ -107,21 +74,14 @@ export function useRepository() {
   }
 
   return {
-    repoUrl,
-    setRepoUrl,
-    commits,
-    setCommits,
     currentRepositoryData,
     isLoading,
     error,
-    setError, // Exposed to allow other hooks to set error if needed, or clear it
     currentRepository,
     showRepositorySelector,
-    setShowRepositorySelector,
     handleDisconnect,
     handleTryDemo,
     handleRepositorySelect,
     handleRepositoryRefresh,
-    handleRepoSubmit,
   }
 }

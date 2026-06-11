@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  demoVisualizerData,
-  type DemoVisualizerData,
-} from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import {
   CheckboxRow,
-  detailColors,
+  DetailActionButton,
   PanelSection,
   SectionBulletLabel,
   SectionDivider,
@@ -38,6 +36,7 @@ export function DetailPanelSettings({
   const [selectedLayoutDirection, setSelectedLayoutDirection] = useState(
     settingsData.selectedLayoutDirection ?? defaultLayoutDirections[0],
   );
+  const [isResetting, setIsResetting] = useState(false);
   const [visibleNodeTypes, setVisibleNodeTypes] = useState(defaultVisibleNodeTypes);
   const [labels, setLabels] = useState(defaultLabels);
   const [dataOptions, setDataOptions] = useState(defaultDataOptions);
@@ -124,22 +123,23 @@ export function DetailPanelSettings({
         </div>
       </section>
       <div className="pl-4 pt-4">
-        <button
-          type="button"
+        <DetailActionButton
+          label="Reset to default"
+          loading={isResetting}
           onClick={() => {
-            setSelectedDetailLevel(settingsData.selectedDetailLevel ?? defaultDetailLevels[0]);
-            setSelectedLayoutDirection(
-              settingsData.selectedLayoutDirection ?? defaultLayoutDirections[0],
-            );
-            setVisibleNodeTypes(defaultVisibleNodeTypes);
-            setLabels(defaultLabels);
-            setDataOptions(defaultDataOptions);
+            setIsResetting(true);
+            window.requestAnimationFrame(() => {
+              setSelectedDetailLevel(settingsData.selectedDetailLevel ?? defaultDetailLevels[0]);
+              setSelectedLayoutDirection(
+                settingsData.selectedLayoutDirection ?? defaultLayoutDirections[0],
+              );
+              setVisibleNodeTypes(defaultVisibleNodeTypes);
+              setLabels(defaultLabels);
+              setDataOptions(defaultDataOptions);
+              window.setTimeout(() => setIsResetting(false), 250);
+            });
           }}
-          className="rounded-[8px] border border-[var(--secondary-color)] px-4 py-2.5 text-[13px] font-medium text-black"
-          style={{ backgroundColor: detailColors.bullet }}
-        >
-          Reset to default
-        </button>
+        />
       </div>
     </div>
   );

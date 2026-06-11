@@ -4,7 +4,7 @@ import RepositorySelector from "@/screens/repository/repository-selector"
 import VisualizerWorkspace from "@/screens/visualizer/visualizer-workspace"
 
 import Header from "@/components/app/header"
-import { useGittufExplorer } from "@/hooks/use-gittuf-explorer"
+import { useRepositorySession } from "@/hooks/use-repository-session"
 
 export default function Home() {
   const {
@@ -17,7 +17,7 @@ export default function Home() {
     handleTryDemo,
     handleRepositorySelect,
     handleRepositoryRefresh,
-  } = useGittufExplorer()
+  } = useRepositorySession()
 
   const isWorkspaceView = Boolean(currentRepository && !showRepositorySelector)
 

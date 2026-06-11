@@ -29,6 +29,11 @@ const SURFACE_BORDER = "var(--secondary-color)"
 const CONTROL_BORDER = "var(--tertiary-color)"
 const PARAGRAPH_COLOR = "var(--dark-gray)"
 const BUTTON_COLOR = "var(--secondary-color)"
+const REMOTE_REPOSITORY_HOSTS = {
+  "github.com": "GitHub",
+  "gitlab.com": "GitLab",
+  "bitbucket.org": "Bitbucket",
+} as const
 
 function StepIndicator({ step }: { step: number }) {
   return (
@@ -73,20 +78,21 @@ export default function RepositorySelector({
     }
 
     const normalizedUrl = /^https?:\/\//i.test(remoteUrl.trim()) ? remoteUrl.trim() : `https://${remoteUrl.trim()}`
+    let validatedHost: keyof typeof REMOTE_REPOSITORY_HOSTS | null = null
 
     try {
       const url = new URL(normalizedUrl)
-      if (
-        !url.hostname.includes("github.com") &&
-        !url.hostname.includes("gitlab.com") &&
-        !url.hostname.includes("bitbucket.org")
-      ) {
+      const normalizedHost = url.hostname.toLowerCase()
+
+      if (!(normalizedHost in REMOTE_REPOSITORY_HOSTS)) {
         setValidationStatus({
           isValid: false,
           message: "Please enter a GitHub, GitLab, or Bitbucket repository URL.",
         })
         return
       }
+
+      validatedHost = normalizedHost as keyof typeof REMOTE_REPOSITORY_HOSTS
     } catch {
       setValidationStatus({
         isValid: false,
@@ -106,11 +112,7 @@ export default function RepositorySelector({
       message: "Repository URL validated successfully.",
       details: {
         type: "remote",
-        platform: normalizedUrl.includes("github.com")
-          ? "GitHub"
-          : normalizedUrl.includes("gitlab.com")
-            ? "GitLab"
-            : "Bitbucket",
+        platform: validatedHost ? REMOTE_REPOSITORY_HOSTS[validatedHost] : undefined,
         url: normalizedUrl,
       },
     })

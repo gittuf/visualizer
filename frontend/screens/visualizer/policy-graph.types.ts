@@ -1,3 +1,4 @@
+// for policy graph comparison
 export type PolicyGraphChangeStatus =
   | "added"
   | "removed"

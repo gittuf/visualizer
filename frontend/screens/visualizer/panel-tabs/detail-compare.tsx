@@ -1,15 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import emptyFileIcon from "@/assets/empty_file.png";
 import swapVertIcon from "@/assets/swap_vert.png";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import {
-  demoVisualizerData,
-  type DemoVisualizerData,
-} from "@/lib/demo-visualizer-data";
-import {
-  detailColors,
+  DetailActionButton,
   PanelSection,
   SearchHighlightText,
   SectionBulletLabel,
@@ -40,6 +38,7 @@ export function DetailPanelCompare({
   onSwapVersions,
   onCompare,
 }: DetailPanelCompareProps) {
+  const [isComparing, setIsComparing] = useState(false);
   const compareData =
     workspaceData?.workspaceDetails.compare ??
     demoVisualizerData.workspaceDetails.compare;
@@ -69,7 +68,7 @@ export function DetailPanelCompare({
         <button
           type="button"
           onClick={onSwapVersions}
-          className="flex h-8 w-8 items-center justify-center rounded-[4px] transition-colors duration-150 hover:bg-[var(--gray-highlight)]"
+          className="flex h-8 w-8 items-center justify-center rounded-sm transition-colors duration-150 hover:bg-(--gray-highlight)"
         >
           <Image src={swapVertIcon} alt="" className="h-5 w-5" />
         </button>
@@ -83,14 +82,17 @@ export function DetailPanelCompare({
         />
       </PanelSection>
       <div className="pl-2 pt-2">
-        <button
-          type="button"
-          onClick={onCompare}
-          className="rounded-[8px] border border-[var(--secondary-color)] px-4 py-2.5 text-[13px] font-medium text-black"
-          style={{ backgroundColor: detailColors.bullet }}
-        >
-          Compare
-        </button>
+        <DetailActionButton
+          label="Compare"
+          loading={isComparing}
+          onClick={() => {
+            setIsComparing(true);
+            window.requestAnimationFrame(() => {
+              onCompare();
+              window.setTimeout(() => setIsComparing(false), 250);
+            });
+          }}
+        />
       </div>
       {hasCompared ? (
         <section className="space-y-4 py-4">
@@ -100,7 +102,7 @@ export function DetailPanelCompare({
               <div
                 key={item}
                 className={
-                  index < 2 ? "text-[var(--approve-color)]" : "text-[var(--dark-gray)]"
+                  index < 2 ? "text-(--approve-color)" : "text-(--dark-gray)"
                 }
               >
                 {index < 2 ? "✓" : "—"}{" "}

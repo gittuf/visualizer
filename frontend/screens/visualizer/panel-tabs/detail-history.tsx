@@ -4,10 +4,8 @@ import { useEffect } from "react";
 import Image from "next/image";
 import ascendingIcon from "@/assets/ascending.png";
 import discendingIcon from "@/assets/discending.png";
-import {
-  demoVisualizerData,
-  type DemoVisualizerData,
-} from "@/lib/demo-visualizer-data";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import { useWorkspaceHistory } from "@/hooks/visualizer/use-workspace-history";
 import {
   CommitHistoryItem,
@@ -106,7 +104,7 @@ export function DetailPanelHistory({
           selectedLabel={selectedSort}
           displayLabel={`Sort by: ${selectedSort}`}
           onChange={(value) => onSortChange(value as HistorySortField)}
-          className="w-[132px]"
+          className="w-33"
         />
         <button
           type="button"
@@ -154,7 +152,7 @@ export function DetailPanelHistory({
             <button
               type="button"
               onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-              className="rounded-[4px] border border-[var(--secondary-color)] px-3 py-1 text-[12px] text-black"
+              className="rounded-sm border border-(--secondary-color) px-3 py-1 text-[12px] text-black"
             >
               &lt; Previous
             </button>
@@ -168,8 +166,8 @@ export function DetailPanelHistory({
                     key={pageNumber}
                     type="button"
                     onClick={() => setCurrentPage(pageNumber)}
-                    className={`rounded-[4px] px-2 py-1 ${
-                      isActive ? "text-black" : "text-[var(--dark-gray)]"
+                    className={`rounded-sm px-2 py-1 ${
+                      isActive ? "text-black" : "text-(--dark-gray)"
                     }`}
                     style={isActive ? { backgroundColor: detailColors.bullet } : undefined}
                   >
@@ -181,7 +179,7 @@ export function DetailPanelHistory({
             <button
               type="button"
               onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-              className="rounded-[4px] border border-[var(--secondary-color)] px-3 py-1 text-[12px] text-black"
+              className="rounded-sm border border-(--secondary-color) px-3 py-1 text-[12px] text-black"
             >
               Next &gt;
             </button>

@@ -1,14 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import branchIcon from "@/assets/branch.png";
 import emptyFileIcon from "@/assets/empty_file.png";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import {
-  demoVisualizerData,
-  type DemoVisualizerData,
-} from "@/lib/demo-visualizer-data";
-import {
-  detailColors,
+  DetailActionButton,
   PanelSection,
   QueryUserCard,
   SectionBulletLabel,
@@ -49,6 +47,7 @@ export function DetailPanelPolicyQuery({
   onChangedPathChange,
   onQuery,
 }: DetailPanelPolicyQueryProps) {
+  const [isQuerying, setIsQuerying] = useState(false);
   const policyQuery =
     workspaceData?.workspaceDetails.policyQuery ??
     demoVisualizerData.workspaceDetails.policyQuery;
@@ -83,32 +82,33 @@ export function DetailPanelPolicyQuery({
         />
       </PanelSection>
       <div className="pl-2 pt-2">
-        <button
-          type="button"
+        <DetailActionButton
+          label="Query policy"
+          loading={isQuerying}
           onClick={() => {
-            onQuery({
-              matchedBranch:
-                queryScenario?.matchedBranch ??
-                policyQuery.queryResult.matchedBranch ??
-                selectedBranch,
-              matchedRule:
-                queryScenario?.matchedRule ??
-                policyQuery.queryResult.matchedRule ??
-                selectedChangedPath,
-              requiredApprovals:
-                queryScenario?.requiredApprovals ??
-                policyQuery.queryResult.requiredApprovals ??
-                2,
-              authorizedUsers:
-                queryScenario?.authorizedUsers ??
-                policyQuery.authorizedUsers,
+            setIsQuerying(true);
+            window.requestAnimationFrame(() => {
+              onQuery({
+                matchedBranch:
+                  queryScenario?.matchedBranch ??
+                  policyQuery.queryResult.matchedBranch ??
+                  selectedBranch,
+                matchedRule:
+                  queryScenario?.matchedRule ??
+                  policyQuery.queryResult.matchedRule ??
+                  selectedChangedPath,
+                requiredApprovals:
+                  queryScenario?.requiredApprovals ??
+                  policyQuery.queryResult.requiredApprovals ??
+                  2,
+                authorizedUsers:
+                  queryScenario?.authorizedUsers ??
+                  policyQuery.authorizedUsers,
+              });
+              window.setTimeout(() => setIsQuerying(false), 250);
             });
           }}
-          className="rounded-[8px] border border-[var(--secondary-color)] px-4 py-2.5 text-[13px] font-medium text-black"
-          style={{ backgroundColor: detailColors.bullet }}
-        >
-          Query policy
-        </button>
+        />
       </div>
       {showResults ? (
         <>
