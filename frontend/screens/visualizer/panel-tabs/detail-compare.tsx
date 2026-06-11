@@ -68,9 +68,13 @@ export function DetailPanelCompare({
         <button
           type="button"
           onClick={onSwapVersions}
-          className="flex h-8 w-8 items-center justify-center rounded-sm transition-colors duration-150 hover:bg-(--gray-highlight)"
+          className="group flex h-8 w-8 items-center justify-center rounded-sm transition-colors duration-150"
         >
-          <Image src={swapVertIcon} alt="" className="h-5 w-5" />
+          <Image
+            src={swapVertIcon}
+            alt=""
+            className="h-5 w-5 transition-all duration-150 group-hover:brightness-0 group-hover:saturate-100 group-hover:invert-[24%] group-hover:sepia-[96%] group-hover:saturate-[2678%] group-hover:hue-rotate-[204deg] group-hover:brightness-[97%] group-hover:contrast-[101%]"
+          />
         </button>
       </div>
       <PanelSection label="Compare Version" className="pt-2" searchQuery={searchQuery}>

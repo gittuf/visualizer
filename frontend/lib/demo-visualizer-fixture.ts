@@ -390,6 +390,35 @@ export const demoVisualizerData: DemoVisualizerData = {
       ],
       graphsByVersion: demoGraphsByVersion,
       comparisonsByPair: {
+        [`${compareLabelByHash["e5f6a7b8"]}|${compareLabelByHash["2c3d4e5f"]}`]: {
+          changedMetadata: ["Trust setup", "File rules", "Root metadata"],
+          stats: [
+            { value: "1", label: "role changed" },
+            { value: "0", label: "rules added" },
+            { value: "1 ↑", label: "threshold" },
+            { value: "1", label: "principal added" },
+          ],
+          compareGraph: {
+            repositoryLabel: "2c3d4e",
+            branchLabel: "Branch: main",
+            showLegend: true,
+            lanes: [
+              {
+                key: "src",
+                pathLabel: "src/**",
+                roleLabel: "Authorized users",
+                approvals: "Requires: 3 approvals",
+                approvalsStatus: "modified",
+                principals: [
+                  { name: "Alice", status: "unchanged" },
+                  { name: "Carol", status: "unchanged" },
+                  { name: "Bob", status: "unchanged" },
+                  { name: "Steve", status: "added" },
+                ],
+              },
+            ],
+          },
+        },
         [`${compareLabelByHash["c3d4e5f6"]}|${compareLabelByHash["0a1b2c3d"]}`]: {
           changedMetadata: ["Trust setup", "File rules", "Root metadata"],
           stats: [
