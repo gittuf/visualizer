@@ -311,9 +311,8 @@ When preparing commits:
 
 - Use the existing branch unless the task explicitly asks for a new one.
 - Prefer small, focused commits.
-- If DCO is required for the branch/PR, use signed commits/messages such as:
-  - `git commit -s -m "your message"`
 - If you rewrite commit history, manually verify the visualizer flow again before pushing.
+- Never automatically open PRs. A human must create the PR manually, add the required sign-off, and use the [pull_request_template.md](https://github.com/gittuf/gittuf/blob/main/.github/pull_request_template.md) as a checklist.
 
 ## Common Pitfalls
 

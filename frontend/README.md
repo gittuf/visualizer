@@ -1,34 +1,18 @@
 # gittuf Metadata Visualizer (Frontend)
 
 This directory contains the active frontend for the gittuf metadata visualizer,
-written in Next.js.
+written in Next.js. (The current version supports only a demo mode using mock data. Support for actually repo data is still under development.)
 
 ## Features
 
-- **Repository Entry Flow**: Connect a remote repository, point at a local
-  repository, or launch the demo workspace from the home screen.
-- **Policy Graph Workspace**: Explore one or more draggable policy graphs inside
-  the main visualizer canvas, with tabbed canvases along the bottom bar.
-- **Graph Source Controls**: Inspect repository, policy ref, policy version,
-  metadata source, and active mode from the detail panel.
-- **Policy Query Panel**: Query a branch and changed path to see the matched
-  rule, required approvals, and authorized users.
-- **History Timeline**: Open a history view with sortable commits, a commit
-  strip, and graph canvases for browsing policy state across revisions.
-- **Comparison Canvas**: Generate side-by-side base and compare graphs with
-  added, removed, modified, and unchanged diff highlighting.
-- **Metadata and Settings Panels**: Review metadata status and summary views,
-  then adjust visible node/detail settings for the workspace.
-
-## Tech Stack
-
-- **Framework**: Next.js 16 (App Router)
-- **UI**: Tailwind CSS, shadcn UI components, Radix UI
-- **Visualization**: ReactFlow, Chart.js & react-chartjs-2, Framer Motion
-- **Icons**: Lucide React
-- **Language**: TypeScript
-- **Linting**: ESLint (Next.js Core Web Vitals, TypeScript)
-- **Testing**: Typecheck + lint today, broader automated UI tests still to be added
+- **Repository Selection**: Start building policy graphs from a remote repository, a local repository, or the demo workspace.
+- **Interactive Policy Graphs**: Explore trust relationships through draggable policy graphs in a tabbed workspace.
+- **Policy Queries**: Check which rules and approvals apply to a given branch and file path.
+- **History View**: Browse how policy state has evolved across commit history.
+- **Side-by-Side Comparison**: Compare two versions of a policy graph with
+  visual added, removed, modified, and unchanged diff highlighting.
+- **Metadata Inspection**: Review metadata status, summary metrics, decoded
+  JSON, and envelope views.
 
 ## Getting Started
 
@@ -99,8 +83,8 @@ frontend/
 
 ## Usage
 
-1. Open the home route and enter a Git repository URL, choose a local
-   repository, or launch the demo workspace.
+1. Open the app's landing page and enter a Git repository URL, choose a local
+   repository, or launch the demo workspace. (current version only supports the demo workspace)
 2. Explore the visualizer workspace, including the graph canvas, history strip,
    and detail panel tabs.
 
