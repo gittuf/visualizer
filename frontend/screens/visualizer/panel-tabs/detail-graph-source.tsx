@@ -1,0 +1,89 @@
+"use client";
+
+import { useState } from "react";
+import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
+import type { RepositoryInfo } from "@/lib/repository-handler";
+import {
+  DetailActionButton,
+  InlineSelectRow,
+  StaticValueRow,
+} from "@/components/visualizer/detail/workspace-detail-primitives";
+
+interface DetailPanelGraphSourceProps {
+  repository: RepositoryInfo;
+  workspaceData?: DemoVisualizerData | null;
+  onRegenerate: () => void;
+  isLoading?: boolean;
+  searchQuery?: string;
+}
+
+export function DetailPanelGraphSource({
+  repository,
+  workspaceData,
+  onRegenerate,
+  isLoading = false,
+  searchQuery,
+}: DetailPanelGraphSourceProps) {
+  const graphSource =
+    workspaceData?.workspaceDetails.graphSource ??
+    demoVisualizerData.workspaceDetails.graphSource;
+  const policyVersionOptions = graphSource.policyVersionOptions;
+  const metadataOptions = graphSource.metadataOptions;
+  const activeModeOptions = graphSource.activeModeOptions;
+  const [selectedPolicyVersion, setSelectedPolicyVersion] = useState(
+    graphSource.policyVersion ?? policyVersionOptions[0],
+  );
+  const [selectedMetadataFile, setSelectedMetadataFile] = useState(
+    graphSource.metadataFile ?? metadataOptions[0],
+  );
+  const [selectedActiveMode, setSelectedActiveMode] = useState(
+    graphSource.activeMode ?? activeModeOptions[0],
+  );
+
+  return (
+    <div className="space-y-2 px-5 pb-8">
+      <StaticValueRow
+        label="Repository:"
+        value={graphSource.repository ?? repository.name}
+        searchQuery={searchQuery}
+      />
+      <StaticValueRow
+        label="Policy ref:"
+        value={graphSource.policyRef}
+        searchQuery={searchQuery}
+      />
+      <InlineSelectRow
+        label="Policy version:"
+        options={policyVersionOptions.map((label) => ({ label }))}
+        selectedLabel={selectedPolicyVersion}
+        chips={[selectedPolicyVersion]}
+        onChange={setSelectedPolicyVersion}
+        searchQuery={searchQuery}
+      />
+      <InlineSelectRow
+        label="Metadata:"
+        options={metadataOptions.map((label) => ({ label }))}
+        selectedLabel={selectedMetadataFile}
+        chips={[selectedMetadataFile]}
+        onChange={setSelectedMetadataFile}
+        searchQuery={searchQuery}
+      />
+      <InlineSelectRow
+        label="Active mode"
+        options={activeModeOptions.map((label) => ({ label }))}
+        selectedLabel={selectedActiveMode}
+        chips={[selectedActiveMode]}
+        onChange={setSelectedActiveMode}
+        searchQuery={searchQuery}
+      />
+      <div className="pl-2 pt-8">
+        <DetailActionButton
+          label="Regenerate"
+          onClick={onRegenerate}
+          loading={isLoading}
+        />
+      </div>
+    </div>
+  );
+}
