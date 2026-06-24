@@ -42,7 +42,7 @@ func DecodeMetadataBlob(repoPath, commitHash, metadataFilename string) (models.M
 	file, err := tree.File(metadataPath)
 	if err != nil {
 		if errors.Is(err, object.ErrFileNotFound) {
-			return nil, fmt.Errorf("file metadata/%s not found in commit", metadataFilename)
+			return nil, fmt.Errorf("file metadata/%s not found in commit: %w", metadataFilename, err)
 		}
 		return nil, fmt.Errorf("failed to get file: %w", err)
 	}

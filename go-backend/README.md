@@ -93,7 +93,38 @@ Fetches commits from the `refs/gittuf/policy` branch of a remote repository.
 
 #### POST `/metadata`
 
-Retrieves and decodes a metadata blob from a specific commit in a remote repository.
+Retrieves and decodes both `root.json` and `targets.json` from a specific commit in a remote repository.
+
+- **Request Body** (JSON):
+  ```json
+  {
+    "url": "https://github.com/user/repo.git",
+    "commit": "abc123..."
+  }
+  ```
+- **Response** (200 OK):
+  ```json
+  {
+    "root": {
+      // Decoded root metadata object
+    },
+    "targets": {
+      // Decoded targets metadata object
+    }
+  }
+  ```
+- **Error Response** (400/500):
+  ```json
+  {
+    "error": "Error message",
+    "code": 400,
+    "details": "Detailed error information"
+  }
+  ```
+
+#### POST `/metadata-single`
+
+Retrieves and decodes a single metadata blob from a specific commit in a remote repository.
 
 - **Request Body** (JSON):
   ```json
@@ -118,13 +149,44 @@ Retrieves and decodes a metadata blob from a specific commit in a remote reposit
   }
   ```
 
+#### POST `/policy-query`
+
+Evaluates a branch/path query against policy metadata at a specific remote policy commit.
+
+- **Request Body** (JSON):
+  ```json
+  {
+    "url": "https://github.com/user/repo.git",
+    "commit": "abc123...",
+    "branch": "main",
+    "changedPath": "src/app.ts"
+  }
+  ```
+- **Response** (200 OK):
+  ```json
+  {
+    "matchedBranch": "main",
+    "matchedRule": "src/**",
+    "requiredApprovals": 2,
+    "authorizedUsers": ["alice", "bob"]
+  }
+  ```
+- **Error Response** (400/500):
+  ```json
+  {
+    "error": "Error message",
+    "code": 400,
+    "details": "Detailed error information"
+  }
+  ```
+
 ---
 
 ### Local Repository Endpoints
 
 #### POST `/commits-local`
 
-Lists commits from the HEAD of a local Git repository.
+Lists commits from the `refs/gittuf/policy` ref of a local Git repository.
 
 - **Request Body** (JSON):
   ```json
@@ -154,7 +216,38 @@ Lists commits from the HEAD of a local Git repository.
 
 #### POST `/metadata-local`
 
-Retrieves and decodes a metadata blob from a specific commit in a local repository.
+Retrieves and decodes both `root.json` and `targets.json` from a specific commit in a local repository.
+
+- **Request Body** (JSON):
+  ```json
+  {
+    "path": "/path/to/local/repo",
+    "commit": "abc123..."
+  }
+  ```
+- **Response** (200 OK):
+  ```json
+  {
+    "root": {
+      // Decoded root metadata object
+    },
+    "targets": {
+      // Decoded targets metadata object
+    }
+  }
+  ```
+- **Error Response** (400/500):
+  ```json
+  {
+    "error": "Error message",
+    "code": 400,
+    "details": "Detailed error information"
+  }
+  ```
+
+#### POST `/metadata-local-single`
+
+Retrieves and decodes a single metadata blob from a specific commit in a local repository.
 
 - **Request Body** (JSON):
   ```json
@@ -168,6 +261,37 @@ Retrieves and decodes a metadata blob from a specific commit in a local reposito
   ```json
   {
     // Decoded metadata object
+  }
+  ```
+- **Error Response** (400/500):
+  ```json
+  {
+    "error": "Error message",
+    "code": 400,
+    "details": "Detailed error information"
+  }
+  ```
+
+#### POST `/policy-query-local`
+
+Evaluates a branch/path query against policy metadata at a specific local policy commit.
+
+- **Request Body** (JSON):
+  ```json
+  {
+    "path": "/path/to/local/repo",
+    "commit": "abc123...",
+    "branch": "main",
+    "changedPath": "src/app.ts"
+  }
+  ```
+- **Response** (200 OK):
+  ```json
+  {
+    "matchedBranch": "main",
+    "matchedRule": "src/**",
+    "requiredApprovals": 2,
+    "authorizedUsers": ["alice", "bob"]
   }
   ```
 - **Error Response** (400/500):
