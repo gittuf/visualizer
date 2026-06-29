@@ -4,16 +4,31 @@
 package validation
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
+var ErrInvalidLocalPath = errors.New("path must be an absolute local filesystem path")
+
 func GetAbsolutePath(path string) (string, error) {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return "", err
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return "", ErrInvalidLocalPath
 	}
-	return absPath, nil
+
+	// Reject URL-like and UNC/network-style paths. Local endpoints should only
+	// read from the machine's filesystem.
+	if strings.Contains(path, "://") || strings.HasPrefix(path, "\\\\") || strings.ContainsRune(path, '\x00') {
+		return "", ErrInvalidLocalPath
+	}
+
+	if !filepath.IsAbs(path) {
+		return "", ErrInvalidLocalPath
+	}
+
+	return filepath.Clean(path), nil
 }
 
 func IsValidGitRepo(path string) bool {
