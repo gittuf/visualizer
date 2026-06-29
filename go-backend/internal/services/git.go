@@ -13,6 +13,7 @@ import (
 	"github.com/gittuf/visualizer/go-backend/internal/models"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
@@ -54,48 +55,23 @@ func CloneAndFetchRepo(url string) (string, func(), error) {
 
 // Retrieve commits from the gittuf/policy ref
 func GetPolicyCommits(repoPath string) ([]models.Commit, error) {
-	repo, err := git.PlainOpen(repoPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open repository: %w", err)
-	}
-
-	ref, err := repo.Reference("refs/remotes/origin/gittuf/policy", true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get policy ref: %w", err)
-	}
-
-	commitIter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get commit log: %w", err)
-	}
-
-	var commits []models.Commit
-	err = commitIter.ForEach(func(c *object.Commit) error {
-		commits = append(commits, models.Commit{
-			Hash:    c.Hash.String(),
-			Message: strings.TrimSpace(c.Message),
-			Author:  c.Author.Name,
-			Date:    c.Author.When,
-		})
-		return nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to iterate commits: %w", err)
-	}
-
-	return commits, nil
+	return getCommitsForRef(repoPath, plumbing.ReferenceName("refs/remotes/origin/gittuf/policy"))
 }
 
-// Retrieve commits from HEAD of a local repository
+// Retrieve commits from the local gittuf policy ref
 func GetLocalCommits(repoPath string) ([]models.Commit, error) {
+	return getCommitsForRef(repoPath, plumbing.ReferenceName("refs/gittuf/policy"))
+}
+
+func getCommitsForRef(repoPath string, refName plumbing.ReferenceName) ([]models.Commit, error) {
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open repository: %w", err)
 	}
 
-	ref, err := repo.Head()
+	ref, err := repo.Reference(refName, true)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get HEAD: %w", err)
+		return nil, fmt.Errorf("failed to get %s: %w", refName, err)
 	}
 
 	commitIter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
