@@ -26,25 +26,41 @@ Both backends expose the same core endpoints. The Go backend also includes a
     - body: `{ "url": "https://github.com/user/repo.git" }`
     - returns: array of commits `[{ hash, message, author, date }]`
   - `POST /metadata`
+    - body: `{ "url": "...", "commit": "<sha>" }`
+    - returns: decoded `root.json` and `targets.json` metadata for the
+      specified commit
+  - `POST /metadata-single`
     - body: `{ "url": "...", "commit": "<sha>", "file": "root.json|targets.json" }`
     - returns: decoded metadata JSON from `metadata/<file>` at the specified
       commit
+  - `POST /policy-query`
+    - body: `{ "url": "...", "commit": "<sha>", "branch": "main", "changedPath": "src/app.ts" }`
+    - returns: matched rule, required approvals, and authorized users for the
+      queried branch/path
 
 - Local repository (by folder path)
   - `POST /commits-local`
     - body: `{ "path": "/absolute/path/to/local/repo" }`
-    - returns: array of commits from `HEAD`
+    - returns: array of commits from `refs/gittuf/policy`
   - `POST /metadata-local`
+    - body: `{ "path": "...", "commit": "<sha>" }`
+    - returns: decoded `root.json` and `targets.json` metadata for the
+      specified commit
+  - `POST /metadata-local-single`
     - body: `{ "path": "...", "commit": "<sha>", "file": "root.json|targets.json" }`
     - returns: decoded metadata JSON from `metadata/<file>` at the specified
       commit
+  - `POST /policy-query-local`
+    - body: `{ "path": "...", "commit": "<sha>", "branch": "main", "changedPath": "src/app.ts" }`
+    - returns: matched rule, required approvals, and authorized users for the
+      queried branch/path
 
 - Health (Go backend only)
   - `GET /health` → `{ "status": "Looks good!" }`
 
 Notes:
 - The backend fetches commits from the `refs/gittuf/policy` ref for
-  remote repositories.
+  both remote and local repositories.
 - Metadata blobs are expected under `metadata/root.json` or
   `metadata/targets.json` in the tree of the given commit.
 
