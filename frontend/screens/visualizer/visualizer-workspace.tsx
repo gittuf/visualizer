@@ -85,9 +85,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
     isHistoryPanel,
     isHistorySortAscending,
     isHistoryStripCollapsed,
-    isMenuCollapsed,
     isMenuCompact,
-    menuPanelRef,
     onLayoutChanged,
     panelGroupRef,
     selectedBaseVersion,
@@ -101,7 +99,6 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
     setIsDetailCollapsed,
     setIsHistorySortAscending,
     setIsHistoryStripCollapsed,
-    setIsMenuCollapsed,
     setMenuPanelWidth,
     setSelectedBaseVersion,
     setSelectedCompareVersion,
@@ -142,22 +139,14 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
           <ResizablePanel
             id="workspace-menu-panel"
             className="min-w-0"
-            panelRef={menuPanelRef}
-            collapsible
-            collapsedSize="0%"
             defaultSize="10%"
-            minSize="7%"
+            minSize="5%"
             maxSize="24%"
             onResize={(panelSize) => {
               setMenuPanelWidth(panelSize.asPercentage);
-              setIsMenuCollapsed(panelSize.asPercentage <= 1);
             }}
           >
-            <aside
-              className={`h-full overflow-hidden bg-white py-3 ${
-                isMenuCollapsed ? "pointer-events-none opacity-0" : ""
-              }`}
-            >
+            <aside className="h-full overflow-hidden bg-white py-3">
               <nav className="space-y-1 px-3">
                 {visualizerMenuItems.map((item) => (
                   <WorkspaceMenuItem

@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import type { PanelImperativeHandle } from "react-resizable-panels";
 
-const compactMenuWidthPx = 132;
-const autoCollapseMenuWidthPx = 1180;
+const compactMenuWidthPx = 112;
+const menuMinSizePercent = 5;
 const autoCollapseDetailWidthPx = 980;
 
 function shouldUseCompactMenu(
@@ -23,20 +23,30 @@ export function useVisualizerLayout() {
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: "visualizer-workspace-layout",
   });
-  const initialMenuWidth = defaultLayout?.["workspace-menu-panel"] ?? 18;
+  const initialMenuWidth = Math.max(
+    defaultLayout?.["workspace-menu-panel"] ?? 18,
+    menuMinSizePercent,
+  );
   const initialDetailWidth = defaultLayout?.["workspace-detail-panel"] ?? 25;
+  const normalizedDefaultLayout = defaultLayout
+    ? {
+        ...defaultLayout,
+        "workspace-menu-panel": initialMenuWidth,
+      }
+    : undefined;
 
-  const [isMenuCompact, setIsMenuCompact] = useState(initialMenuWidth <= 8);
-  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
-  const [isDetailCollapsed, setIsDetailCollapsed] = useState(false);
+  const [isMenuCompact, setIsMenuCompact] = useState(
+    initialMenuWidth <= menuMinSizePercent,
+  );
+  const [isDetailCollapsed, setIsDetailCollapsed] = useState(
+    initialDetailWidth <= 1,
+  );
   const [menuPanelWidth, setMenuPanelWidth] = useState(initialMenuWidth);
   const [detailPanelWidth, setDetailPanelWidth] = useState(initialDetailWidth);
   const [panelGroupWidth, setPanelGroupWidth] = useState(0);
 
   const panelGroupRef = useRef<HTMLDivElement | null>(null);
-  const menuPanelRef = useRef<PanelImperativeHandle | null>(null);
   const detailPanelRef = useRef<PanelImperativeHandle | null>(null);
-  const didAutoCollapseMenuRef = useRef(false);
   const didAutoCollapseDetailRef = useRef(false);
 
   useEffect(() => {
@@ -62,22 +72,8 @@ export function useVisualizerLayout() {
   }, [menuPanelWidth, panelGroupWidth]);
 
   useEffect(() => {
-    if (!menuPanelRef.current || !detailPanelRef.current || panelGroupWidth <= 0) {
+    if (!detailPanelRef.current || panelGroupWidth <= 0) {
       return;
-    }
-
-    // Auto-collapse is width-driven, but only auto-expand panels that this hook
-    // previously collapsed. Manual user collapses should stay under user control.
-    if (panelGroupWidth <= autoCollapseMenuWidthPx && !isMenuCollapsed) {
-      menuPanelRef.current.collapse();
-      didAutoCollapseMenuRef.current = true;
-    } else if (
-      panelGroupWidth > autoCollapseMenuWidthPx &&
-      isMenuCollapsed &&
-      didAutoCollapseMenuRef.current
-    ) {
-      menuPanelRef.current.expand();
-      didAutoCollapseMenuRef.current = false;
     }
 
     if (panelGroupWidth <= autoCollapseDetailWidthPx && !isDetailCollapsed) {
@@ -91,7 +87,7 @@ export function useVisualizerLayout() {
       detailPanelRef.current.expand();
       didAutoCollapseDetailRef.current = false;
     }
-  }, [isDetailCollapsed, isMenuCollapsed, panelGroupWidth]);
+  }, [isDetailCollapsed, panelGroupWidth]);
 
   const handleDetailPanelToggle = () => {
     if (!detailPanelRef.current) return;
@@ -116,21 +112,18 @@ export function useVisualizerLayout() {
       : 0;
 
   return {
-    defaultLayout,
+    defaultLayout: normalizedDefaultLayout,
     detailPanelRef,
     detailPanelWidth,
     footerLeftWidthPx,
     handleDetailPanelToggle,
     isDetailCollapsed,
-    isMenuCollapsed,
     isMenuCompact,
-    menuPanelRef,
     menuPanelWidth,
     onLayoutChanged,
     panelGroupRef,
     setDetailPanelWidth,
     setIsDetailCollapsed,
-    setIsMenuCollapsed,
     setMenuPanelWidth,
   };
 }

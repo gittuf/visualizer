@@ -52,7 +52,7 @@ export function getNodeTextStyle(
   return normalizedSearchQuery &&
     value.toLowerCase().includes(normalizedSearchQuery)
     ? {
-        backgroundColor: "var(--selected-color)",
+        backgroundColor: "#ffe58f",
         borderRadius: "4px",
       }
     : undefined;
