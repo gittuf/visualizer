@@ -10,10 +10,6 @@ type CommitsRequest struct {
 type MetadataRequest struct {
 	URL    string `json:"url"`
 	Commit string `json:"commit"`
-}
-
-type MetadataSingleRequest struct {
-	MetadataRequest
 	File string `json:"file"`
 }
 
@@ -24,10 +20,6 @@ type CommitsLocalRequest struct {
 type MetadataLocalRequest struct {
 	Path   string `json:"path"`
 	Commit string `json:"commit"`
-}
-
-type MetadataLocalSingleRequest struct {
-	MetadataLocalRequest
 	File string `json:"file"`
 }
 
@@ -43,18 +35,4 @@ type PolicyQueryLocalRequest struct {
 	Commit      string `json:"commit"`
 	Branch      string `json:"branch"`
 	ChangedPath string `json:"changedPath"`
-}
-
-type PolicyQueryRequest struct {
-	URL         string `json:"url" binding:"required"`
-	Commit      string `json:"commit" binding:"required"`
-	Branch      string `json:"branch" binding:"required"`
-	ChangedPath string `json:"changedPath" binding:"required"`
-}
-
-type PolicyQueryLocalRequest struct {
-	Path        string `json:"path" binding:"required"`
-	Commit      string `json:"commit" binding:"required"`
-	Branch      string `json:"branch" binding:"required"`
-	ChangedPath string `json:"changedPath" binding:"required"`
 }
