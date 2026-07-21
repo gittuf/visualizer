@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useMemo } from "react";
 import addIcon from "@/assets/add.png";
 import leftArrowIcon from "@/assets/left.png";
 import rightArrowIcon from "@/assets/right.png";
@@ -30,6 +31,21 @@ import { historyTabId } from "@/screens/visualizer/visualizer.constants";
 import type { VisualizerWorkspaceProps } from "@/screens/visualizer/visualizer.types";
 
 export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
+  const activeGraphVariant = useMemo(() => {
+    const selectedVersion = props.workspaceData?.workspaceDetails.compare.selectedBaseVersion
+    if (!selectedVersion) return undefined
+
+    const graph = props.workspaceData?.workspaceDetails.compare.graphsByVersion[selectedVersion]
+    if (!graph) return undefined
+
+    return {
+      repositoryLabel: props.repository.name,
+      branchLabel: graph.branchLabel,
+      lanes: graph.lanes,
+      principalNames: graph.lanes.flatMap((lane) => (lane.principals ?? []).map((principal) => principal.name)),
+    }
+  }, [props.repository.name, props.workspaceData])
+
   const {
     activeGraphTab,
     activeGraphTabId,
@@ -45,6 +61,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
     detailPanelRef,
     detailSearchQuery,
     footerLeftWidthPx,
+    graphVariantsByCommit,
     graphSearchQuery,
     graphTabs,
     graphViewportRef,
@@ -91,6 +108,8 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
     setHasCompared,
     visualizerMenuItems,
   } = useVisualizerWorkspace(props);
+  const mainGraphViewportWidth = Math.max(graphViewportSize.width - 48, 980);
+  const mainGraphViewportHeight = Math.max(graphViewportSize.height - 48, 720);
 
   return (
     <section className="flex h-full min-h-0 w-full flex-col overflow-hidden">
@@ -323,6 +342,7 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                     activeCommitId={activeHistoryCommitId}
                     zoom={graphZoom}
                     searchQuery={graphSearchQuery}
+                    graphVariantsByCommit={graphVariantsByCommit}
                   />
                 ) : isComparePanel ? (
                   hasCompared ? (
@@ -349,17 +369,19 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                             activeGraphTab.graphs.map((graph) => (
                               <div
                                 key={graph.id}
-                                className="h-[980px] w-[980px] shrink-0"
+                                className="shrink-0"
+                                style={{
+                                  width: `${mainGraphViewportWidth}px`,
+                                  height: `${mainGraphViewportHeight}px`,
+                                }}
                               >
                                 <PolicyGraphCanvas
                                   graphId={graph.id}
                                   zoom={graphZoom}
                                   searchQuery={graphSearchQuery}
-                                  viewportWidth={980}
-                                  viewportHeight={Math.max(
-                                    graphViewportSize.height - 48,
-                                    720,
-                                  )}
+                                  variant={activeGraphVariant}
+                                  viewportWidth={mainGraphViewportWidth}
+                                  viewportHeight={mainGraphViewportHeight}
                                   offset={graph.offset}
                                   onOffsetChange={(nextOffset) =>
                                     handleGraphOffsetChange(
@@ -374,7 +396,13 @@ export default function VisualizerWorkspace(props: VisualizerWorkspaceProps) {
                               </div>
                             ))
                           ) : (
-                            <div className="min-h-[980px] min-w-[980px] shrink-0" />
+                            <div
+                              className="shrink-0"
+                              style={{
+                                minWidth: `${mainGraphViewportWidth}px`,
+                                minHeight: `${mainGraphViewportHeight}px`,
+                              }}
+                            />
                           )}
                         </div>
                       </div>

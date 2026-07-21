@@ -11,3 +11,10 @@ type ErrorResponse struct {
 
 type CommitsResponse []Commit
 type MetadataResponse map[string]interface{}
+
+type PolicyQueryResponse struct {
+	MatchedBranch     string   `json:"matchedBranch"`
+	MatchedRule       string   `json:"matchedRule"`
+	RequiredApprovals int      `json:"requiredApprovals"`
+	AuthorizedUsers   []string `json:"authorizedUsers"`
+}

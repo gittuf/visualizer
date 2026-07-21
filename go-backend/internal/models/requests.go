@@ -22,3 +22,17 @@ type MetadataLocalRequest struct {
 	Commit string `json:"commit" binding:"required"`
 	File   string `json:"file" binding:"required"`
 }
+
+type PolicyQueryRequest struct {
+	URL         string `json:"url" binding:"required"`
+	Commit      string `json:"commit" binding:"required"`
+	Branch      string `json:"branch" binding:"required"`
+	ChangedPath string `json:"changedPath" binding:"required"`
+}
+
+type PolicyQueryLocalRequest struct {
+	Path        string `json:"path" binding:"required"`
+	Commit      string `json:"commit" binding:"required"`
+	Branch      string `json:"branch" binding:"required"`
+	ChangedPath string `json:"changedPath" binding:"required"`
+}

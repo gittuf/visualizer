@@ -41,14 +41,16 @@ func main() {
 	// Remote repository endpoints
 	router.POST("/commits", handlers.ListCommits)
 	router.POST("/metadata", handlers.GetMetadata)
+	router.POST("/policy-query", handlers.QueryPolicy)
 
 	// Local repository endpoints
 	router.POST("/commits-local", handlers.ListCommitsLocal)
 	router.POST("/metadata-local", handlers.GetMetadataLocal)
+	router.POST("/policy-query-local", handlers.QueryPolicyLocal)
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "5000"
+		port = "8080"
 	}
 
 	if err := router.Run(":" + port); err != nil {

@@ -5,6 +5,9 @@ import branchIcon from "@/assets/branch.png";
 import emptyFileIcon from "@/assets/empty_file.png";
 import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
+import { queryPolicy } from "@/lib/api";
+import type { RepositoryInfo } from "@/lib/repository-handler";
+import type { PolicyQueryResult } from "@/lib/types";
 import {
   DetailActionButton,
   PanelSection,
@@ -15,28 +18,22 @@ import {
 } from "@/components/visualizer/detail/workspace-detail-primitives";
 
 interface DetailPanelPolicyQueryProps {
+  repository: RepositoryInfo;
+  commitHash?: string;
   workspaceData?: DemoVisualizerData | null;
   searchQuery?: string;
   selectedBranch: string;
   selectedChangedPath: string;
   showResults: boolean;
-  resultState: {
-    matchedBranch: string;
-    matchedRule: string;
-    requiredApprovals: number;
-    authorizedUsers: string[];
-  };
+  resultState: PolicyQueryResult;
   onBranchChange: (value: string) => void;
   onChangedPathChange: (value: string) => void;
-  onQuery: (result: {
-    matchedBranch: string;
-    matchedRule: string;
-    requiredApprovals: number;
-    authorizedUsers: string[];
-  }) => void;
+  onQuery: (result: PolicyQueryResult) => void;
 }
 
 export function DetailPanelPolicyQuery({
+  repository,
+  commitHash,
   workspaceData,
   searchQuery,
   selectedBranch,
@@ -48,6 +45,8 @@ export function DetailPanelPolicyQuery({
   onQuery,
 }: DetailPanelPolicyQueryProps) {
   const [isQuerying, setIsQuerying] = useState(false);
+  const uniqueAuthorizedUsers = (users: string[]) =>
+    users.filter((user, index, allUsers) => user && allUsers.indexOf(user) === index);
   const policyQuery =
     workspaceData?.workspaceDetails.policyQuery ??
     demoVisualizerData.workspaceDetails.policyQuery;
@@ -85,9 +84,27 @@ export function DetailPanelPolicyQuery({
         <DetailActionButton
           label="Query policy"
           loading={isQuerying}
-          onClick={() => {
+          onClick={async () => {
+            if (!commitHash) {
+              return;
+            }
+
             setIsQuerying(true);
-            window.requestAnimationFrame(() => {
+            try {
+              const response = await queryPolicy(
+                repository.path,
+                commitHash,
+                selectedBranch,
+                selectedChangedPath,
+              );
+
+              onQuery({
+                matchedBranch: response.matchedBranch,
+                matchedRule: response.matchedRule,
+                requiredApprovals: response.requiredApprovals,
+                authorizedUsers: uniqueAuthorizedUsers(response.authorizedUsers),
+              });
+            } catch {
               onQuery({
                 matchedBranch:
                   queryScenario?.matchedBranch ??
@@ -100,13 +117,15 @@ export function DetailPanelPolicyQuery({
                 requiredApprovals:
                   queryScenario?.requiredApprovals ??
                   policyQuery.queryResult.requiredApprovals ??
-                  2,
-                authorizedUsers:
+                  0,
+                authorizedUsers: uniqueAuthorizedUsers(
                   queryScenario?.authorizedUsers ??
                   policyQuery.authorizedUsers,
+                ),
               });
-              window.setTimeout(() => setIsQuerying(false), 250);
-            });
+            } finally {
+              setIsQuerying(false);
+            }
           }}
         />
       </div>
@@ -134,7 +153,7 @@ export function DetailPanelPolicyQuery({
           <section className="space-y-4 py-4">
             <SectionBulletLabel label="Authorized users" searchQuery={searchQuery} />
             <div className="flex flex-wrap gap-5">
-              {resultState.authorizedUsers.map((user) => (
+              {uniqueAuthorizedUsers(resultState.authorizedUsers).map((user) => (
                 <QueryUserCard key={user} name={user} searchQuery={searchQuery} />
               ))}
             </div>

@@ -8,17 +8,43 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/gittuf/visualizer/go-backend/internal/logger"
 	"github.com/gittuf/visualizer/go-backend/internal/models"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
+
+var remoteRepoCache = struct {
+	sync.Mutex
+	paths map[string]string
+}{
+	paths: map[string]string{},
+}
 
 // Clones a repository and fetches the custom gittuf policy ref
 // Returns the temporary directory path and cleanup function
 func CloneAndFetchRepo(url string) (string, func(), error) {
+	remoteRepoCache.Lock()
+	cachedPath := remoteRepoCache.paths[url]
+	remoteRepoCache.Unlock()
+
+	if cachedPath != "" {
+		repo, err := git.PlainOpen(cachedPath)
+		if err == nil {
+			if err := fetchPolicyRef(repo); err == nil {
+				return cachedPath, func() {}, nil
+			}
+		}
+
+		remoteRepoCache.Lock()
+		delete(remoteRepoCache.paths, url)
+		remoteRepoCache.Unlock()
+	}
+
 	tempDir, err := os.MkdirTemp("", "gittuf-viz-*")
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to create temp directory: %w", err)
@@ -38,18 +64,17 @@ func CloneAndFetchRepo(url string) (string, func(), error) {
 		return "", nil, fmt.Errorf("failed to clone repository: %w", err)
 	}
 
-	// Fetch the custom ref
-	refSpec := config.RefSpec("refs/gittuf/policy:refs/remotes/origin/gittuf/policy")
-	err = repo.Fetch(&git.FetchOptions{
-		RefSpecs: []config.RefSpec{refSpec},
-		Progress: nil,
-	})
-	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+	if err := fetchPolicyRef(repo); err != nil {
 		cleanup()
-		return "", nil, fmt.Errorf("failed to fetch refs/gittuf/policy: %w", err)
+		return "", nil, err
 	}
 
-	return tempDir, cleanup, nil
+	remoteRepoCache.Lock()
+	remoteRepoCache.paths[url] = tempDir
+	remoteRepoCache.Unlock()
+
+	// ponytail: cached remote repos live for the backend process lifetime; add TTL cleanup only if temp dirs pile up.
+	return tempDir, func() {}, nil
 }
 
 // Retrieve commits from the gittuf/policy ref
@@ -59,7 +84,7 @@ func GetPolicyCommits(repoPath string) ([]models.Commit, error) {
 		return nil, fmt.Errorf("failed to open repository: %w", err)
 	}
 
-	ref, err := repo.Reference("refs/remotes/origin/gittuf/policy", true)
+	ref, err := getPolicyRef(repo, "refs/remotes/origin/gittuf/policy")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get policy ref: %w", err)
 	}
@@ -86,16 +111,16 @@ func GetPolicyCommits(repoPath string) ([]models.Commit, error) {
 	return commits, nil
 }
 
-// Retrieve commits from HEAD of a local repository
+// Retrieve commits from the local gittuf policy ref
 func GetLocalCommits(repoPath string) ([]models.Commit, error) {
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open repository: %w", err)
 	}
 
-	ref, err := repo.Head()
+	ref, err := getPolicyRef(repo, "refs/remotes/origin/gittuf/policy", "refs/gittuf/policy")
 	if err != nil {
-		return nil, fmt.Errorf("failed to get HEAD: %w", err)
+		return nil, fmt.Errorf("failed to get local policy ref: %w", err)
 	}
 
 	commitIter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
@@ -118,4 +143,28 @@ func GetLocalCommits(repoPath string) ([]models.Commit, error) {
 	}
 
 	return commits, nil
+}
+
+func getPolicyRef(repo *git.Repository, refs ...string) (*plumbing.Reference, error) {
+	for _, refName := range refs {
+		ref, err := repo.Reference(plumbing.ReferenceName(refName), true)
+		if err == nil {
+			return ref, nil
+		}
+	}
+
+	return nil, fmt.Errorf("policy ref not found in %s", strings.Join(refs, ", "))
+}
+
+func fetchPolicyRef(repo *git.Repository) error {
+	refSpec := config.RefSpec("refs/gittuf/policy:refs/remotes/origin/gittuf/policy")
+	err := repo.Fetch(&git.FetchOptions{
+		RefSpecs: []config.RefSpec{refSpec},
+		Progress: nil,
+	})
+	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		return fmt.Errorf("failed to fetch refs/gittuf/policy: %w", err)
+	}
+
+	return nil
 }

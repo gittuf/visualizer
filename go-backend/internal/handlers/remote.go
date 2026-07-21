@@ -5,6 +5,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gittuf/visualizer/go-backend/internal/logger"
 	"github.com/gittuf/visualizer/go-backend/internal/models"
@@ -79,6 +80,15 @@ func GetMetadata(c *gin.Context) {
 	// Decode the metadata blob
 	metadata, err := services.DecodeMetadataBlob(repoPath, req.Commit, req.File)
 	if err != nil {
+		if strings.Contains(err.Error(), "not found in commit") {
+			logger.Sugar.Infof("Missing %s at %s: %v", req.File, req.Commit, err)
+			c.JSON(http.StatusNotFound, models.ErrorResponse{
+				Error:   "Metadata file not found in commit",
+				Code:    http.StatusNotFound,
+				Details: err.Error(),
+			})
+			return
+		}
 		logger.Sugar.Errorf("Exception in /metadata: %v", err)
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Error:   "Failed to decode metadata",
@@ -89,4 +99,51 @@ func GetMetadata(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, metadata)
+}
+
+func QueryPolicy(c *gin.Context) {
+	var req models.PolicyQueryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: "Missing 'url', 'commit', 'branch', or 'changedPath' in request body",
+			Code:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	repoPath, cleanup, err := services.CloneAndFetchRepo(req.URL)
+	if err != nil {
+		logger.Sugar.Errorf("Exception in /policy-query: %v", err)
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "Failed to clone or fetch repository",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
+		return
+	}
+	defer cleanup()
+
+	root, err := services.DecodeMetadataBlob(repoPath, req.Commit, "root.json")
+	if err != nil {
+		logger.Sugar.Errorf("Exception in /policy-query: %v", err)
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "Failed to decode root metadata",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
+		return
+	}
+
+	targets, err := services.DecodeMetadataBlob(repoPath, req.Commit, "targets.json")
+	if err != nil {
+		logger.Sugar.Errorf("Exception in /policy-query: %v", err)
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "Failed to decode targets metadata",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, services.QueryPolicy(root, targets, req.Branch, req.ChangedPath))
 }
