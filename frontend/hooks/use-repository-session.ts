@@ -14,8 +14,8 @@ export function useRepositorySession() {
   const [error, setError] = useState("")
   const [currentRepository, setCurrentRepository] = useState<RepositoryInfo | null>(null)
   const [currentRepositoryData, setCurrentRepositoryData] = useState<DemoVisualizerData | null>(null)
-  const [showRepositorySelector, setShowRepositorySelector] = useState(false)
   const [repositoryHandler] = useState(() => new RepositoryHandler())
+  const showRepositorySelector = !isBootstrapping && !currentRepository
 
   const persistRepositorySession = (repository: RepositoryInfo | null) => {
     if (typeof window === "undefined") return
@@ -38,7 +38,6 @@ export function useRepositorySession() {
 
     try {
       await repositoryHandler.setRepository(demoRepository)
-      setShowRepositorySelector(false)
       persistRepositorySession(demoRepository)
       if (onSuccess) onSuccess()
     } catch (err) {
@@ -63,7 +62,6 @@ export function useRepositorySession() {
         (commitHash) => repositoryHandler.fetchPolicySnapshot(commitHash),
       )
       setCurrentRepositoryData(workspaceData)
-      setShowRepositorySelector(false)
       persistRepositorySession(repoInfo)
       if (onSuccess) onSuccess()
     } catch (err) {
@@ -100,7 +98,6 @@ export function useRepositorySession() {
     setError("")
     setCurrentRepository(null)
     setCurrentRepositoryData(null)
-    setShowRepositorySelector(true)
     persistRepositorySession(null)
   }
 
@@ -108,21 +105,25 @@ export function useRepositorySession() {
     const savedRepository = window.localStorage.getItem(repositorySessionKey)
 
     if (!savedRepository) {
-      setShowRepositorySelector(true)
-      setIsBootstrapping(false)
+      queueMicrotask(() => {
+        setIsBootstrapping(false)
+      })
       return
     }
 
     try {
       const repository = JSON.parse(savedRepository) as RepositoryInfo
 
-      void handleRepositorySelect(repository).finally(() => {
-        setIsBootstrapping(false)
+      queueMicrotask(() => {
+        void handleRepositorySelect(repository).finally(() => {
+          setIsBootstrapping(false)
+        })
       })
     } catch {
       window.localStorage.removeItem(repositorySessionKey)
-      setShowRepositorySelector(true)
-      setIsBootstrapping(false)
+      queueMicrotask(() => {
+        setIsBootstrapping(false)
+      })
     }
   }, [handleRepositorySelect])
 
