@@ -10,49 +10,51 @@ import (
 	"github.com/gittuf/visualizer/go-backend/internal/models"
 )
 
-func QueryPolicy(root, targets models.MetadataResponse, branch, changedPath string) models.PolicyQueryResponse {
-	delegations, _ := targets["delegations"].(map[string]interface{})
-	roles, _ := delegations["roles"].([]interface{})
-	principalNames := buildPolicyPrincipalNames(root, targets)
+type policyData struct {
+	principalNames map[string]string
+	roles          []policyRole
+}
+
+type policyRole struct {
+	name         string
+	paths        []string
+	principalIDs []string
+	threshold    int
+}
+
+func QueryPolicy(data policyData, branch, changedPath string) models.PolicyQueryResponse {
 	matchedRule := changedPath
 	requiredApprovals := 0
 	authorizedUsers := []string{}
 	hasSpecificMatch := false
 
-	for _, roleValue := range roles {
-		role, ok := roleValue.(map[string]interface{})
-		if !ok {
-			continue
-		}
-
+	for _, role := range data.roles {
 		if !roleMatches(role, branch, changedPath) {
 			continue
 		}
 
-		roleName := asPolicyString(role["name"])
-		isDefaultAllowRule := roleName == "gittuf-allow-rule"
-		if roleName != "" && (!hasSpecificMatch || !isDefaultAllowRule) {
-			matchedRule = roleName
+		isDefaultAllowRule := role.name == "gittuf-allow-rule"
+		if role.name != "" && (!hasSpecificMatch || !isDefaultAllowRule) {
+			matchedRule = role.name
 			if !isDefaultAllowRule {
 				hasSpecificMatch = true
 			}
 		}
 
-		if threshold, ok := role["threshold"].(float64); ok && int(threshold) > requiredApprovals {
-			requiredApprovals = int(threshold)
+		if role.threshold > requiredApprovals {
+			requiredApprovals = role.threshold
 		}
 
-		principalIDs := getPolicyPrincipalIDs(role)
-		if isDefaultAllowRule && len(principalIDs) == 0 {
+		if isDefaultAllowRule && len(role.principalIDs) == 0 {
 			authorizedUsers = append(authorizedUsers, "Anyone")
 			continue
 		}
 
-		for _, principalID := range principalIDs {
+		for _, principalID := range role.principalIDs {
 			if principalID == "" {
 				continue
 			}
-			authorizedUsers = append(authorizedUsers, principalNames[principalID])
+			authorizedUsers = append(authorizedUsers, data.principalNames[principalID])
 		}
 	}
 
@@ -64,8 +66,14 @@ func QueryPolicy(root, targets models.MetadataResponse, branch, changedPath stri
 	}
 }
 
-func roleMatches(role map[string]interface{}, branch, changedPath string) bool {
-	paths, _ := role["paths"].([]interface{})
+func BuildPolicyData(root, targets models.MetadataResponse) policyData {
+	return policyData{
+		principalNames: buildPolicyPrincipalNames(root, targets),
+		roles:          buildPolicyRoles(targets),
+	}
+}
+
+func roleMatches(role policyRole, branch, changedPath string) bool {
 	branchPattern := "git:refs/heads/" + branch
 	queryingRef := strings.HasPrefix(changedPath, "git:refs/")
 	branchMatched := false
@@ -73,8 +81,7 @@ func roleMatches(role map[string]interface{}, branch, changedPath string) bool {
 	hasBranchPath := false
 	refMatched := false
 
-	for _, pathValue := range paths {
-		path := asPolicyString(pathValue)
+	for _, path := range role.paths {
 		if path == "" {
 			continue
 		}
@@ -125,6 +132,28 @@ func matchesPolicyPath(pattern, changedPath string) bool {
 	return err == nil && matched
 }
 
+func buildPolicyRoles(targets models.MetadataResponse) []policyRole {
+	delegations, _ := targets["delegations"].(map[string]interface{})
+	values, _ := delegations["roles"].([]interface{})
+	roles := make([]policyRole, 0, len(values))
+
+	for _, value := range values {
+		roleMap, ok := value.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		roles = append(roles, policyRole{
+			name:         asPolicyString(roleMap["name"]),
+			paths:        getPolicyPaths(roleMap),
+			principalIDs: getPolicyPrincipalIDs(roleMap),
+			threshold:    getPolicyThreshold(roleMap),
+		})
+	}
+
+	return roles
+}
+
 func buildPolicyPrincipalNames(root, targets models.MetadataResponse) map[string]string {
 	names := map[string]string{}
 
@@ -148,6 +177,18 @@ func buildPolicyPrincipalNames(root, targets models.MetadataResponse) map[string
 	}
 
 	return names
+}
+
+func getPolicyPaths(role map[string]interface{}) []string {
+	values, _ := role["paths"].([]interface{})
+	paths := make([]string, 0, len(values))
+	for _, value := range values {
+		if path := asPolicyString(value); path != "" {
+			paths = append(paths, path)
+		}
+	}
+
+	return paths
 }
 
 func getPolicyPrincipalIDs(role map[string]interface{}) []string {
@@ -188,6 +229,11 @@ func getPolicyPrincipalIDs(role map[string]interface{}) []string {
 	}
 
 	return uniquePolicyStrings(principalIDs)
+}
+
+func getPolicyThreshold(role map[string]interface{}) int {
+	threshold, _ := role["threshold"].(float64)
+	return int(threshold)
 }
 
 func asPolicyString(value interface{}) string {

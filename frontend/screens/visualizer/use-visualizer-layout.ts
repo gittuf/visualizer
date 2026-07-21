@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import type { PanelImperativeHandle } from "react-resizable-panels";
 
@@ -35,15 +35,16 @@ export function useVisualizerLayout() {
       }
     : undefined;
 
-  const [isMenuCompact, setIsMenuCompact] = useState(
-    initialMenuWidth <= menuMinSizePercent,
-  );
   const [isDetailCollapsed, setIsDetailCollapsed] = useState(
     initialDetailWidth <= 1,
   );
   const [menuPanelWidth, setMenuPanelWidth] = useState(initialMenuWidth);
   const [detailPanelWidth, setDetailPanelWidth] = useState(initialDetailWidth);
   const [panelGroupWidth, setPanelGroupWidth] = useState(0);
+  const isMenuCompact = useMemo(
+    () => shouldUseCompactMenu(menuPanelWidth, panelGroupWidth),
+    [menuPanelWidth, panelGroupWidth],
+  );
 
   const panelGroupRef = useRef<HTMLDivElement | null>(null);
   const detailPanelRef = useRef<PanelImperativeHandle | null>(null);
@@ -66,10 +67,6 @@ export function useVisualizerLayout() {
       resizeObserver.disconnect();
     };
   }, []);
-
-  useEffect(() => {
-    setIsMenuCompact(shouldUseCompactMenu(menuPanelWidth, panelGroupWidth));
-  }, [menuPanelWidth, panelGroupWidth]);
 
   useEffect(() => {
     if (!detailPanelRef.current || panelGroupWidth <= 0) {
