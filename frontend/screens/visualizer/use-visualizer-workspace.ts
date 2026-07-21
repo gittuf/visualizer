@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   layoutHeight,
   layoutWidth,
@@ -24,6 +24,30 @@ export function useVisualizerWorkspace({
   const [graphZoom, setGraphZoom] = useState(0.75);
   const [graphSearchQuery, setGraphSearchQuery] = useState("");
   const hasAutoFitZoomedRef = useRef(false);
+  const handleGraphZoomChange = useCallback((nextZoom: number | ((current: number) => number)) => {
+    hasAutoFitZoomedRef.current = true;
+    setGraphZoom(nextZoom);
+  }, []);
+  const handleViewportResize = useCallback((size: { width: number; height: number }) => {
+    if (hasAutoFitZoomedRef.current) return;
+    if (!size.width || !size.height) return;
+
+    const fittedZoom = Math.min(
+      1,
+      Number(
+        Math.max(
+          0.4,
+          Math.min(
+            (size.width - 96) / layoutWidth,
+            (size.height - 96) / layoutHeight,
+          ),
+        ).toFixed(2),
+      ),
+    );
+
+    hasAutoFitZoomedRef.current = true;
+    setGraphZoom(fittedZoom);
+  }, []);
   const {
     defaultLayout,
     detailPanelRef,
@@ -64,7 +88,10 @@ export function useVisualizerWorkspace({
     setSelectedBaseVersion,
     setSelectedCompareVersion,
   } = useVisualizerHistoryCompare(workspaceData);
-  const { graphViewportRef, graphViewportSize } = useGraphViewport(graphZoom);
+  const { graphViewportRef, graphViewportSize } = useGraphViewport(
+    graphZoom,
+    handleViewportResize,
+  );
   const {
     activeGraphTab,
     activeGraphTabId,
@@ -95,27 +122,6 @@ export function useVisualizerWorkspace({
   const activePanelIcon =
     visualizerMenuItems.find((item) => item.id === activePanel)?.icon ??
     visualizerMenuItems[0].icon;
-
-  useEffect(() => {
-    if (hasAutoFitZoomedRef.current) return;
-    if (!graphViewportSize.width || !graphViewportSize.height) return;
-
-    const fittedZoom = Math.min(
-      1,
-      Number(
-        Math.max(
-          0.4,
-          Math.min(
-            (graphViewportSize.width - 96) / layoutWidth,
-            (graphViewportSize.height - 96) / layoutHeight,
-          ),
-        ).toFixed(2),
-      ),
-    );
-
-    hasAutoFitZoomedRef.current = true;
-    setGraphZoom(fittedZoom);
-  }, [graphViewportSize.height, graphViewportSize.width]);
 
   const handleMenuItemSelect = (panelId: WorkspacePanelId) => {
     setActivePanel(panelId);
@@ -176,10 +182,7 @@ export function useVisualizerWorkspace({
     setDetailPanelWidth,
     setDetailSearchQuery,
     setGraphSearchQuery,
-    setGraphZoom: (nextZoom: number | ((current: number) => number)) => {
-      hasAutoFitZoomedRef.current = true;
-      setGraphZoom(nextZoom);
-    },
+    setGraphZoom: handleGraphZoomChange,
     setHistorySortField,
     setIsDetailCollapsed,
     setIsHistorySortAscending,

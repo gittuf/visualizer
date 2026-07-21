@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { buildVisualizerDataFromBackend } from "@/lib/backend-visualizer-data"
 import { demoVisualizerData } from "@/lib/demo-visualizer-fixture"
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types"
@@ -48,7 +48,7 @@ export function useRepositorySession() {
     }
   }
 
-  const handleRepositorySelect = async (repoInfo: RepositoryInfo, onSuccess?: () => void) => {
+  const handleRepositorySelect = useCallback(async (repoInfo: RepositoryInfo, onSuccess?: () => void) => {
     setCurrentRepository(repoInfo)
     setCurrentRepositoryData(null)
     setIsLoading(true)
@@ -71,7 +71,7 @@ export function useRepositorySession() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [repositoryHandler])
 
   const handleRepositoryRefresh = async () => {
     if (!currentRepository) return
@@ -124,7 +124,7 @@ export function useRepositorySession() {
       setShowRepositorySelector(true)
       setIsBootstrapping(false)
     }
-  }, [])
+  }, [handleRepositorySelect])
 
   return {
     currentRepositoryData,
