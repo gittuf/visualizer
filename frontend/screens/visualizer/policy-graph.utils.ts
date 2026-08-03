@@ -1,4 +1,10 @@
-import { DIFF_COLORS, boundary } from "@/screens/visualizer/policy-graph.constants";
+import {
+  boundary,
+  branchBox,
+  DIFF_COLORS,
+  fileBox,
+  roleBox,
+} from "@/screens/visualizer/policy-graph.constants";
 import type {
   PolicyGraphChangeStatus,
   PolicyGraphLane,
@@ -59,7 +65,9 @@ export function getLaneNodeChangeTypes(lane: PolicyGraphLane) {
   const branch = getChangeType(lane.branchStatus);
   const laneDefault = lane.status;
   const path = getChangeType(lane.pathStatus ?? laneDefault);
-  const role = getChangeType(lane.roleStatus);
+  const role = getChangeType(
+    lane.roleStatus ?? lane.approvalsStatus ?? laneDefault,
+  );
   const approvals = getChangeType(lane.approvalsStatus ?? laneDefault);
   const roleIcon = getChangeType(
     lane.roleStatus ?? lane.approvalsStatus ?? laneDefault,
@@ -88,29 +96,117 @@ export const compareStatusColors: Record<PolicyGraphChangeStatus, string> = {
   unchanged: DIFF_COLORS.unchanged.edge,
 };
 
-export function getLaneCenters(laneCount: number) {
-  if (laneCount <= 1) {
-    return [boundary.x + boundary.width / 2];
-  }
+export interface PolicyLaneLayout {
+  centerX: number;
+  width: number;
+}
 
-  // Keep multi-lane graphs visually centered while leaving enough side padding
-  // for principal spreads and freeform dragging within the dotted boundary.
-  const usableWidth = boundary.width - 420;
-  return Array.from({ length: laneCount }, (_, index) => {
-    const ratio = laneCount === 1 ? 0.5 : index / (laneCount - 1);
-    return boundary.x + 210 + usableWidth * ratio;
+export interface PrincipalLayout {
+  offset: number;
+  width: number;
+}
+
+function getEstimatedPrincipalWidths(principals: Array<{ name: string }>) {
+  const minWidth = 72;
+  const maxWidth = 136;
+
+  return principals.map((principal) =>
+    Math.max(minWidth, Math.min(maxWidth, principal.name.length * 7 + 28)),
+  );
+}
+
+function getPackedPrincipalWidth(principals: Array<{ name: string }>) {
+  if (principals.length === 0) return 0;
+
+  const gap = 16;
+  const estimatedWidths = getEstimatedPrincipalWidths(principals);
+
+  return (
+    estimatedWidths.reduce((sum, width) => sum + width, 0) +
+    gap * (principals.length - 1)
+  );
+}
+
+export function getLaneLayouts(
+  lanes: PolicyGraphLane[],
+  principalNames: string[],
+): PolicyLaneLayout[] {
+  if (lanes.length === 0) return [];
+
+  const gutter = 64;
+  const minOuterPadding = 40;
+  const minLaneWidth = Math.max(branchBox.width, fileBox.width, roleBox.width + 24);
+  const availableInnerWidth =
+    boundary.width - minOuterPadding * 2 - gutter * (lanes.length - 1);
+  const rawLaneWidths = lanes.map((lane) => {
+    const lanePrincipals =
+      lane.principals ?? principalNames.map((name) => ({ name }));
+    const principalWidth = getPackedPrincipalWidth(lanePrincipals);
+
+    return Math.max(
+      minLaneWidth,
+      branchBox.width,
+      fileBox.width,
+      roleBox.width,
+      principalWidth + 24,
+    );
+  });
+  const baseWidthTotal = minLaneWidth * lanes.length;
+  const availableExtraWidth = Math.max(0, availableInnerWidth - baseWidthTotal);
+  const rawExtras = rawLaneWidths.map((width) => Math.max(0, width - minLaneWidth));
+  const rawExtraTotal = rawExtras.reduce((sum, width) => sum + width, 0);
+  const laneExtraScale =
+    rawExtraTotal > availableExtraWidth
+      ? availableExtraWidth / rawExtraTotal
+      : 1;
+  const laneWidths = rawLaneWidths.map((width, index) =>
+    minLaneWidth + rawExtras[index] * laneExtraScale,
+  );
+  const totalWidth =
+    laneWidths.reduce((sum, width) => sum + width, 0) + gutter * (lanes.length - 1);
+  const outerPadding = Math.max(
+    minOuterPadding,
+    (boundary.width - totalWidth) / 2,
+  );
+  let laneStart = boundary.x + outerPadding;
+
+  return laneWidths.map((width) => {
+    const layout = {
+      centerX: laneStart + width / 2,
+      width,
+    };
+
+    laneStart += width + gutter;
+    return layout;
   });
 }
 
-export function getPrincipalOffsets(principalCount: number) {
-  if (principalCount <= 1) return [0];
+export function getPrincipalLayouts(
+  principals: Array<{ name: string }>,
+  laneWidth: number,
+): PrincipalLayout[] {
+  if (principals.length === 0) return [];
 
-  // Cap the spread so larger principal groups stay inside the graph boundary
-  // without small groups compressed.
-  const maxSpread = 300;
-  const spread = Math.min(maxSpread, Math.max(120, (principalCount - 1) * 90));
-  const start = -spread / 2;
-  const step = spread / (principalCount - 1);
+  const gap = 16;
+  const minWidth = 72;
+  const maxWidth = 136;
+  const usableWidth = Math.max(minWidth, laneWidth - 24);
+  const estimatedWidths = getEstimatedPrincipalWidths(principals);
+  const totalWidth =
+    estimatedWidths.reduce((sum, width) => sum + width, 0) +
+    gap * (principals.length - 1);
+  const scale = totalWidth > usableWidth ? usableWidth / totalWidth : 1;
+  const widths = estimatedWidths.map((width) =>
+    Math.max(minWidth, Math.min(maxWidth, width * scale)),
+  );
+  const packedWidth =
+    widths.reduce((sum, width) => sum + width, 0) + gap * (principals.length - 1);
+  let cursor = -packedWidth / 2;
 
-  return Array.from({ length: principalCount }, (_, index) => start + step * index);
+  return widths.map((width) => {
+    const offset = cursor + width / 2;
+    cursor += width + gap;
+
+    return { offset, width };
+  });
 }

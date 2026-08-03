@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
+import type { PolicyGraphCanvasVariant } from "@/screens/visualizer/policy-graph.types";
 import {
   getDefaultHistoryCommitId,
   getDefaultHistorySortState,
@@ -102,6 +103,36 @@ export function useVisualizerHistoryCompare(
       showCompareLegend: comparisonResult.compareGraph.showLegend ?? true,
     };
   }, [comparisonResult]);
+  const graphVariantsByCommit = useMemo(() => {
+    const historyData =
+      workspaceData?.workspaceDetails.history ??
+      demoVisualizerData.workspaceDetails.history;
+
+    return Object.fromEntries(
+      historyData.commits.map((commit) => {
+        const versionLabel = compareData.baseVersionOptions.find((option) =>
+          option.startsWith(commit.hash.slice(0, 7)),
+        )
+        const graph = versionLabel
+          ? compareData.graphsByVersion[versionLabel]
+          : undefined
+
+        return [
+          commit.hash,
+          graph
+            ? ({
+                repositoryLabel: commit.hash.slice(0, 7),
+                branchLabel: graph.branchLabel,
+                lanes: graph.lanes,
+                principalNames: graph.lanes.flatMap((lane) =>
+                  (lane.principals ?? []).map((principal) => principal.name),
+                ),
+              } satisfies PolicyGraphCanvasVariant)
+            : undefined,
+        ]
+      }),
+    )
+  }, [compareData.baseVersionOptions, compareData.graphsByVersion, workspaceData]);
 
   useEffect(() => {
     // History selection follows the currently sorted commit list so the detail
@@ -132,6 +163,7 @@ export function useVisualizerHistoryCompare(
     comparisonResult,
     compareGraph,
     detailHistoryCommits,
+    graphVariantsByCommit,
     hasCompared,
     historyCommits,
     historySortField,

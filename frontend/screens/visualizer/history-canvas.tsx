@@ -8,12 +8,14 @@ import type {
   HistoryTimelineCommit,
 } from "@/screens/visualizer/history.types";
 import { PolicyGraphCanvas } from "@/screens/visualizer/policy-graph-canvas";
+import type { PolicyGraphCanvasVariant } from "@/screens/visualizer/policy-graph.types";
 
 interface WorkspaceHistoryCanvasProps {
   commits: HistoryTimelineCommit[];
   activeCommitId: string | null;
   zoom: number;
   searchQuery?: string;
+  graphVariantsByCommit?: Record<string, PolicyGraphCanvasVariant | undefined>;
 }
 
 interface WorkspaceHistoryTimelineStripProps {
@@ -159,6 +161,7 @@ export function WorkspaceHistoryCanvas({
   activeCommitId,
   zoom,
   searchQuery,
+  graphVariantsByCommit,
 }: WorkspaceHistoryCanvasProps) {
   const [graphOffsets, setGraphOffsets] = useState<
     Record<string, { x: number; y: number }>
@@ -198,6 +201,28 @@ export function WorkspaceHistoryCanvas({
                 viewportWidth={historyCanvasWidth}
                 viewportHeight={historyCanvasHeight}
                 searchQuery={searchQuery}
+                variant={
+                  graphVariantsByCommit?.[commit.hash]
+                    ? {
+                        ...graphVariantsByCommit[commit.hash],
+                        repositoryLabel: commit.hash.slice(0, 7),
+                        repositoryLabelColor:
+                          commit.id === activeCommitId
+                            ? "var(--modified-color)"
+                            : "var(--dark-gray)",
+                        boundaryFill:
+                          commit.id === activeCommitId ? selectedGraphColor : "none",
+                      }
+                    : {
+                        repositoryLabel: commit.hash.slice(0, 7),
+                        repositoryLabelColor:
+                          commit.id === activeCommitId
+                            ? "var(--modified-color)"
+                            : "var(--dark-gray)",
+                        boundaryFill:
+                          commit.id === activeCommitId ? selectedGraphColor : "none",
+                      }
+                }
                 offset={graphOffsets[commit.id] ?? { x: 0, y: 0 }}
                 onOffsetChange={(nextOffset) => {
                   setGraphOffsets((currentOffsets) => ({
@@ -206,15 +231,6 @@ export function WorkspaceHistoryCanvas({
                   }));
                 }}
                 allowOverflowDrag
-                variant={{
-                  repositoryLabel: commit.hash.slice(0, 7),
-                  repositoryLabelColor:
-                    commit.id === activeCommitId
-                      ? "var(--modified-color)"
-                      : "var(--dark-gray)",
-                  boundaryFill:
-                    commit.id === activeCommitId ? selectedGraphColor : "none",
-                }}
               />
             </div>
           ))}

@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import {
+  layoutHeight,
+  layoutWidth,
+} from "@/screens/visualizer/policy-graph.constants";
 import { visualizerMenuItems } from "@/screens/visualizer/visualizer.constants";
 import type {
   VisualizerWorkspaceProps,
@@ -19,6 +23,31 @@ export function useVisualizerWorkspace({
   const [detailSearchQuery, setDetailSearchQuery] = useState("");
   const [graphZoom, setGraphZoom] = useState(0.75);
   const [graphSearchQuery, setGraphSearchQuery] = useState("");
+  const hasAutoFitZoomedRef = useRef(false);
+  const handleGraphZoomChange = useCallback((nextZoom: number | ((current: number) => number)) => {
+    hasAutoFitZoomedRef.current = true;
+    setGraphZoom(nextZoom);
+  }, []);
+  const handleViewportResize = useCallback((size: { width: number; height: number }) => {
+    if (hasAutoFitZoomedRef.current) return;
+    if (!size.width || !size.height) return;
+
+    const fittedZoom = Math.min(
+      1,
+      Number(
+        Math.max(
+          0.4,
+          Math.min(
+            (size.width - 96) / layoutWidth,
+            (size.height - 96) / layoutHeight,
+          ),
+        ).toFixed(2),
+      ),
+    );
+
+    hasAutoFitZoomedRef.current = true;
+    setGraphZoom(fittedZoom);
+  }, []);
   const {
     defaultLayout,
     detailPanelRef,
@@ -43,6 +72,7 @@ export function useVisualizerWorkspace({
     comparisonResult,
     compareGraph,
     detailHistoryCommits,
+    graphVariantsByCommit,
     hasCompared,
     historyCommits,
     historySortField,
@@ -58,7 +88,10 @@ export function useVisualizerWorkspace({
     setSelectedBaseVersion,
     setSelectedCompareVersion,
   } = useVisualizerHistoryCompare(workspaceData);
-  const { graphViewportRef, graphViewportSize } = useGraphViewport(graphZoom);
+  const { graphViewportRef, graphViewportSize } = useGraphViewport(
+    graphZoom,
+    handleViewportResize,
+  );
   const {
     activeGraphTab,
     activeGraphTabId,
@@ -113,6 +146,7 @@ export function useVisualizerWorkspace({
     detailPanelWidth,
     detailSearchQuery,
     footerLeftWidthPx,
+    graphVariantsByCommit,
     graphSearchQuery,
     graphTabs,
     graphViewportRef,
@@ -148,7 +182,7 @@ export function useVisualizerWorkspace({
     setDetailPanelWidth,
     setDetailSearchQuery,
     setGraphSearchQuery,
-    setGraphZoom,
+    setGraphZoom: handleGraphZoomChange,
     setHistorySortField,
     setIsDetailCollapsed,
     setIsHistorySortAscending,
