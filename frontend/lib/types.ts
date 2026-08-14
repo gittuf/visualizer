@@ -16,6 +16,13 @@ export interface CommitsRequest {
   url: string
 }
 
+export interface PolicyQueryResult {
+  matchedBranch: string
+  matchedRule: string
+  requiredApprovals: number
+  authorizedUsers: string[]
+}
+
 export type JsonValue = string | number | boolean | null | JsonObject | JsonArray
 export type JsonArray = JsonValue[]
 export interface JsonObject {

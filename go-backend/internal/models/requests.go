@@ -10,11 +10,7 @@ type CommitsRequest struct {
 type MetadataRequest struct {
 	URL    string `json:"url"`
 	Commit string `json:"commit"`
-}
-
-type MetadataSingleRequest struct {
-	MetadataRequest
-	File string `json:"file"`
+	File   string `json:"file"`
 }
 
 type CommitsLocalRequest struct {
@@ -24,11 +20,7 @@ type CommitsLocalRequest struct {
 type MetadataLocalRequest struct {
 	Path   string `json:"path"`
 	Commit string `json:"commit"`
-}
-
-type MetadataLocalSingleRequest struct {
-	MetadataLocalRequest
-	File string `json:"file"`
+	File   string `json:"file"`
 }
 
 type PolicyQueryRequest struct {

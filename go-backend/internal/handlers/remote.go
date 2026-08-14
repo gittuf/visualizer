@@ -5,6 +5,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gittuf/visualizer/go-backend/internal/logger"
 	"github.com/gittuf/visualizer/go-backend/internal/models"
@@ -17,16 +18,22 @@ import (
 func ListCommits(c *gin.Context) {
 	var req models.CommitsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		writeBindError(c, err)
-		return
-	}
-	if !requireFields(c, "url", req.URL) {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: "Missing 'url' in request body",
+			Code:  http.StatusBadRequest,
+		})
 		return
 	}
 
 	// Clone and fetch the repository
-	repoPath, cleanup, ok := loadRemoteRepo(c, req.URL, "/commits")
-	if !ok {
+	repoPath, cleanup, err := services.CloneAndFetchRepo(req.URL)
+	if err != nil {
+		logger.Sugar.Errorf("Exception in /commits: %v", err)
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "Failed to clone or fetch repository",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
 		return
 	}
 	defer cleanup()
@@ -50,79 +57,93 @@ func ListCommits(c *gin.Context) {
 func GetMetadata(c *gin.Context) {
 	var req models.MetadataRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		writeBindError(c, err)
-		return
-	}
-	if !requireFields(c, "url", req.URL, "commit", req.Commit) {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: "Missing 'url', 'commit', or 'file' in request body",
+			Code:  http.StatusBadRequest,
+		})
 		return
 	}
 
 	// Clone and fetch the repository
-	repoPath, cleanup, ok := loadRemoteRepo(c, req.URL, "/metadata")
-	if !ok {
-		return
-	}
-	defer cleanup()
-
-	metadata, err := services.LoadPolicySnapshot(repoPath, req.Commit)
+	repoPath, cleanup, err := services.CloneAndFetchRepo(req.URL)
 	if err != nil {
 		logger.Sugar.Errorf("Exception in /metadata: %v", err)
-		writeMetadataError(c, "Failed to decode metadata", err)
-		return
-	}
-
-	c.JSON(http.StatusOK, metadata)
-}
-
-// Retrieves a single decoded metadata file from remote repo
-func GetMetadataSingle(c *gin.Context) {
-	var req models.MetadataSingleRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		writeBindError(c, err)
-		return
-	}
-	if !requireFields(c, "url", req.URL, "commit", req.Commit, "file", req.File) {
-		return
-	}
-
-	repoPath, cleanup, ok := loadRemoteRepo(c, req.URL, "/metadata-single")
-	if !ok {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "Failed to clone or fetch repository",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
 		return
 	}
 	defer cleanup()
 
+	// Decode the metadata blob
 	metadata, err := services.DecodeMetadataBlob(repoPath, req.Commit, req.File)
 	if err != nil {
-		logger.Sugar.Errorf("Exception in /metadata-single: %v", err)
-		writeMetadataError(c, "Failed to decode metadata", err)
+		if strings.Contains(err.Error(), "not found in commit") {
+			logger.Sugar.Infof("Missing %s at %s: %v", req.File, req.Commit, err)
+			c.JSON(http.StatusNotFound, models.ErrorResponse{
+				Error:   "Metadata file not found in commit",
+				Code:    http.StatusNotFound,
+				Details: err.Error(),
+			})
+			return
+		}
+		logger.Sugar.Errorf("Exception in /metadata: %v", err)
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "Failed to decode metadata",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
 		return
 	}
 
 	c.JSON(http.StatusOK, metadata)
 }
 
-func QueryPolicyRemote(c *gin.Context) {
+func QueryPolicy(c *gin.Context) {
 	var req models.PolicyQueryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		writeBindError(c, err)
-		return
-	}
-	if !requireFields(c, "url", req.URL, "commit", req.Commit, "branch", req.Branch, "changedPath", req.ChangedPath) {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: "Missing 'url', 'commit', 'branch', or 'changedPath' in request body",
+			Code:  http.StatusBadRequest,
+		})
 		return
 	}
 
-	repoPath, cleanup, ok := loadRemoteRepo(c, req.URL, "/policy-query")
-	if !ok {
+	repoPath, cleanup, err := services.CloneAndFetchRepo(req.URL)
+	if err != nil {
+		logger.Sugar.Errorf("Exception in /policy-query: %v", err)
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "Failed to clone or fetch repository",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
 		return
 	}
 	defer cleanup()
 
-	snapshot, err := services.LoadPolicySnapshot(repoPath, req.Commit)
+	root, err := services.DecodeMetadataBlob(repoPath, req.Commit, "root.json")
 	if err != nil {
 		logger.Sugar.Errorf("Exception in /policy-query: %v", err)
-		writeMetadataError(c, "Failed to load policy metadata", err)
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "Failed to decode root metadata",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, services.QueryPolicy(snapshot, req.Branch, req.ChangedPath))
+	targets, err := services.DecodeMetadataBlob(repoPath, req.Commit, "targets.json")
+	if err != nil {
+		logger.Sugar.Errorf("Exception in /policy-query: %v", err)
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "Failed to decode targets metadata",
+			Code:    http.StatusInternalServerError,
+			Details: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, services.QueryPolicy(root, targets, req.Branch, req.ChangedPath))
 }
