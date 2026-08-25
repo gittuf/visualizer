@@ -199,5 +199,5 @@ func QueryPolicyLocal(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, services.QueryPolicy(services.BuildPolicyData(root, targets), req.Branch, req.ChangedPath))
+	c.JSON(http.StatusOK, services.QueryPolicy(root, targets, req.Branch, req.ChangedPath))
 }

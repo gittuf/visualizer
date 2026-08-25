@@ -12,10 +12,11 @@ export function useRepositorySession() {
   const [isBootstrapping, setIsBootstrapping] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [pendingRepository, setPendingRepository] = useState<RepositoryInfo | null>(null)
   const [currentRepository, setCurrentRepository] = useState<RepositoryInfo | null>(null)
   const [currentRepositoryData, setCurrentRepositoryData] = useState<DemoVisualizerData | null>(null)
   const [repositoryHandler] = useState(() => new RepositoryHandler())
-  const showRepositorySelector = !isBootstrapping && !currentRepository
+  const showRepositorySelector = !isBootstrapping && !currentRepositoryData
 
   const persistRepositorySession = (repository: RepositoryInfo | null) => {
     if (typeof window === "undefined") return
@@ -31,6 +32,7 @@ export function useRepositorySession() {
   const handleTryDemo = async (onSuccess?: () => void) => {
     const demoRepository: RepositoryInfo = demoVisualizerData.repository
 
+    setPendingRepository(demoRepository)
     setCurrentRepository(demoRepository)
     setCurrentRepositoryData(demoVisualizerData)
     setIsLoading(true)
@@ -43,12 +45,14 @@ export function useRepositorySession() {
     } catch (err) {
       setError(`Failed to load demo data: ${err instanceof Error ? err.message : "Unknown error"}`)
     } finally {
+      setPendingRepository(null)
       setIsLoading(false)
     }
   }
 
   const handleRepositorySelect = useCallback(async (repoInfo: RepositoryInfo, onSuccess?: () => void) => {
-    setCurrentRepository(repoInfo)
+    setPendingRepository(repoInfo)
+    setCurrentRepository(null)
     setCurrentRepositoryData(null)
     setIsLoading(true)
     setError("")
@@ -61,12 +65,16 @@ export function useRepositorySession() {
         commits,
         (commitHash) => repositoryHandler.fetchPolicySnapshot(commitHash),
       )
+      setCurrentRepository(repoInfo)
       setCurrentRepositoryData(workspaceData)
       persistRepositorySession(repoInfo)
       if (onSuccess) onSuccess()
     } catch (err) {
+      setCurrentRepository(null)
+      setCurrentRepositoryData(null)
       setError(`Failed to connect to repository: ${err instanceof Error ? err.message : "Unknown error"}`)
     } finally {
+      setPendingRepository(null)
       setIsLoading(false)
     }
   }, [repositoryHandler])
@@ -78,12 +86,13 @@ export function useRepositorySession() {
     setError("")
 
     try {
-      repositoryHandler.clearCache()
+      repositoryHandler.clearCommitsCache()
       const commits = await repositoryHandler.fetchCommits()
       const workspaceData = await buildVisualizerDataFromBackend(
         currentRepository,
         commits,
         (commitHash) => repositoryHandler.fetchPolicySnapshot(commitHash),
+        currentRepositoryData?.metadataByCommit,
       )
       setCurrentRepositoryData(workspaceData)
     } catch (err) {
@@ -96,6 +105,7 @@ export function useRepositorySession() {
   const handleDisconnect = () => {
     setIsLoading(false)
     setError("")
+    setPendingRepository(null)
     setCurrentRepository(null)
     setCurrentRepositoryData(null)
     persistRepositorySession(null)
@@ -132,6 +142,7 @@ export function useRepositorySession() {
     isBootstrapping,
     isLoading,
     error,
+    pendingRepository,
     currentRepository,
     showRepositorySelector,
     handleDisconnect,

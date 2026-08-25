@@ -32,7 +32,7 @@ func TestQueryPolicyUsesNormalizedRoles(t *testing.T) {
 		},
 	}
 
-	response := QueryPolicy(BuildPolicyData(root, targets), "main", "src/app.go")
+	response := QueryPolicy(root, targets, "main", "src/app.go")
 
 	if response.MatchedRule != "protect-main" {
 		t.Fatalf("MatchedRule = %q, want %q", response.MatchedRule, "protect-main")

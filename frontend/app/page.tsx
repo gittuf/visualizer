@@ -13,6 +13,7 @@ export default function Home() {
     isBootstrapping,
     isLoading,
     error,
+    pendingRepository,
     currentRepository,
     currentRepositoryData,
     showRepositorySelector,
@@ -46,7 +47,7 @@ export default function Home() {
               onTryDemo={handleTryDemo}
               isLoading={isLoading}
               error={error}
-              currentRepository={currentRepository}
+              currentRepository={pendingRepository ?? currentRepository}
             />
           )}
 

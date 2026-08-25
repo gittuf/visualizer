@@ -12,6 +12,8 @@ export interface PolicySnapshot {
   targets: JsonObject
 }
 
+const snapshotBatchSize = 4
+
 function asObject(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -184,27 +186,51 @@ export async function buildVisualizerDataFromBackend(
   repository: RepositoryInfo,
   commits: Commit[],
   loadSnapshot: (commitHash: string) => Promise<PolicySnapshot>,
+  existingMetadataByCommit?: DemoVisualizerData["metadataByCommit"],
 ): Promise<DemoVisualizerData> {
   const metadataByCommitEntries: Array<[string, { "root.json": JsonObject; "targets.json": JsonObject }]> = []
   let firstSnapshotError: Error | null = null
 
-  for (const commit of commits) {
-    try {
-      const snapshot = await loadSnapshot(commit.hash)
-      metadataByCommitEntries.push([
-        commit.hash,
-        {
-          "root.json": snapshot.root,
-          "targets.json": snapshot.targets,
-        },
-      ])
-    } catch (error) {
-      if (!firstSnapshotError && error instanceof Error) {
-        firstSnapshotError = error
-      }
+  if (existingMetadataByCommit) {
+    metadataByCommitEntries.push(
+      ...commits
+        .filter((commit) => Boolean(existingMetadataByCommit[commit.hash]))
+        .map((commit) => [commit.hash, existingMetadataByCommit[commit.hash]]),
+    )
+  }
 
-      // ponytail: skip policy commits missing full metadata; include them when the UI can represent partial snapshots honestly.
-    }
+  const knownCommitHashes = new Set(metadataByCommitEntries.map(([commitHash]) => commitHash))
+  const commitsToLoad = commits.filter((commit) => !knownCommitHashes.has(commit.hash))
+
+  for (let index = 0; index < commitsToLoad.length; index += snapshotBatchSize) {
+    const batch = commitsToLoad.slice(index, index + snapshotBatchSize)
+    const batchEntries = await Promise.all(
+      batch.map(async (commit) => {
+        try {
+          const snapshot = await loadSnapshot(commit.hash)
+          return [
+            commit.hash,
+            {
+              "root.json": snapshot.root,
+              "targets.json": snapshot.targets,
+            },
+          ] as const
+        } catch (error) {
+          if (!firstSnapshotError && error instanceof Error) {
+            firstSnapshotError = error
+          }
+
+          // ponytail: skip policy commits missing full metadata; include them when the UI can represent partial snapshots honestly.
+          return null
+        }
+      }),
+    )
+
+    metadataByCommitEntries.push(
+      ...batchEntries.filter(
+        (entry): entry is [string, { "root.json": JsonObject; "targets.json": JsonObject }] => Boolean(entry),
+      ),
+    )
   }
 
   if (metadataByCommitEntries.length === 0) {

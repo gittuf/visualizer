@@ -37,6 +37,10 @@ export class RepositoryHandler {
     this.metadataCache.clear()
   }
 
+  clearCommitsCache() {
+    this.commitsCache.clear()
+  }
+
   async fetchCommits(): Promise<Commit[]> {
     if (!this.repositoryInfo) {
       throw new Error("No repository configured")
@@ -58,9 +62,14 @@ export class RepositoryHandler {
   }
 
   async fetchPolicySnapshot(commitHash: string): Promise<{ root: JsonObject; targets: JsonObject }> {
+    const [targets, root] = await Promise.all([
+      this.fetchMetadata(commitHash, "targets.json"),
+      this.fetchMetadata(commitHash, "root.json"),
+    ])
+
     return {
-      targets: (await this.fetchMetadata(commitHash, "targets.json")) as JsonObject,
-      root: (await this.fetchMetadata(commitHash, "root.json")) as JsonObject,
+      targets: targets as JsonObject,
+      root: root as JsonObject,
     }
   }
 

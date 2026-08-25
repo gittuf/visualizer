@@ -235,7 +235,14 @@ export function useVisualizerHistoryCompare(
   const setCompareSelection = (
     updater: (current: typeof compareSelection) => typeof compareSelection,
   ) => {
-    setCompareSelectionState(updater(compareSelection));
+    setCompareSelectionState((current) => {
+      const resolvedCurrent =
+        current.key === compareSelectionKey
+          ? current
+          : { key: compareSelectionKey, ...compareSelectionDefaults };
+
+      return updater(resolvedCurrent);
+    });
   };
 
   const setSelectedBaseVersion = (

@@ -22,7 +22,8 @@ type policyRole struct {
 	threshold    int
 }
 
-func QueryPolicy(data policyData, branch, changedPath string) models.PolicyQueryResponse {
+func QueryPolicy(root, targets models.MetadataResponse, branch, changedPath string) models.PolicyQueryResponse {
+	data := buildPolicyData(root, targets)
 	matchedRule := changedPath
 	requiredApprovals := 0
 	authorizedUsers := []string{}
@@ -66,7 +67,7 @@ func QueryPolicy(data policyData, branch, changedPath string) models.PolicyQuery
 	}
 }
 
-func BuildPolicyData(root, targets models.MetadataResponse) policyData {
+func buildPolicyData(root, targets models.MetadataResponse) policyData {
 	return policyData{
 		principalNames: buildPolicyPrincipalNames(root, targets),
 		roles:          buildPolicyRoles(targets),
