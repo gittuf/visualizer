@@ -7,7 +7,10 @@ interface GraphViewportSize {
   height: number;
 }
 
-export function useGraphViewport(graphZoom: number) {
+export function useGraphViewport(
+  graphZoom: number,
+  onViewportResize?: (size: GraphViewportSize) => void,
+) {
   const graphViewportRef = useRef<HTMLDivElement | null>(null);
   const [graphViewportSize, setGraphViewportSize] = useState<GraphViewportSize>({
     width: 0,
@@ -19,10 +22,13 @@ export function useGraphViewport(graphZoom: number) {
     if (!viewport) return;
 
     const updateViewportSize = () => {
-      setGraphViewportSize({
+      const nextSize = {
         width: viewport.clientWidth,
         height: viewport.clientHeight,
-      });
+      };
+
+      setGraphViewportSize(nextSize);
+      onViewportResize?.(nextSize);
     };
 
     updateViewportSize();
@@ -33,7 +39,7 @@ export function useGraphViewport(graphZoom: number) {
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [onViewportResize]);
 
   useEffect(() => {
     const viewport = graphViewportRef.current;
