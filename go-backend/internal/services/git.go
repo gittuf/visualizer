@@ -39,15 +39,9 @@ func CloneAndFetchRepo(url string) (string, func(), error) {
 		return "", nil, fmt.Errorf("failed to clone repository: %w", err)
 	}
 
-	// Fetch the custom ref
-	refSpec := config.RefSpec("refs/gittuf/policy:refs/remotes/origin/gittuf/policy")
-	err = repo.Fetch(&git.FetchOptions{
-		RefSpecs: []config.RefSpec{refSpec},
-		Progress: nil,
-	})
-	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+	if err := fetchPolicyRef(repo); err != nil {
 		cleanup()
-		return "", nil, fmt.Errorf("failed to fetch refs/gittuf/policy: %w", err)
+		return "", nil, err
 	}
 
 	return tempDir, cleanup, nil
@@ -55,23 +49,14 @@ func CloneAndFetchRepo(url string) (string, func(), error) {
 
 // Retrieve commits from the gittuf/policy ref
 func GetPolicyCommits(repoPath string) ([]models.Commit, error) {
-	return getCommitsForRef(repoPath, plumbing.ReferenceName("refs/remotes/origin/gittuf/policy"))
-}
-
-// Retrieve commits from the local gittuf policy ref
-func GetLocalCommits(repoPath string) ([]models.Commit, error) {
-	return getCommitsForRef(repoPath, plumbing.ReferenceName("refs/gittuf/policy"))
-}
-
-func getCommitsForRef(repoPath string, refName plumbing.ReferenceName) ([]models.Commit, error) {
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open repository: %w", err)
 	}
 
-	ref, err := repo.Reference(refName, true)
+	ref, err := getPolicyRef(repo)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get %s: %w", refName, err)
+		return nil, fmt.Errorf("failed to get policy ref: %w", err)
 	}
 
 	commitIter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
@@ -94,4 +79,60 @@ func getCommitsForRef(repoPath string, refName plumbing.ReferenceName) ([]models
 	}
 
 	return commits, nil
+}
+
+// Retrieve commits from the local gittuf policy ref
+func GetLocalCommits(repoPath string) ([]models.Commit, error) {
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open repository: %w", err)
+	}
+
+	ref, err := getPolicyRef(repo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get local policy ref: %w", err)
+	}
+
+	commitIter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get commit log: %w", err)
+	}
+
+	var commits []models.Commit
+	err = commitIter.ForEach(func(c *object.Commit) error {
+		commits = append(commits, models.Commit{
+			Hash:    c.Hash.String(),
+			Message: strings.TrimSpace(c.Message),
+			Author:  c.Author.Name,
+			Date:    c.Author.When,
+		})
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to iterate commits: %w", err)
+	}
+
+	return commits, nil
+}
+
+func getPolicyRef(repo *git.Repository) (*plumbing.Reference, error) {
+	ref, err := repo.Reference(plumbing.ReferenceName("refs/gittuf/policy"), true)
+	if err != nil {
+		return nil, fmt.Errorf("policy ref not found: %w", err)
+	}
+
+	return ref, nil
+}
+
+func fetchPolicyRef(repo *git.Repository) error {
+	refSpec := config.RefSpec("refs/gittuf/policy:refs/gittuf/policy")
+	err := repo.Fetch(&git.FetchOptions{
+		RefSpecs: []config.RefSpec{refSpec},
+		Progress: nil,
+	})
+	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		return fmt.Errorf("failed to fetch refs/gittuf/policy: %w", err)
+	}
+
+	return nil
 }
