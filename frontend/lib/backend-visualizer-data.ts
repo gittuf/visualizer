@@ -195,7 +195,9 @@ export async function buildVisualizerDataFromBackend(
     metadataByCommitEntries.push(
       ...commits
         .filter((commit) => Boolean(existingMetadataByCommit[commit.hash]))
-        .map((commit) => [commit.hash, existingMetadataByCommit[commit.hash]]),
+        .map<[string, DemoVisualizerData["metadataByCommit"][string]]>(
+          (commit) => [commit.hash, existingMetadataByCommit[commit.hash]],
+        ),
     )
   }
 
