@@ -52,7 +52,7 @@ export function SearchHighlightText({
           <span
             key={`${part.value}-${index}`}
             className="rounded-xs text-(--modified-color)"
-            style={{ backgroundColor: "var(--selected-color)" }}
+            style={{ backgroundColor: "#ffe58f" }}
           >
             {part.value}
           </span>

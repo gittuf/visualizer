@@ -4,9 +4,9 @@ import type {
   PolicyGraphLane,
 } from "@/screens/visualizer/policy-graph.types";
 
-export const layoutWidth = 980;
-export const layoutHeight = 980;
-export const boundary = { x: 80, y: 60, width: 820, height: 840 };
+export const layoutWidth = 1600;
+export const layoutHeight = 1060;
+export const boundary = { x: 100, y: 40, width: 1360, height: 940 };
 export const rowY = {
   branch: 120,
   file: 300,
@@ -31,7 +31,7 @@ export const defaultPrincipalNames = ["Alice", "Carol", "Bob"];
 export const branchBox = { width: 140, height: 92 };
 export const fileBox = { width: 120, height: 118 };
 export const roleBox = { width: 180, height: 132 };
-export const principalBox = { width: 92, height: 108 };
+export const principalBox = { width: 120, height: 108 };
 export const scrollPadding = 96;
 
 export const DIFF_COLORS = {
