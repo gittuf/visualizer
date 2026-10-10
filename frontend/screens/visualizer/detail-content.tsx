@@ -4,6 +4,7 @@ import { useState } from "react";
 import { demoVisualizerData } from "@/lib/demo-visualizer-fixture";
 import type { DemoVisualizerData } from "@/lib/demo-visualizer.types";
 import type { RepositoryInfo } from "@/lib/repository-handler";
+import type { PolicyQueryResult } from "@/lib/types";
 import {
   DetailPanelCompare,
   DetailPanelGraphSource,
@@ -86,7 +87,7 @@ export function WorkspaceDetailContent({
     matchedRule: policyQueryDefaults.queryResult.matchedRule,
     requiredApprovals: policyQueryDefaults.queryResult.requiredApprovals,
     authorizedUsers: policyQueryDefaults.authorizedUsers,
-  });
+  } satisfies PolicyQueryResult);
 
   switch (activePanel) {
     case "graph-source":
@@ -102,6 +103,8 @@ export function WorkspaceDetailContent({
     case "policy-query":
       return (
         <DetailPanelPolicyQuery
+          repository={repository}
+          commitHash={workspaceData?.commits[0]?.hash}
           workspaceData={workspaceData}
           searchQuery={searchQuery}
           selectedBranch={selectedBranch}
