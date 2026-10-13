@@ -6,6 +6,8 @@ interface WorkspaceDetailToggleProps {
   isCollapsed: boolean;
   leftIcon: StaticImageData;
   rightIcon: StaticImageData;
+  collapseLabel?: string;
+  expandLabel?: string;
   onToggle: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
@@ -13,9 +15,11 @@ export function WorkspaceDetailToggle({
   isCollapsed,
   leftIcon,
   rightIcon,
+  collapseLabel = "Collapse detail panel",
+  expandLabel = "Expand detail panel",
   onToggle,
 }: WorkspaceDetailToggleProps) {
-  const label = isCollapsed ? "Expand detail panel" : "Collapse detail panel";
+  const label = isCollapsed ? expandLabel : collapseLabel;
 
   return (
     <button

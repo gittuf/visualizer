@@ -17,8 +17,8 @@ import {
   getIconFilter,
   getLaneNodeChangeTypes,
   getNodeTextStyle,
+  getPrincipalLayouts,
   getPrincipalChangeType,
-  getPrincipalOffsets,
   getTextClassName,
 } from "@/screens/visualizer/policy-graph.utils";
 import type { PolicyGraphLane } from "@/screens/visualizer/policy-graph.types";
@@ -26,6 +26,7 @@ import type { PolicyGraphLane } from "@/screens/visualizer/policy-graph.types";
 interface PolicyGraphLaneColumnProps {
   branchLabel: string;
   centerX: number;
+  laneWidth: number;
   lane: PolicyGraphLane;
   normalizedSearchQuery: string;
   principalNames: string[];
@@ -34,6 +35,7 @@ interface PolicyGraphLaneColumnProps {
 export function PolicyGraphLaneColumn({
   branchLabel,
   centerX,
+  laneWidth,
   lane,
   normalizedSearchQuery,
   principalNames,
@@ -44,7 +46,7 @@ export function PolicyGraphLaneColumn({
     principalNames.map((name) => ({
       name,
     }));
-  const principalOffsets = getPrincipalOffsets(lanePrincipals.length);
+  const principalLayouts = getPrincipalLayouts(lanePrincipals, laneWidth);
 
   return (
     <div>
@@ -127,7 +129,11 @@ export function PolicyGraphLaneColumn({
       </div>
 
       {lanePrincipals.map((principal, principalIndex) => {
-        const center = centerX + principalOffsets[principalIndex];
+        const principalLayout = principalLayouts[principalIndex] ?? {
+          offset: 0,
+          width: principalBox.width,
+        };
+        const center = centerX + principalLayout.offset;
         const principalChangeType = getPrincipalChangeType(principal, lane);
 
         return (
@@ -135,9 +141,9 @@ export function PolicyGraphLaneColumn({
             key={`${lane.key}-${principal.name}`}
             className="absolute flex flex-col items-center text-center"
             style={{
-              left: `${center - principalBox.width / 2}px`,
+              left: `${center - principalLayout.width / 2}px`,
               top: `${rowY.principals}px`,
-              width: `${principalBox.width}px`,
+              width: `${principalLayout.width}px`,
               minHeight: `${principalBox.height}px`,
             }}
           >
@@ -152,8 +158,11 @@ export function PolicyGraphLaneColumn({
               draggable={false}
             />
             <div
-              className={`mt-2 text-[16px] leading-[1.3] ${getTextClassName(principalChangeType)}`}
-              style={getNodeTextStyle(principal.name, normalizedSearchQuery)}
+              className={`mt-2 w-full break-all px-1 text-[13px] leading-[1.15] ${getTextClassName(principalChangeType)}`}
+              style={{
+                textWrap: "balance",
+                ...getNodeTextStyle(principal.name, normalizedSearchQuery),
+              }}
             >
               {principal.name}
             </div>

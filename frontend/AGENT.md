@@ -174,7 +174,7 @@ Important note:
 
 - Repository interaction is abstracted behind `lib/repository-handler.ts`.
 - Demo/mock behavior is provided through:
-  - `lib/mock-api.ts`
+  - `lib/api.ts`
   - `lib/demo-visualizer-fixture.ts`
 - Repository connection loading/error handling is currently local-state driven:
   - async handlers set inline `isLoading` / `error` state in `use-repository-session.ts`
