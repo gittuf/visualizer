@@ -4,8 +4,9 @@ import type React from "react"
 
 import Image from "next/image"
 import { useMemo, useState } from "react"
-import { AlertCircle, CheckCircle, Loader2 } from "lucide-react"
+import { AlertCircle, CheckCircle } from "lucide-react"
 import clipIcon from "@/assets/clip.png"
+import spinnerIcon from "@/assets/spinner.png"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { RepositoryInfo } from "@/lib/repository-handler"
@@ -148,7 +149,6 @@ export default function RepositorySelector({
 
     onRepositorySelect(repoInfo)
   }
-
   return (
     <section className="px-4 py-6">
       <div className="mx-auto w-full max-w-[980px]">
@@ -210,7 +210,7 @@ export default function RepositorySelector({
                     className="h-11 min-w-[120px] rounded-[5px] border px-6 text-[16px] font-normal text-black shadow-none hover:opacity-90 disabled:opacity-100"
                     style={{ backgroundColor: BUTTON_COLOR, borderColor: CONTROL_BORDER }}
                   >
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Connect"}
+                    {isLoading ? <Image src={spinnerIcon} alt="" className="h-4 w-4 animate-spin" /> : "Connect"}
                   </Button>
                 </div>
               </form>
@@ -219,7 +219,7 @@ export default function RepositorySelector({
 
               <form onSubmit={handleLocalSubmit} className="space-y-2">
                 <p className="text-[14px] leading-[1.4]" style={{ color: PARAGRAPH_COLOR }}>
-                  Select a local Git repository folder from your computer that contains gittuf security metadata
+                  Enter the local path to a Git repository that contains gittuf security metadata
                 </p>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center">
                   <Input
@@ -237,7 +237,7 @@ export default function RepositorySelector({
                     className="h-11 min-w-[120px] rounded-[5px] border px-6 text-[16px] font-normal text-black shadow-none hover:opacity-90 disabled:opacity-100"
                     style={{ backgroundColor: BUTTON_COLOR, borderColor: CONTROL_BORDER }}
                   >
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Connect"}
+                    {isLoading ? <Image src={spinnerIcon} alt="" className="h-4 w-4 animate-spin" /> : "Connect"}
                   </Button>
                 </div>
               </form>
@@ -277,12 +277,8 @@ export default function RepositorySelector({
 
             {validationStatus && (
               <div
-                className="flex items-start gap-3 rounded-[5px] border px-4 py-3 text-[14px]"
+                className="flex items-start gap-3 px-1 py-1 text-[14px]"
                 style={{
-                  borderColor: validationStatus.isValid ? "var(--approve-color)" : "var(--reject-color)",
-                  backgroundColor: validationStatus.isValid
-                    ? "var(--approve-color-12)"
-                    : "var(--reject-color-12)",
                   color: validationStatus.isValid ? "var(--approve-color)" : "var(--reject-color)",
                 }}
               >
@@ -301,10 +297,8 @@ export default function RepositorySelector({
 
             {error && (
               <div
-                className="rounded-[5px] border px-4 py-3 text-[14px]"
+                className="px-1 py-1 text-[14px]"
                 style={{
-                  borderColor: "var(--reject-color)",
-                  backgroundColor: "var(--reject-color-12)",
                   color: "var(--reject-color)",
                 }}
               >
