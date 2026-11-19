@@ -38,19 +38,14 @@ func main() {
 	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
 	router.Use(cors.New(config))
 
-	// health check endpoint
-	router.GET("/health", handlers.Health)
-
 	// Remote repository endpoints
 	router.POST("/commits", handlers.ListCommits)
 	router.POST("/metadata", handlers.GetMetadata)
-	router.POST("/metadata-single", handlers.GetMetadataSingle)
-	router.POST("/policy-query", handlers.QueryPolicyRemote)
+	router.POST("/policy-query", handlers.QueryPolicy)
 
 	// Local repository endpoints
 	router.POST("/commits-local", handlers.ListCommitsLocal)
 	router.POST("/metadata-local", handlers.GetMetadataLocal)
-	router.POST("/metadata-local-single", handlers.GetMetadataLocalSingle)
 	router.POST("/policy-query-local", handlers.QueryPolicyLocal)
 
 	port := os.Getenv("PORT")
