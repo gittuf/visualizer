@@ -61,14 +61,18 @@ export function DetailPanelGraphSource({
         onChange={setSelectedPolicyVersion}
         searchQuery={searchQuery}
       />
-      <InlineSelectRow
-        label="Metadata:"
-        options={metadataOptions.map((label) => ({ label }))}
-        selectedLabel={selectedMetadataFile}
-        chips={[selectedMetadataFile]}
-        onChange={setSelectedMetadataFile}
-        searchQuery={searchQuery}
-      />
+      {/* commented for now because the current graph depends on both root.json and targets.json.
+          Will bring this back when we add graph modes that can honestly render a single metadata file. */}
+      {false ? (
+        <InlineSelectRow
+          label="Metadata:"
+          options={metadataOptions.map((label) => ({ label }))}
+          selectedLabel={selectedMetadataFile}
+          chips={[selectedMetadataFile]}
+          onChange={setSelectedMetadataFile}
+          searchQuery={searchQuery}
+        />
+      ) : null}
       <InlineSelectRow
         label="Active mode"
         options={activeModeOptions.map((label) => ({ label }))}

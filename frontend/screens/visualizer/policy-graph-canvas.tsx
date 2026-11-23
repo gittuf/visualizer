@@ -16,11 +16,11 @@ import {
   scrollPadding,
 } from "@/screens/visualizer/policy-graph.constants";
 import {
-  getLaneCenters,
+  getLaneLayouts,
   getLaneNodeChangeTypes,
   getNodeTextStyle,
+  getPrincipalLayouts,
   getPrincipalChangeType,
-  getPrincipalOffsets,
 } from "@/screens/visualizer/policy-graph.utils";
 import type {
   PolicyGraphCanvasVariant,
@@ -67,7 +67,7 @@ export function PolicyGraphCanvas({
   const branchLabel = variant?.branchLabel ?? defaultPolicyGraphVariant.branchLabel;
   const boundaryFill = variant?.boundaryFill ?? "none";
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
-  const laneCenters = getLaneCenters(lanes.length);
+  const laneLayouts = getLaneLayouts(lanes, principalNames);
   const scaledWidth = layoutWidth * zoom;
   const scaledHeight = layoutHeight * zoom;
   const canvasWidth = Math.max(scaledWidth + scrollPadding * 2, viewportWidth);
@@ -97,7 +97,7 @@ export function PolicyGraphCanvas({
       );
 
   const verticalPaths: PolicyGraphEdge[] = lanes.flatMap((lane, laneIndex) => {
-    const centerX = laneCenters[laneIndex];
+    const centerX = laneLayouts[laneIndex]?.centerX ?? boundary.x + boundary.width / 2;
     const changeTypes = getLaneNodeChangeTypes(lane);
 
     return [
@@ -115,20 +115,24 @@ export function PolicyGraphCanvas({
   });
 
   const principalPaths: PolicyGraphEdge[] = lanes.flatMap((lane, laneIndex) => {
-    const centerX = laneCenters[laneIndex];
+    const laneLayout = laneLayouts[laneIndex];
+    const centerX = laneLayout?.centerX ?? boundary.x + boundary.width / 2;
     const lanePrincipals =
       lane.principals ??
       principalNames.map((name) => ({
         name,
       }));
-    const principalOffsets = getPrincipalOffsets(lanePrincipals.length);
+    const principalLayouts = getPrincipalLayouts(
+      lanePrincipals,
+      laneLayout?.width ?? boundary.width,
+    );
 
-    return principalOffsets.map((offset, index) => {
+    return principalLayouts.map((principalLayout, index) => {
       const principal = lanePrincipals[index] ?? { name: "" };
       const principalChangeType = getPrincipalChangeType(principal, lane);
 
       return {
-        d: `M ${centerX} ${rowY.role + roleBox.height} L ${centerX + offset} ${rowY.principals - 18}`,
+        d: `M ${centerX} ${rowY.role + roleBox.height} L ${centerX + principalLayout.offset} ${rowY.principals - 18}`,
         arrow: true,
         changeType: principalChangeType,
       };
@@ -264,13 +268,15 @@ export function PolicyGraphCanvas({
             </div>
 
             {lanes.map((lane, laneIndex) => {
-              const centerX = laneCenters[laneIndex];
+              const laneLayout = laneLayouts[laneIndex];
+              const centerX = laneLayout?.centerX ?? boundary.x + boundary.width / 2;
 
               return (
                 <PolicyGraphLaneColumn
                   key={lane.key}
                   branchLabel={branchLabel}
                   centerX={centerX}
+                  laneWidth={laneLayout?.width ?? boundary.width}
                   lane={lane}
                   normalizedSearchQuery={normalizedSearchQuery}
                   principalNames={principalNames}
